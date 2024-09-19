@@ -22,11 +22,14 @@
 #endif
 #import <Foundation/Foundation.h>
 
+@class ACRView;
+
 @interface ACOAdaptiveCard : NSObject
 
 @property ACORefresh *refresh;
 @property ACOAuthentication *authentication;
 
++ (UIView *)swiftViewFromAcrView:(ACRView *)acrView cardData:(NSString *)cardData;
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload;
 - (NSData *)inputs;
 - (NSArray<ACRIBaseInputHandler> *)getInputs;

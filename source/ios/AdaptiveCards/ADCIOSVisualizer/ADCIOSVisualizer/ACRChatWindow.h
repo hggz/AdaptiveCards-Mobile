@@ -26,4 +26,5 @@ extern NSString *identifier;
 @interface ACRChatWindowCell : UITableViewCell
 
 @property (nonatomic) ACRView *adaptiveCardView;
+- (void)setAdaptiveCardView:(ACRView *)adaptiveCardView cardData:(NSString *)cardData;
 @end

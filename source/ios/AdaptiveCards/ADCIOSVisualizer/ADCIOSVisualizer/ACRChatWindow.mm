@@ -9,6 +9,8 @@
 #import "ADCResolver.h"
 #import <Foundation/Foundation.h>
 
+static BOOL SWIFT_RENDER_ENABLED = NO;
+
 @implementation ACRChatWindow {
     NSUInteger numberOfCards;
     NSMutableArray<NSString *> *adaptiveCardsPayloads;
@@ -100,7 +102,11 @@
 
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"adaptiveCell" forIndexPath:indexPath];
     if (cell) {
-        ((ACRChatWindowCell *)cell).adaptiveCardView = adaptiveCardView;
+        if (SWIFT_RENDER_ENABLED) {
+            [((ACRChatWindowCell *)cell) setAdaptiveCardView:adaptiveCardView cardData:adaptiveCardsPayloads[indexPath.row]];
+        } else {
+            ((ACRChatWindowCell *)cell).adaptiveCardView = adaptiveCardView;
+        }
         [cell becomeFirstResponder];
         UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, cell);
     }
@@ -190,7 +196,7 @@
     return self;
 }
 
-- (void)setAdaptiveCardView:(ACRView *)adaptiveCardView
+- (void)setAdaptiveCardView:(ACRView *)adaptiveCardView 
 {
     _adaptiveCardView = adaptiveCardView;
     if (self.adaptiveCardView) {
@@ -199,6 +205,27 @@
         }
         [self.contentView addSubview:self.adaptiveCardView];
         [self updateLayoutConstraints];
+    }
+}
+
+- (void)setAdaptiveCardView:(ACRView *)adaptiveCardView cardData:(NSString *)cardData 
+{
+    _adaptiveCardView = adaptiveCardView;
+    if (self.adaptiveCardView) {
+        if (self.contentView.subviews && self.contentView.subviews.count) {
+            [self.contentView.subviews[0] removeFromSuperview];
+        }
+        // hook
+        UIView *blankView = [ACOAdaptiveCard swiftViewFromAcrView:adaptiveCardView cardData:cardData];
+//        blankView.backgroundColor = UIColor.redColor;
+        blankView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self.contentView addSubview:blankView];
+        [NSLayoutConstraint activateConstraints:@[
+            [blankView.centerXAnchor constraintEqualToAnchor:self.contentView.centerXAnchor],
+            [blankView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
+            [self.contentView.heightAnchor constraintEqualToAnchor:blankView.heightAnchor],
+            [self.contentView.widthAnchor constraintEqualToAnchor:blankView.widthAnchor]
+        ]];
     }
 }
 

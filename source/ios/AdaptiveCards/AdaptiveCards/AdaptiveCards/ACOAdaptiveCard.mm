@@ -19,6 +19,7 @@
 #import "SharedAdaptiveCard.h"
 #import "UtiliOS.h"
 #import <Foundation/Foundation.h>
+#import <AdaptiveCardsSharedSwiftModel-Swift.h>
 
 using namespace AdaptiveCards;
 
@@ -35,6 +36,15 @@ using namespace AdaptiveCards;
 - (void)appendInputs:(NSArray *)inputs
 {
     [_inputs addObjectsFromArray:inputs];
+}
+
++ (UIView *)swiftViewFromAcrView:(ACRView *)acrView cardData:(NSString *)cardData {
+    AdaptiveCardsSharedSwift *swiftParser = [[AdaptiveCardsSharedSwift alloc] init];
+    UIView *testView = [swiftParser parseWithPayload:cardData];
+//    return [swiftParser renderedViewWithCardData:cardData];
+//    UIView *testView = [[UIView alloc] initWithFrame:CGRectZero];
+//    testView.backgroundColor = UIColor.redColor;
+    return testView;
 }
 
 - (NSData *)inputs
