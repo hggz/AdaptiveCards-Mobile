@@ -175,7 +175,8 @@
             }
     }
 
-    [viewGroup addArrangedSubview:inputview];
+    NSString *areaName = stringForCString(elem->GetAreaGridName());
+    [viewGroup addArrangedSubview:inputview withAreaName:areaName];
 
     inputview.translatesAutoresizingMaskIntoConstraints = false;
 
@@ -191,6 +192,7 @@
         NSString *key = [NSString stringWithCString:action->GetIconUrl().c_str() encoding:[NSString defaultCStringEncoding]];
         UIImage *img = imageViewMap[key];
         button.iconPlacement = ACRNoTitle;
+        button.accessibilityLabel = title;
 
         if (img) {
             UIImageView *iconView = [[ACRUIImageView alloc] init];
@@ -237,6 +239,8 @@
                 if (![acoSelectAction isEnabled]) {
                     quickReplyView.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
                 }
+            } else if (action->GetElementType() == ActionType::OpenUrl) {
+                button.accessibilityTraits = UIAccessibilityTraitLink;
             }
             [viewGroup addTarget:target];
         }
