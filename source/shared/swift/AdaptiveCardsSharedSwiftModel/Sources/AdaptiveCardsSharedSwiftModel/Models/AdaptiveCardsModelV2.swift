@@ -1,7 +1,8 @@
 import Foundation
 
 // MARK: - AdaptiveCard
-struct AdaptiveCard: Codable {
+struct AdaptiveCard: Codable, Identifiable {
+    var id: ObjectIdentifier?
     let schema: String?
     let type: String
     let version: String?
@@ -41,6 +42,7 @@ enum CardElement: Codable {
     case inputTime(InputTime)
     case inputToggle(InputToggle)
     case inputChoiceSet(InputChoiceSet)
+    case factSet(FactSet)
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -61,6 +63,8 @@ enum CardElement: Codable {
             self = .columnSet(try ColumnSet(from: decoder))
         case "Column":
             self = .column(try Column(from: decoder))
+        case "FactSet":
+            self = .factSet(try FactSet(from: decoder))
         case "ImageSet":
             self = .imageSet(try ImageSet(from: decoder))
         case "Icon":
@@ -630,6 +634,23 @@ struct TableCell: Codable {
         case verticalContentAlignment
         case horizontalContentAlignment
     }
+}
+
+// MARK: - FactSet
+struct FactSet: Codable {
+    let type: String
+    let facts: [Fact]
+    
+    enum CodingKeys: String, CodingKey {
+        case type
+        case facts
+    }
+}
+
+// MARK: - Fact
+struct Fact: Codable {
+    let title: String
+    let value: String
 }
 
 extension AdaptiveCard {

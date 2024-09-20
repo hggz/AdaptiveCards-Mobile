@@ -92,12 +92,32 @@ struct AdaptiveCardElementView: View {
                         .environmentObject(viewModel)
                 }
             }
-
+            
+        case .factSet(let factSet):
+            factSetView(factSet)
+            
         // Handle other cases if necessary
 
         default:
             EmptyView()
         }
+    }
+    
+    func factSetView(_ factSet: FactSet) -> some View {
+        VStack(alignment: .leading) {
+            ForEach(factSet.facts.indices, id: \.self) { index in
+                let fact = factSet.facts[index]
+                HStack(alignment: .top) {
+                    Text(fact.title)
+                        .fontWeight(.bold)
+                        .frame(width: 100, alignment: .leading)
+                    Text(fact.value)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding(.vertical, 2)
+            }
+        }
+        .padding()
     }
 
     // MARK: - Helper Views

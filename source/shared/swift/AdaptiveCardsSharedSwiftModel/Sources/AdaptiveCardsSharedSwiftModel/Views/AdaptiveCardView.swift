@@ -20,6 +20,9 @@ struct AdaptiveCardView: View {
             }
         }
         .padding()
+        .sheet(item: $viewModel.showModalCard) { card in
+            AdaptiveCardView(adaptiveCard: card)
+        }
     }
 
     @ViewBuilder

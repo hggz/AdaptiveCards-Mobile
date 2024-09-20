@@ -3,6 +3,7 @@ import SwiftUI
 @available(iOS 15.0, *)
 class AdaptiveCardViewModel: ObservableObject {
     @Published var formData: [String: String] = [:]
+    @Published var showModalCard: AdaptiveCard?
 
     func handleAction(_ action: Action) {
         switch action {
@@ -17,6 +18,7 @@ class AdaptiveCardViewModel: ObservableObject {
             // Handle show card action
             // You might want to present a new view or update the UI accordingly
             print("Show card action triggered")
+            self.showModalCard = actionShowCard.card
         case .execute(_):
             // Handle execute action
             print("Execute action triggered")
