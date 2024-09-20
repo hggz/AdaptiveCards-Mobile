@@ -6,7 +6,7 @@ struct AdaptiveCard: Codable {
     let type: String
     let version: String
     let body: [CardElement]
-    let actions: [CardElement]? // Adjusted to use CardElement for actions
+    let actions: [Action]? // Adjusted to use Action for actions
 
     enum CodingKeys: String, CodingKey {
         case schema = "$schema"
@@ -27,16 +27,17 @@ enum CardElement: Codable {
     case columnSet(ColumnSet)
     case column(Column)
     case imageSet(ImageSet)
-    // New input types
+    // New elements
+    case icon(Icon)
+    case actionSet(ActionSet)
+    case compoundButton(CompoundButton)
+    // Input elements
     case inputText(InputText)
     case inputDate(InputDate)
     case inputNumber(InputNumber)
     case inputTime(InputTime)
     case inputToggle(InputToggle)
     case inputChoiceSet(InputChoiceSet)
-    // Actions (if needed)
-    case actionSubmit(ActionSubmit)
-    case actionOpenUrl(ActionOpenUrl)
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -59,7 +60,14 @@ enum CardElement: Codable {
             self = .column(try Column(from: decoder))
         case "ImageSet":
             self = .imageSet(try ImageSet(from: decoder))
-        // Handle new input types
+        // New elements
+        case "Icon":
+            self = .icon(try Icon(from: decoder))
+        case "ActionSet":
+            self = .actionSet(try ActionSet(from: decoder))
+        case "CompoundButton":
+            self = .compoundButton(try CompoundButton(from: decoder))
+        // Input elements
         case "Input.Text":
             self = .inputText(try InputText(from: decoder))
         case "Input.Date":
@@ -72,11 +80,6 @@ enum CardElement: Codable {
             self = .inputToggle(try InputToggle(from: decoder))
         case "Input.ChoiceSet":
             self = .inputChoiceSet(try InputChoiceSet(from: decoder))
-        // Handle actions if they appear in the body
-        case "Action.Submit":
-            self = .actionSubmit(try ActionSubmit(from: decoder))
-        case "Action.OpenUrl":
-            self = .actionOpenUrl(try ActionOpenUrl(from: decoder))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown type: \(type)")
         }
@@ -88,6 +91,100 @@ enum CardElement: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case type
+    }
+}
+
+enum Action: Codable {
+    case openUrl(ActionOpenUrl)
+    case submit(ActionSubmit)
+    case showCard(ActionShowCard)
+    case execute(ActionExecute)
+    // Add more action types as needed
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: ActionCodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+
+        switch type {
+        case "Action.OpenUrl":
+            self = .openUrl(try ActionOpenUrl(from: decoder))
+        case "Action.Submit":
+            self = .submit(try ActionSubmit(from: decoder))
+        case "Action.ShowCard":
+            self = .showCard(try ActionShowCard(from: decoder))
+        case "Action.Execute":
+            self = .execute(try ActionExecute(from: decoder))
+        default:
+            throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown type: \(type)")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        // Implement encoding if needed
+    }
+
+    private enum ActionCodingKeys: String, CodingKey {
+        case type
+    }
+}
+
+struct Icon: Codable {
+    let type: String
+    let name: String
+    let size: String?
+    let style: String?
+    let color: String?
+    let selectAction: Action?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case name
+        case size
+        case style
+        case color
+        case selectAction
+    }
+}
+
+struct ActionSet: Codable {
+    let type: String
+    let actions: [Action]
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case actions
+    }
+}
+
+struct CompoundButton: Codable {
+    let type: String
+    let title: String
+    let icon: IconInfo?
+    let description: String?
+    let height: String?
+    let badge: String?
+    let selectAction: Action?
+    let spacing: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case title
+        case icon
+        case description
+        case height
+        case badge
+        case selectAction
+        case spacing
+    }
+}
+
+struct IconInfo: Codable {
+    let name: String
+    let style: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case style
     }
 }
 
@@ -233,9 +330,38 @@ struct ActionSubmit: Codable {
     let title: String?
     let associatedInputs: String?
     let disabledUnlessAssociatedInputsChange: Bool?
+    let role: String?
 
     enum CodingKeys: String, CodingKey {
-        case type, title, associatedInputs, disabledUnlessAssociatedInputsChange
+        case type
+        case title
+        case associatedInputs
+        case disabledUnlessAssociatedInputsChange
+        case role
+    }
+}
+
+struct ActionShowCard: Codable {
+    let type: String
+    let title: String?
+    let card: AdaptiveCard
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case title
+        case card
+    }
+}
+
+struct ActionExecute: Codable {
+    let type: String
+    let title: String?
+    let role: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case title
+        case role
     }
 }
 
@@ -243,9 +369,17 @@ struct ActionOpenUrl: Codable {
     let type: String
     let title: String?
     let url: String?
+    let iconUrl: String?
+    let role: String?
+    let tooltip: String?
 
     enum CodingKeys: String, CodingKey {
-        case type, title, url
+        case type
+        case title
+        case url
+        case iconUrl
+        case role
+        case tooltip
     }
 }
 

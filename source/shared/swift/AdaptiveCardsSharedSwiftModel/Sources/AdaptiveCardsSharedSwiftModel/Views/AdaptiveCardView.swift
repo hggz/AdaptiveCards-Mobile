@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @available(iOS 15.0, *)
 struct AdaptiveCardView: View {
@@ -22,6 +23,14 @@ struct AdaptiveCardView: View {
     @ViewBuilder
     func viewForElement(_ element: CardElement) -> some View {
         switch element {
+        case .icon(let icon):
+            iconView(icon)
+        case .actionSet(let actionSet):
+            ForEach(actionSet.actions.indices, id: \.self) { index in
+                viewForAction(actionSet.actions[index])
+            }
+        case .compoundButton(let compoundButton):
+            compoundButtonView(compoundButton)
         case .inputText(let input):
             AnyView(
                 TextField(input.label ?? input.id, text: bindingForInput(input.id, defaultValue: input.value ?? "DEFAULT_INPUT"))
@@ -100,29 +109,121 @@ struct AdaptiveCardView: View {
             AnyView(EmptyView())
         }
     }
+    
+    func iconView(_ icon: Icon) -> some View {
+        let iconName = icon.name
+        let size = iconSize(for: icon.size)
+        let color = iconColor(for: icon.color)
+
+        let imageView = SwiftUI.Image(systemName: iconName)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size, height: size)
+            .foregroundColor(color)
+
+        if let selectAction = icon.selectAction {
+            return AnyView(
+                Button(action: {
+                    handleAction(selectAction)
+                }) {
+                    imageView
+                }
+            )
+        } else {
+            return AnyView(imageView)
+        }
+    }
+
+    func handleAction(_ action: Action) {
+        switch action {
+        case .openUrl(let actionOpenUrl):
+            if let urlString = actionOpenUrl.url, let url = URL(string: urlString) {
+                UIApplication.shared.open(url)
+            }
+        case .submit(let actionSubmit):
+            // Handle submit action
+            print("Form data: \(formData)")
+        case .showCard(let actionShowCard):
+            // Handle show card action
+            // You might want to present a new view or update the UI accordingly
+            print("Show card action triggered")
+        case .execute(let actionExecute):
+            // Handle execute action
+            print("Execute action triggered")
+        default:
+            break
+        }
+    }
+    
+    func compoundButtonView(_ compoundButton: CompoundButton) -> some View {
+        Button(action: {
+            if let selectAction = compoundButton.selectAction {
+                handleAction(selectAction)
+            }
+        }) {
+            HStack(alignment: .center, spacing: 10) {
+                if let iconInfo = compoundButton.icon {
+                    SwiftUI.Image(systemName: iconInfo.name)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 24, height: 24)
+                }
+                VStack(alignment: .leading) {
+                    Text(compoundButton.title)
+                        .font(.headline)
+                    if let description = compoundButton.description {
+                        Text(description)
+                            .font(.subheadline)
+                    }
+                }
+                Spacer()
+                if let badge = compoundButton.badge {
+                    Text(badge)
+                        .font(.caption)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(4)
+                }
+            }
+            .padding()
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
 
     @ViewBuilder
-    func viewForAction(_ action: CardElement) -> some View {
+    func viewForAction(_ action: Action) -> some View {
         switch action {
-        case .actionSubmit(let action):
-            AnyView(
-                Button(action.title ?? "Submit") {
-                    // Handle submit action
-                    print("Form data: \(formData)")
+        case .openUrl(let action):
+            if let urlString = action.url, let url = URL(string: urlString) {
+                Button(action.title ?? "Open URL") {
+                    UIApplication.shared.open(url)
                 }
                 .padding()
-            )
-        case .actionOpenUrl(let action):
-            if let urlString = action.url, let url = URL(string: urlString) {
-                AnyView(
-                    Link(action.title ?? "Open URL", destination: url)
-                        .padding()
-                )
             } else {
-                AnyView(EmptyView())
+                EmptyView()
             }
+        case .submit(let action):
+            Button(action.title ?? "Submit") {
+                // Handle submit action
+                print("Form data: \(formData)")
+            }
+            .padding()
+        case .showCard(let action):
+            // Implement show card functionality
+            Button(action.title ?? "Show Card") {
+                // Handle show card action
+                print("Show card action triggered")
+            }
+            .padding()
+        case .execute(let action):
+            // Handle execute action
+            Button(action.title ?? "Execute") {
+                // Handle execute action
+                print("Execute action triggered")
+            }
+            .padding()
         default:
-            AnyView(EmptyView())
+            EmptyView()
         }
     }
 
@@ -185,6 +286,44 @@ struct AdaptiveCardView: View {
             return .trailing
         default:
             return .leading
+        }
+    }
+    
+    func iconSize(for size: String?) -> CGFloat {
+        switch size {
+        case "xxSmall":
+            return 12
+        case "xSmall":
+            return 16
+        case "Small":
+            return 20
+        case "Standard":
+            return 24
+        case "Medium":
+            return 28
+        case "Large":
+            return 32
+        case "xLarge":
+            return 40
+        case "xxLarge":
+            return 48
+        default:
+            return 24 // Default size
+        }
+    }
+
+    func iconColor(for color: String?) -> Color {
+        switch color {
+        case "accent":
+            return .blue
+        case "good":
+            return .green
+        case "warning":
+            return .yellow
+        case "attention":
+            return .red
+        default:
+            return .primary
         }
     }
 }
