@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import AVKit // Added for media playback
 
 @available(iOS 15.0, *)
 struct AdaptiveCardView: View {
@@ -33,6 +34,8 @@ struct AdaptiveCardView: View {
             }
         case .compoundButton(let compoundButton):
             compoundButtonView(compoundButton)
+        case .media(let media): // Handle media case
+            mediaView(media)
         case .inputText(let input):
             AnyView(
                 TextField(input.label ?? input.id, text: bindingForInput(input.id, defaultValue: input.value ?? "DEFAULT_INPUT"))
@@ -133,6 +136,52 @@ struct AdaptiveCardView: View {
             )
         } else {
             return AnyView(imageView)
+        }
+    }
+    
+    @ViewBuilder
+    func mediaView(_ media: Media) -> some View {
+        if let source = media.sources.first, let url = URL(string: source.url) {
+            let player = AVPlayer(url: url)
+            if source.mimeType.starts(with: "video/") {
+                VideoPlayer(player: player)
+                    .aspectRatio(contentMode: .fit)
+                    .overlay(
+                        Text(media.altText ?? "")
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(8)
+                            .padding(),
+                        alignment: .bottomLeading
+                    )
+            } else if source.mimeType.starts(with: "audio/") {
+                VStack {
+                    if let posterUrl = media.poster, let imageUrl = URL(string: posterUrl) {
+                        AsyncImage(url: imageUrl) { image in
+                            image.resizable().scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                    }
+                    HStack {
+                        Button(action: {
+                            player.play()
+                        }) {
+                            Text("Play")
+                        }
+                        Button(action: {
+                            player.pause()
+                        }) {
+                            Text("Pause")
+                        }
+                    }
+                }
+            } else {
+                Text("Unsupported media type")
+            }
+        } else {
+            Text("No media source available")
         }
     }
 

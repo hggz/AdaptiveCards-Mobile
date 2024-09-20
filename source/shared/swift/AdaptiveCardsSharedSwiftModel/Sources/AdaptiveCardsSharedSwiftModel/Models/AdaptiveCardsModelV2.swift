@@ -42,6 +42,7 @@ enum CardElement: Codable {
     case icon(Icon)
     case actionSet(ActionSet)
     case compoundButton(CompoundButton)
+    case media(Media) // Added media case
     // Input elements
     case inputText(InputText)
     case inputDate(InputDate)
@@ -71,14 +72,14 @@ enum CardElement: Codable {
             self = .column(try Column(from: decoder))
         case "ImageSet":
             self = .imageSet(try ImageSet(from: decoder))
-        // New elements
         case "Icon":
             self = .icon(try Icon(from: decoder))
         case "ActionSet":
             self = .actionSet(try ActionSet(from: decoder))
         case "CompoundButton":
             self = .compoundButton(try CompoundButton(from: decoder))
-        // Input elements
+        case "Media":
+            self = .media(try Media(from: decoder)) // Handle media case
         case "Input.Text":
             self = .inputText(try InputText(from: decoder))
         case "Input.Date":
@@ -102,6 +103,45 @@ enum CardElement: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case type
+    }
+}
+
+// MARK: - Media
+struct Media: Codable {
+    let type: String
+    let poster: String?
+    let altText: String?
+    let sources: [MediaSource]
+    let captionSources: [MediaCaptionSource]?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case poster
+        case altText
+        case sources
+        case captionSources
+    }
+}
+
+struct MediaSource: Codable {
+    let mimeType: String
+    let url: String
+
+    enum CodingKeys: String, CodingKey {
+        case mimeType
+        case url
+    }
+}
+
+struct MediaCaptionSource: Codable {
+    let mimeType: String
+    let label: String
+    let url: String
+
+    enum CodingKeys: String, CodingKey {
+        case mimeType
+        case label
+        case url
     }
 }
 
