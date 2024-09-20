@@ -17,18 +17,8 @@ struct AdaptiveCard: Codable {
     }
 }
 
-extension AdaptiveCard {
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        schema = try container.decodeIfPresent(String.self, forKey: .schema)
-        type = try container.decode(String.self, forKey: .type)
-        version = try container.decodeIfPresent(String.self, forKey: .version)
-        body = try container.decodeIfPresent([CardElement].self, forKey: .body) ?? []
-        actions = try container.decodeIfPresent([Action].self, forKey: .actions)
-    }
-}
-
 // MARK: - CardElement Enum
+// Update CardElement enum
 enum CardElement: Codable {
     case container(Container)
     case textBlock(TextBlock)
@@ -42,7 +32,8 @@ enum CardElement: Codable {
     case icon(Icon)
     case actionSet(ActionSet)
     case compoundButton(CompoundButton)
-    case media(Media) // Added media case
+    case media(Media)
+    case table(TableComponent) // Added table case
     // Input elements
     case inputText(InputText)
     case inputDate(InputDate)
@@ -79,7 +70,9 @@ enum CardElement: Codable {
         case "CompoundButton":
             self = .compoundButton(try CompoundButton(from: decoder))
         case "Media":
-            self = .media(try Media(from: decoder)) // Handle media case
+            self = .media(try Media(from: decoder))
+        case "Table":
+            self = .table(try TableComponent(from: decoder)) // Handle table case
         case "Input.Text":
             self = .inputText(try InputText(from: decoder))
         case "Input.Date":
@@ -571,4 +564,81 @@ struct BackgroundImage: Codable {
     let url: String
     let verticalAlignment: String?
     let horizontalAlignment: String?
+}
+
+// MARK: - Table
+struct TableComponent: Codable {
+    let type: String
+    let gridStyle: String?
+    let firstRowAsHeaders: Bool?
+    let showGridLines: Bool?
+    let horizontalCellContentAlignment: String?
+    let verticalCellContentAlignment: String?
+    let columns: [TableColumnDefinition]
+    let rows: [TableRowComponent]
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case gridStyle
+        case firstRowAsHeaders
+        case showGridLines
+        case horizontalCellContentAlignment
+        case verticalCellContentAlignment
+        case columns
+        case rows
+    }
+}
+
+// MARK: - TableColumnDefinition
+struct TableColumnDefinition: Codable {
+    let width: Double? // Assuming width can be a fractional value
+
+    enum CodingKeys: String, CodingKey {
+        case width
+    }
+}
+
+// MARK: - TableRow
+struct TableRowComponent: Codable {
+    let type: String
+    let cells: [TableCell]
+    let style: String?
+    let horizontalCellContentAlignment: String?
+    let verticalCellContentAlignment: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case cells
+        case style
+        case horizontalCellContentAlignment
+        case verticalCellContentAlignment
+    }
+}
+
+// MARK: - TableCell
+struct TableCell: Codable {
+    let type: String
+    let items: [CardElement]
+    let style: String?
+    let verticalContentAlignment: String?
+    let horizontalContentAlignment: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case items
+        case style
+        case verticalContentAlignment
+        case horizontalContentAlignment
+    }
+}
+
+extension AdaptiveCard {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schema = try container.decodeIfPresent(String.self, forKey: .schema)
+        type = try container.decode(String.self, forKey: .type)
+        version = try container.decodeIfPresent(String.self, forKey: .version)
+        body = try container.decodeIfPresent([CardElement].self, forKey: .body) ?? []
+        actions = try container.decodeIfPresent([Action].self, forKey: .actions)
+    }
 }

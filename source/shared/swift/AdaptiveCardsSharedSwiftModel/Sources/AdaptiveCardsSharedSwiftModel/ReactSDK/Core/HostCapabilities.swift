@@ -1,3 +1,4 @@
+/*
 class HostCapabilities: SerializableObject {
     private var capabilities: [String: TargetVersion] = [:]
 
@@ -78,3 +79,4 @@ class HostCapabilities: SerializableObject {
         return true
     }
 }
+*/

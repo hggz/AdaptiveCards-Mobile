@@ -1,3 +1,4 @@
+/*
 import Foundation
 
 struct IValidationEvent {
@@ -813,3 +814,4 @@ class TypedSerializableObject: SerializableObject, JsonTypeRepresentable {
         fatalError("Subclasses must override this")
     }
 }
+*/
