@@ -642,3 +642,18 @@ extension AdaptiveCard {
         actions = try container.decodeIfPresent([Action].self, forKey: .actions)
     }
 }
+
+extension Action {
+    var title: String? {
+        switch self {
+        case .openUrl(let action):
+            return action.title
+        case .submit(let action):
+            return action.title
+        case .showCard(let action):
+            return action.title
+        case .execute(let action):
+            return action.type
+        }
+    }
+}
