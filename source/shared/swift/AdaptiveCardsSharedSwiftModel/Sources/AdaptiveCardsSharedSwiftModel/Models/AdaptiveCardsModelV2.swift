@@ -4,9 +4,9 @@ import Foundation
 struct AdaptiveCard: Codable {
     let schema: String?
     let type: String
-    let version: String
-    let body: [CardElement]
-    let actions: [Action]? // Adjusted to use Action for actions
+    let version: String?
+    let body: [CardElement]? // Made optional
+    let actions: [Action]? // Already optional
 
     enum CodingKeys: String, CodingKey {
         case schema = "$schema"
@@ -14,6 +14,17 @@ struct AdaptiveCard: Codable {
         case version
         case body
         case actions
+    }
+}
+
+extension AdaptiveCard {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schema = try container.decodeIfPresent(String.self, forKey: .schema)
+        type = try container.decode(String.self, forKey: .type)
+        version = try container.decodeIfPresent(String.self, forKey: .version)
+        body = try container.decodeIfPresent([CardElement].self, forKey: .body) ?? []
+        actions = try container.decodeIfPresent([Action].self, forKey: .actions)
     }
 }
 

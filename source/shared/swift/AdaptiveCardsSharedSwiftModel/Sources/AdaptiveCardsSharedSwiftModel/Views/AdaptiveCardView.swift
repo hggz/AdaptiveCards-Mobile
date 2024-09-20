@@ -8,8 +8,10 @@ struct AdaptiveCardView: View {
 
     var body: some View {
         VStack {
-            ForEach(adaptiveCard.body.indices, id: \.self) { index in
-                viewForElement(adaptiveCard.body[index])
+            if let body = adaptiveCard.body {
+                ForEach(body.indices, id: \.self) { index in
+                    viewForElement(body[index])
+                }
             }
             if let actions = adaptiveCard.actions {
                 ForEach(actions.indices, id: \.self) { index in
@@ -19,7 +21,7 @@ struct AdaptiveCardView: View {
         }
         .padding()
     }
-
+    
     @ViewBuilder
     func viewForElement(_ element: CardElement) -> some View {
         switch element {
@@ -209,24 +211,28 @@ struct AdaptiveCardView: View {
             }
             .padding()
         case .showCard(let action):
-            // Implement show card functionality
             Button(action.title ?? "Show Card") {
                 // Handle show card action
                 print("Show card action triggered")
+                // Present the nested card
+                let cardView = makeCardView(from: action.card)
+                // For example, present it in a sheet
+                // showModalCard(cardView)
             }
             .padding()
         case .execute(let action):
-            // Handle execute action
             Button(action.title ?? "Execute") {
                 // Handle execute action
                 print("Execute action triggered")
             }
             .padding()
-        default:
-            EmptyView()
         }
     }
-
+    
+    func makeCardView(from card: AdaptiveCard) -> some View {
+        AdaptiveCardView(adaptiveCard: card)
+    }
+    
     // MARK: - Helper Functions for Bindings
 
     func bindingForInput(_ id: String, defaultValue: String) -> Binding<String> {
