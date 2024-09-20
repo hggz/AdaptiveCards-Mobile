@@ -6,12 +6,14 @@ struct AdaptiveCard: Codable {
     let type: String
     let version: String
     let body: [CardElement]
+    let actions: [CardElement]? // Adjusted to use CardElement for actions
 
     enum CodingKeys: String, CodingKey {
         case schema = "$schema"
         case type
         case version
         case body
+        case actions
     }
 }
 
@@ -25,6 +27,16 @@ enum CardElement: Codable {
     case columnSet(ColumnSet)
     case column(Column)
     case imageSet(ImageSet)
+    // New input types
+    case inputText(InputText)
+    case inputDate(InputDate)
+    case inputNumber(InputNumber)
+    case inputTime(InputTime)
+    case inputToggle(InputToggle)
+    case inputChoiceSet(InputChoiceSet)
+    // Actions (if needed)
+    case actionSubmit(ActionSubmit)
+    case actionOpenUrl(ActionOpenUrl)
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -32,57 +44,208 @@ enum CardElement: Codable {
 
         switch type {
         case "Container":
-            let value = try Container(from: decoder)
-            self = .container(value)
+            self = .container(try Container(from: decoder))
         case "TextBlock":
-            let value = try TextBlock(from: decoder)
-            self = .textBlock(value)
+            self = .textBlock(try TextBlock(from: decoder))
         case "Carousel":
-            let value = try Carousel(from: decoder)
-            self = .carousel(value)
+            self = .carousel(try Carousel(from: decoder))
         case "CarouselPage":
-            let value = try CarouselPage(from: decoder)
-            self = .carouselPage(value)
+            self = .carouselPage(try CarouselPage(from: decoder))
         case "Image":
-            let value = try Image(from: decoder)
-            self = .image(value)
+            self = .image(try Image(from: decoder))
         case "ColumnSet":
-            let value = try ColumnSet(from: decoder)
-            self = .columnSet(value)
+            self = .columnSet(try ColumnSet(from: decoder))
         case "Column":
-            let value = try Column(from: decoder)
-            self = .column(value)
+            self = .column(try Column(from: decoder))
         case "ImageSet":
-            let value = try ImageSet(from: decoder)
-            self = .imageSet(value)
+            self = .imageSet(try ImageSet(from: decoder))
+        // Handle new input types
+        case "Input.Text":
+            self = .inputText(try InputText(from: decoder))
+        case "Input.Date":
+            self = .inputDate(try InputDate(from: decoder))
+        case "Input.Number":
+            self = .inputNumber(try InputNumber(from: decoder))
+        case "Input.Time":
+            self = .inputTime(try InputTime(from: decoder))
+        case "Input.Toggle":
+            self = .inputToggle(try InputToggle(from: decoder))
+        case "Input.ChoiceSet":
+            self = .inputChoiceSet(try InputChoiceSet(from: decoder))
+        // Handle actions if they appear in the body
+        case "Action.Submit":
+            self = .actionSubmit(try ActionSubmit(from: decoder))
+        case "Action.OpenUrl":
+            self = .actionOpenUrl(try ActionOpenUrl(from: decoder))
         default:
             throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown type: \(type)")
         }
     }
 
     func encode(to encoder: Encoder) throws {
-        switch self {
-        case .container(let value):
-            try value.encode(to: encoder)
-        case .textBlock(let value):
-            try value.encode(to: encoder)
-        case .carousel(let value):
-            try value.encode(to: encoder)
-        case .carouselPage(let value):
-            try value.encode(to: encoder)
-        case .image(let value):
-            try value.encode(to: encoder)
-        case .columnSet(let value):
-            try value.encode(to: encoder)
-        case .column(let value):
-            try value.encode(to: encoder)
-        case .imageSet(let value):
-            try value.encode(to: encoder)
-        }
+        // Implement encoding if needed
     }
 
     private enum CodingKeys: String, CodingKey {
         case type
+    }
+}
+
+struct InputText: Codable {
+    let type: String
+    let id: String
+    let value: String?
+    let label: String?
+    let labelPosition: String?
+    let labelWidth: String?
+    let inputStyle: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, value, label, labelPosition, labelWidth, inputStyle
+    }
+
+    // Custom initializer to handle labelWidth being a String or Number
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        id = try container.decode(String.self, forKey: .id)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        labelPosition = try container.decodeIfPresent(String.self, forKey: .labelPosition)
+        inputStyle = try container.decodeIfPresent(String.self, forKey: .inputStyle)
+        if let labelWidthNumber = try? container.decode(Double.self, forKey: .labelWidth) {
+            labelWidth = String(labelWidthNumber)
+        } else {
+            labelWidth = try container.decodeIfPresent(String.self, forKey: .labelWidth)
+        }
+    }
+}
+
+struct InputDate: Codable {
+    let type: String
+    let id: String
+    let value: String?
+    let label: String?
+    let labelPosition: String?
+    let labelWidth: String?
+    let inputStyle: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, value, label, labelPosition, labelWidth, inputStyle
+    }
+
+    // Custom initializer to handle labelWidth being a String or Number
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        id = try container.decode(String.self, forKey: .id)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        labelPosition = try container.decodeIfPresent(String.self, forKey: .labelPosition)
+        inputStyle = try container.decodeIfPresent(String.self, forKey: .inputStyle)
+        if let labelWidthNumber = try? container.decode(Double.self, forKey: .labelWidth) {
+            labelWidth = String(labelWidthNumber)
+        } else {
+            labelWidth = try container.decodeIfPresent(String.self, forKey: .labelWidth)
+        }
+    }
+}
+
+struct InputTime: Codable {
+    let type: String
+    let id: String
+    let value: String?
+    let label: String?
+    let labelPosition: String?
+    let labelWidth: String?
+    let inputStyle: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, value, label, labelPosition, labelWidth, inputStyle
+    }
+
+    // Custom initializer to handle labelWidth being a String or Number
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        id = try container.decode(String.self, forKey: .id)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        labelPosition = try container.decodeIfPresent(String.self, forKey: .labelPosition)
+        inputStyle = try container.decodeIfPresent(String.self, forKey: .inputStyle)
+        if let labelWidthNumber = try? container.decode(Double.self, forKey: .labelWidth) {
+            labelWidth = String(labelWidthNumber)
+        } else {
+            labelWidth = try container.decodeIfPresent(String.self, forKey: .labelWidth)
+        }
+    }
+}
+
+struct InputNumber: Codable {
+    let type: String
+    let id: String
+    let value: Double?
+    let inputStyle: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, value, inputStyle
+    }
+}
+
+struct InputToggle: Codable {
+    let type: String
+    let id: String
+    let title: String?
+    let value: String?
+    let valueOn: String?
+    let valueOff: String?
+    let label: String?
+    let labelPosition: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, title, value, valueOn, valueOff, label, labelPosition
+    }
+}
+
+struct InputChoiceSet: Codable {
+    let type: String
+    let id: String
+    let style: String?
+    let labelPosition: String?
+    let label: String?
+    let isMultiSelect: Bool?
+    let inputStyle: String?
+    let value: String?
+    let choices: [Choice]
+
+    enum CodingKeys: String, CodingKey {
+        case type, id, style, labelPosition, label, isMultiSelect, inputStyle, value, choices
+    }
+}
+
+struct Choice: Codable {
+    let title: String
+    let value: String
+}
+
+struct ActionSubmit: Codable {
+    let type: String
+    let title: String?
+    let associatedInputs: String?
+    let disabledUnlessAssociatedInputsChange: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case type, title, associatedInputs, disabledUnlessAssociatedInputsChange
+    }
+}
+
+struct ActionOpenUrl: Codable {
+    let type: String
+    let title: String?
+    let url: String?
+
+    enum CodingKeys: String, CodingKey {
+        case type, title, url
     }
 }
 
