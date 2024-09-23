@@ -96,10 +96,79 @@ struct AdaptiveCardElementView: View {
         case .factSet(let factSet):
             factSetView(factSet)
             
+        case .columnSet(let columnSet):
+            columnSetView(columnSet)
+            
         // Handle other cases if necessary
 
         default:
             EmptyView()
+        }
+    }
+    
+    func columnSetView(_ columnSet: ColumnSet) -> some View {
+        HStack(alignment: .top, spacing: spacingValue(columnSet.spacing)) {
+            ForEach(columnSet.columns.indices, id: \.self) { index in
+                let column = columnSet.columns[index]
+                columnView(column)
+                if column.separator == true && index < columnSet.columns.count - 1 {
+                    Divider()
+                }
+            }
+        }
+    }
+
+    func spacingValue(_ spacing: String?) -> CGFloat {
+        switch spacing?.lowercased() {
+        case "none":
+            return 0
+        case "small":
+            return 8
+        case "default", "medium":
+            return 16
+        case "large":
+            return 24
+        case "extraLarge":
+            return 32
+        default:
+            return 16 // Default spacing
+        }
+    }
+
+    func columnView(_ column: Column) -> some View {
+        let width = calculateWidth(column.width)
+        return VStack(alignment: .leading, spacing: 0) {
+            if let items = column.items {
+                ForEach(items.indices, id: \.self) { index in
+                    AdaptiveCardElementView(element: items[index])
+                        .environmentObject(viewModel)
+                }
+            }
+        }
+        .frame(width: width)
+        .padding()
+    }
+
+    func calculateWidth(_ width: ColumnWidth?) -> CGFloat? {
+        guard let width = width else { return nil }
+        switch width {
+        case .auto:
+            return nil
+        case .stretch:
+            return nil // Stretch to fill available space
+        case .absolute(let value):
+            return CGFloat(value)
+        case .weight(let value):
+            // Implement logic based on weight
+            return nil
+        case .pixel(let value):
+            // Parse pixel value from string, e.g., "110px"
+            if let number = Double(value.replacingOccurrences(of: "px", with: "")) {
+                return CGFloat(number)
+            }
+            return nil
+        case .undefined:
+            return nil
         }
     }
     

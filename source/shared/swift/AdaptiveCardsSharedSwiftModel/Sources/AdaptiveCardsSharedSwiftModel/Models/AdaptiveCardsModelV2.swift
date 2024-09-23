@@ -504,6 +504,7 @@ struct Image: Codable {
     let altText: String?
     let size: String?
     let horizontalAlignment: String?
+    let spacing: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -511,6 +512,7 @@ struct Image: Codable {
         case altText
         case size
         case horizontalAlignment
+        case spacing
     }
 }
 
@@ -519,22 +521,25 @@ struct ColumnSet: Codable {
     let type: String
     let columns: [Column]
     let style: String?
+    let spacing: String?
 
     enum CodingKeys: String, CodingKey {
         case type
         case columns
         case style
+        case spacing
     }
 }
 
 // MARK: - Column
 struct Column: Codable {
     let type: String
-    let width: String?
+    let width: ColumnWidth?
     let items: [CardElement]?
     let backgroundImage: BackgroundImage?
     let verticalContentAlignment: String?
     let spacing: String?
+    let separator: Bool?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -543,6 +548,7 @@ struct Column: Codable {
         case backgroundImage
         case verticalContentAlignment
         case spacing
+        case separator
     }
 }
 
@@ -553,6 +559,8 @@ struct ImageSet: Codable {
     let size: String?
     let offset: Int?
     let images: [Image]
+    let imageSize: String?
+    let spacing: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -560,14 +568,24 @@ struct ImageSet: Codable {
         case size
         case offset
         case images
+        case imageSize
+        case spacing
     }
 }
 
 // MARK: - BackgroundImage
 struct BackgroundImage: Codable {
     let url: String
-    let verticalAlignment: String?
+    let fillMode: String?
     let horizontalAlignment: String?
+    let verticalAlignment: String?
+
+    enum CodingKeys: String, CodingKey {
+        case url
+        case fillMode
+        case horizontalAlignment
+        case verticalAlignment
+    }
 }
 
 // MARK: - Table
@@ -651,6 +669,55 @@ struct FactSet: Codable {
 struct Fact: Codable {
     let title: String
     let value: String
+}
+
+enum ColumnWidth: Codable {
+    case auto
+    case stretch
+    case absolute(Double)
+    case pixel(String)
+    case weight(Int)
+    case undefined
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let intVal = try? container.decode(Int.self) {
+            self = .weight(intVal)
+        } else if let doubleVal = try? container.decode(Double.self) {
+            self = .absolute(doubleVal)
+        } else if let strVal = try? container.decode(String.self) {
+            switch strVal.lowercased() {
+            case "auto":
+                self = .auto
+            case "stretch":
+                self = .stretch
+            default:
+                // Could be a pixel value like "50px" or any other string
+                self = .pixel(strVal)
+            }
+        } else {
+            self = .undefined
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .auto:
+            try container.encode("auto")
+        case .stretch:
+            try container.encode("stretch")
+        case .absolute(let value):
+            try container.encode(value)
+        case .weight(let value):
+            try container.encode(value)
+        case .pixel(let value):
+            try container.encode(value)
+        case .undefined:
+            // Do nothing or handle accordingly
+            break
+        }
+    }
 }
 
 extension AdaptiveCard {
