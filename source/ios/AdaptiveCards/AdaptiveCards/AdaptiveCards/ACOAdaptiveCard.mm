@@ -47,6 +47,13 @@ using namespace AdaptiveCards;
     return testView;
 }
 
++ (void)testSwiftParser {
+    NSBundle *main = [NSBundle mainBundle];
+    NSString *resourcePath = [main resourcePath];
+    NSString *rootPath = [resourcePath stringByAppendingPathComponent:@"samples"];
+    [[AdaptiveCardsSharedSwift new] testParseWithPath:rootPath];
+}
+
 - (NSData *)inputs
 {
     if (_inputs) {

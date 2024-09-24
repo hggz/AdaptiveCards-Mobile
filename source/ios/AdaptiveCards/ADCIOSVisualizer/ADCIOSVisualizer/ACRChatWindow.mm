@@ -59,6 +59,9 @@ static BOOL SWIFT_RENDER_ENABLED = NO;
                              @"\"Attention\", \"horizontalAlignment\": \"Center\""
                              @"} ] }";
         errorCard = [ACOAdaptiveCard fromJson:errorMSG];
+        if (SWIFT_RENDER_ENABLED) {
+            [ACOAdaptiveCard testSwiftParser];
+        }
     }
     return self;
 }

@@ -30,6 +30,7 @@
 @property ACOAuthentication *authentication;
 
 + (UIView *)swiftViewFromAcrView:(ACRView *)acrView cardData:(NSString *)cardData;
++ (void)testSwiftParser;
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload;
 - (NSData *)inputs;
 - (NSArray<ACRIBaseInputHandler> *)getInputs;

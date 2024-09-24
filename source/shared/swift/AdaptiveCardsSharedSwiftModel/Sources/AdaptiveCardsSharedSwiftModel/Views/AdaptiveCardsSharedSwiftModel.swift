@@ -4,6 +4,10 @@ import SwiftUI
 @objc(AdaptiveCardsSharedSwift)
 @objcMembers public class AdaptiveCardsSharedSwift: NSObject {
     
+    public func testParse(path: String) {
+        TestJSONParser().parseAllJSONFiles(in: path)
+    }
+    
     public func parse(payload: String) -> UIView {
         guard let payloadData = payload.data(using: .utf8) else {
             debugPrint("unable to load payload data:\n\(payload)")
