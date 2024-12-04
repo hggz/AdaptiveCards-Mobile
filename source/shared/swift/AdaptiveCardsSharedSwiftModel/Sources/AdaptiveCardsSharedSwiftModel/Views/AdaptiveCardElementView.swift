@@ -12,19 +12,25 @@ struct AdaptiveCardElementView: View {
             Text(textBlock.text)
                 .font(fontForSize(textBlock.size))
                 .multilineTextAlignment(alignmentForHorizontal(textBlock.horizontalAlignment))
-                .padding()
+                .lineLimit(textBlock.wrap == true ? textBlock.maxLines ?? nil : 1)
+                .fixedSize(horizontal: false, vertical: textBlock.wrap == true)
+                .padding(.top, spacingValue(textBlock.spacing))
+                .padding(.bottom, spacingValue(textBlock.spacing))
 
-        case .image(let image):
-            if let url = URL(string: image.url) {
-                AsyncImage(url: url) { image in
-                    image.resizable().scaledToFit()
+        case .image(let imageElement):
+            if let url = URL(string: imageElement.url) {
+                AsyncImage(url: url) { loadedImage in
+                    loadedImage
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: imageSize(for: imageElement.size), height: imageSize(for: imageElement.size))
+                        .clipped()
                 } placeholder: {
                     ProgressView()
                 }
             } else {
                 EmptyView()
             }
-
         case .inputText(let input):
             TextField(input.label ?? input.id, text: viewModel.bindingForInput(input.id, defaultValue: input.value ?? ""))
                 .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -107,33 +113,61 @@ struct AdaptiveCardElementView: View {
     }
     
     func columnSetView(_ columnSet: ColumnSet) -> some View {
-        HStack(alignment: .top, spacing: spacingValue(columnSet.spacing)) {
-            ForEach(columnSet.columns.indices, id: \.self) { index in
-                let column = columnSet.columns[index]
-                columnView(column)
-                if column.separator == true && index < columnSet.columns.count - 1 {
-                    Divider()
-                }
-            }
-        }
-    }
+       HStack(alignment: .top, spacing: 0) {
+           let totalWeight = columnSet.columns.reduce(0) { total, column in
+               total + (columnWidthToWeight(column.width) ?? 1)
+           }
+           ForEach(columnSet.columns.indices, id: \.self) { index in
+               let column = columnSet.columns[index]
+               AdaptiveCardColumnView(column: column, totalWeight: totalWeight)
+                   .environmentObject(viewModel)
+           }
+       }
+   }
 
-    func spacingValue(_ spacing: String?) -> CGFloat {
-        switch spacing?.lowercased() {
-        case "none":
-            return 0
-        case "small":
-            return 8
-        case "default", "medium":
-            return 16
-        case "large":
-            return 24
-        case "extraLarge":
-            return 32
-        default:
-            return 16 // Default spacing
-        }
-    }
+   struct AdaptiveCardColumnView: View {
+       let column: Column
+       let totalWeight: Int
+       @EnvironmentObject var viewModel: AdaptiveCardViewModel
+
+       var body: some View {
+           let weight = columnWidthToWeight(column.width) ?? 1
+           VStack(alignment: .leading, spacing: 0) {
+               if let items = column.items {
+                   ForEach(items.indices, id: \.self) { index in
+                       AdaptiveCardElementView(element: items[index])
+                           .environmentObject(viewModel)
+                   }
+               }
+           }
+           .frame(maxWidth: .infinity)
+           .layoutPriority(Double(weight))
+       }
+       
+       func columnWidthToWeight(_ width: ColumnWidth?) -> Int? {
+           guard let width = width else { return nil }
+           switch width {
+           case .weight(let value):
+               return value
+           case .absolute(let value):
+               return Int(value)
+           default:
+               return nil
+           }
+       }
+   }
+
+   func columnWidthToWeight(_ width: ColumnWidth?) -> Int? {
+       guard let width = width else { return nil }
+       switch width {
+       case .weight(let value):
+           return value
+       case .absolute(let value):
+           return Int(value)
+       default:
+           return nil
+       }
+   }
 
     func columnView(_ column: Column) -> some View {
         let width = calculateWidth(column.width)
@@ -301,7 +335,14 @@ struct AdaptiveCardElementView: View {
         Button(action.title ?? "Action") {
             viewModel.handleAction(action)
         }
-        .padding()
+        .frame(maxWidth: .infinity) // Make the button take the full width of its container
+        .padding(.horizontal, 20)  // Add horizontal padding to constrain the button size
+        .padding(.vertical, 10)    // Add vertical padding for height
+        .background(Color.blue)    // Button background color
+        .foregroundColor(.white)   // Button text color
+        .font(.system(size: 16, weight: .semibold)) // Text styling
+        .cornerRadius(8)           // Rounded corners
+        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2) // Subtle shadow
     }
 
     // MARK: - Helper Functions
@@ -332,6 +373,40 @@ struct AdaptiveCardElementView: View {
         }
     }
 
+    func spacingValue(_ spacing: String?) -> CGFloat {
+        switch spacing?.lowercased() {
+        case "none":
+            return 0
+        case "small":
+            return 4
+        case "default", "medium":
+            return 8
+        case "large":
+            return 16
+        case "extralarge":
+            return 32
+        default:
+            return 8 // Default spacing
+        }
+    }
+
+    func imageSize(for size: String?) -> CGFloat {
+        switch size?.lowercased() {
+        case "small":
+            return 40
+        case "medium":
+            return 80
+        case "large":
+            return 160
+        case "stretch":
+            return UIScreen.main.bounds.width
+        case "auto":
+            return 100 // Default size for 'auto'
+        default:
+            return 100 // Default size
+        }
+    }
+    
     func iconSize(for size: String?) -> CGFloat {
         switch size?.lowercased() {
         case "xxsmall":

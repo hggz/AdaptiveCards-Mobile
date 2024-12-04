@@ -454,6 +454,8 @@ struct TextBlock: Codable {
     let wrap: Bool?
     let isSubtle: Bool?
     let weight: String?
+    let maxLines: Int?
+    let spacing: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -464,6 +466,8 @@ struct TextBlock: Codable {
         case wrap
         case isSubtle
         case weight
+        case maxLines
+        case spacing
     }
 }
 
