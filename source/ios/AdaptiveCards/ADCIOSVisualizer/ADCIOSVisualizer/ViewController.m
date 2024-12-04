@@ -235,6 +235,26 @@ UIColor* defaultButtonBackgroundColor;
     #if TARGET_OS_VISION
     self.view.backgroundColor = UIColor.clearColor;
     #endif
+    
+    // Adding the red button
+    UIButton *redButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    redButton.backgroundColor = [UIColor redColor];
+    [redButton setTitle:@"Show Modal" forState:UIControlStateNormal];
+    redButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [redButton addTarget:self action:@selector(showModal) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:redButton];
+
+    [redButton.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-20].active = YES;
+    [redButton.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = YES;
+    [redButton.widthAnchor constraintEqualToConstant:200].active = YES;
+    [redButton.heightAnchor constraintEqualToConstant:50].active = YES;
+}
+
+- (void)showModal {
+    UIViewController *modalVC = [ACOAdaptiveCard swiftUITest];
+//    modalVC.view.backgroundColor = [UIColor whiteColor];
+    modalVC.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:modalVC animated:YES completion:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated

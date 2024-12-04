@@ -29,6 +29,7 @@
 @property ACORefresh *refresh;
 @property ACOAuthentication *authentication;
 
++ (UIViewController *)swiftUITest;
 + (UIView *)swiftViewFromAcrView:(ACRView *)acrView cardData:(NSString *)cardData;
 + (void)testSwiftParser;
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload;
