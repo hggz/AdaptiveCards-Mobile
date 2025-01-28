@@ -19,6 +19,7 @@
 #import "SharedAdaptiveCard.h"
 #import "UtiliOS.h"
 #import <Foundation/Foundation.h>
+#import <ACRewritePackage-Swift.h>
 
 using namespace AdaptiveCards;
 
