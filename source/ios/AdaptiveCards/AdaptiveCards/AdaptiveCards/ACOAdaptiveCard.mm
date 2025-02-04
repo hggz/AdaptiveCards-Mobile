@@ -20,6 +20,7 @@
 #import "UtiliOS.h"
 #import <Foundation/Foundation.h>
 #import <ACRewritePackage-Swift.h>
+#import "SwiftAdaptiveCardParserBridge.h"
 
 using namespace AdaptiveCards;
 
@@ -119,10 +120,18 @@ using namespace AdaptiveCards;
 }
 
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload {
-    const std::string g_version = "1.6";
     ACOAdaptiveCardParseResult *result = nil;
-
-    if (payload) {
+    
+    if (!payload) {
+        return result; // TEMP
+    }
+    
+    BOOL useSwiftParser = YES;
+    
+    if (useSwiftParser) {
+        result = [SwiftAdaptiveCardParserBridge parsePayloadWithSwift:payload];
+    } else {
+        const std::string g_version = "1.6";
         NSError *jsonError = nil;
 
         // First, check if the JSON is valid
