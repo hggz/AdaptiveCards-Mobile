@@ -28,8 +28,8 @@ func parseSizeForPixelSize(_ sizeString: String, warnings: inout [AdaptiveCardPa
 /// Ensures that all ShowCard actions have the correct version assigned.
 func ensureShowCardVersions(_ actions: [BaseActionElement], version: String) {
     for action in actions {
-        if let showCardAction = action as? ShowCardAction, showCardAction.card.version.isEmpty {
-            showCardAction.card.version = version
+        if let showCardAction = action as? ShowCardAction, showCardAction.card?.version.isEmpty == true {
+            showCardAction.card?.version = version
         }
     }
 }

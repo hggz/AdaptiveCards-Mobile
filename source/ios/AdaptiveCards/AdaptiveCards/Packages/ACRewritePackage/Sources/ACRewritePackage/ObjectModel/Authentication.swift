@@ -22,7 +22,7 @@ struct Authentication: Codable {
         return !text.isEmpty ||
                !connectionName.isEmpty ||
                !buttons.isEmpty ||
-               (tokenExchangeResource?.shouldSerialize() ?? false)
+        (tokenExchangeResource?.shouldSerialize ?? false)
     }
 
     func serialize() -> String {
@@ -30,7 +30,7 @@ struct Authentication: Codable {
         return jsonData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
     }
 
-    func serializeToJsonValue() -> [String: Any] {
+    func serializeToJsonValue() throws -> [String: Any] {
         var json: [String: Any] = [:]
 
         if !text.isEmpty {
@@ -39,8 +39,8 @@ struct Authentication: Codable {
         if !connectionName.isEmpty {
             json["connectionName"] = connectionName
         }
-        if let tokenExchangeResource = tokenExchangeResource, tokenExchangeResource.shouldSerialize() {
-            json["tokenExchangeResource"] = tokenExchangeResource.serializeToJsonValue()
+        if let tokenExchangeResource = tokenExchangeResource, tokenExchangeResource.shouldSerialize {
+            json["tokenExchangeResource"] = try tokenExchangeResource.serializeToJsonValue()
         }
         if !buttons.isEmpty {
             json["buttons"] = buttons.map { $0.serializeToJsonValue() }
@@ -49,11 +49,11 @@ struct Authentication: Codable {
         return json
     }
 
-    static func deserialize(from json: [String: Any]) -> Authentication {
+    static func deserialize(from json: [String: Any]) throws -> Authentication {
         return Authentication(
             text: json["text"] as? String ?? "",
             connectionName: json["connectionName"] as? String ?? "",
-            tokenExchangeResource: (json["tokenExchangeResource"] as? [String: Any]).flatMap { TokenExchangeResource.deserialize(from: $0) },
+            tokenExchangeResource: try (json["tokenExchangeResource"] as? [String: Any]).flatMap { try TokenExchangeResource.deserialize(from: $0) },
             buttons: (json["buttons"] as? [[String: Any]])?.compactMap { AuthCardButton.deserialize(from: $0) } ?? []
         )
     }
@@ -63,6 +63,6 @@ struct Authentication: Codable {
               let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
             return nil
         }
-        return deserialize(from: jsonDict)
+        return try? deserialize(from: jsonDict)
     }
 }

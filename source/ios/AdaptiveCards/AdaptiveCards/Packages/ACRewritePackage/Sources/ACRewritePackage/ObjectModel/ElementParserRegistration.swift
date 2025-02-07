@@ -98,5 +98,11 @@ struct ElementParserRegistration {
 /// Error types for parsing Adaptive Cards.
 enum AdaptiveCardParseError: Error {
     case invalidJson
+    case renderFailed
+    case requiredPropertyMissing
+    case invalidPropertyValue
     case unsupportedParserOverride
+    case idCollision
+    case invalidType
+    case customError
 }

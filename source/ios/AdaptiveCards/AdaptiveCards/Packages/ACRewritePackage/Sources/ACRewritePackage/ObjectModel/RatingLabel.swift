@@ -88,13 +88,6 @@ struct RatingLabelParser {
     }
 }
 
-/// Enumeration representing horizontal alignment.
-enum HorizontalAlignment: String, Codable {
-    case left
-    case center
-    case right
-}
-
 /// Enumeration representing rating sizes.
 enum RatingSize: String, Codable {
     case small

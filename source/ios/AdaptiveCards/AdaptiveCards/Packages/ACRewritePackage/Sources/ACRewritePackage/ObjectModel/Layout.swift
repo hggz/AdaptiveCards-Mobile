@@ -4,20 +4,6 @@ enum LayoutContainerType: String, Codable {
     case none, stack
 }
 
-enum TargetWidthType: String, Codable {
-    case `default`, wide, standard, narrow, veryNarrow
-    case atLeastWide, atLeastStandard, atLeastNarrow, atLeastVeryNarrow
-    case atMostWide, atMostStandard, atMostNarrow, atMostVeryNarrow
-}
-
-enum HostWidth: String, Comparable {
-    case `default`, wide, standard, narrow, veryNarrow
-
-    static func < (lhs: HostWidth, rhs: HostWidth) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-}
-
 struct Layout: Codable {
     var layoutContainerType: LayoutContainerType = .none
     var targetWidth: TargetWidthType = .default

@@ -78,17 +78,6 @@ struct IconInfo: Codable {
     }
 }
 
-// Supporting Enums
-enum ForegroundColor: String, Codable {
-    case `default` = "default"
-    case accent = "accent"
-    case attention = "attention"
-    case good = "good"
-    case warning = "warning"
-    case dark = "dark"
-    case light = "light"
-}
-
 enum IconSize: String, Codable {
     case standard = "standard"
     case small = "small"

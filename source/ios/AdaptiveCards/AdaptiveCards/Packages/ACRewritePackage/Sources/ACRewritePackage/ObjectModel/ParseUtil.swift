@@ -12,14 +12,16 @@ struct ParseUtil {
     /// Throws an error if the provided JSON object is not valid.
     static func throwIfNotJsonObject(_ json: Any) throws {
         guard json is [String: Any] else {
-            throw AdaptiveCardParseError.invalidJson("Expected JSON object.")
+//            throw AdaptiveCardParseError.invalidJson("Expected JSON object.")
+            throw AdaptiveCardParseError.invalidJson
         }
     }
     
     /// Extracts the `type` property from JSON.
     static func getTypeAsString(from json: [String: Any]) throws -> String {
         guard let type = json["type"] as? String else {
-            throw AdaptiveCardParseError.requiredPropertyMissing("The JSON element is missing the 'type' property.")
+//            throw AdaptiveCardParseError.requiredPropertyMissing("The JSON element is missing the 'type' property.")
+            throw AdaptiveCardParseError.requiredPropertyMissing
         }
         return type
     }
@@ -33,7 +35,8 @@ struct ParseUtil {
     static func getString(from json: [String: Any], key: String, isRequired: Bool = false) throws -> String {
         guard let value = json[key] as? String else {
             if isRequired {
-                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+//                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+                throw AdaptiveCardParseError.requiredPropertyMissing
             }
             return ""
         }
@@ -49,7 +52,8 @@ struct ParseUtil {
     static func getBool(from json: [String: Any], key: String, defaultValue: Bool, isRequired: Bool = false) throws -> Bool {
         guard let value = json[key] as? Bool else {
             if isRequired {
-                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+//                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+                throw AdaptiveCardParseError.requiredPropertyMissing
             }
             return defaultValue
         }
@@ -65,7 +69,8 @@ struct ParseUtil {
     static func getInt(from json: [String: Any], key: String, defaultValue: Int, isRequired: Bool = false) throws -> Int {
         guard let value = json[key] as? Int else {
             if isRequired {
-                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+//                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing.")
+                throw AdaptiveCardParseError.requiredPropertyMissing
             }
             return defaultValue
         }
@@ -81,7 +86,8 @@ struct ParseUtil {
     static func getArray(from json: [String: Any], key: String, isRequired: Bool = false) throws -> [[String: Any]] {
         guard let value = json[key] as? [[String: Any]] else {
             if isRequired {
-                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing or not an array.")
+//                throw AdaptiveCardParseError.requiredPropertyMissing("Property \(key) is required but was missing or not an array.")
+                throw AdaptiveCardParseError.requiredPropertyMissing
             }
             return []
         }

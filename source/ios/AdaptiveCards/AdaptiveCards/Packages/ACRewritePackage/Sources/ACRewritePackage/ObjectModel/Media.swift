@@ -91,9 +91,3 @@ struct MediaParser {
         return try deserialize(from: json)
     }
 }
-
-/// Represents a remote resource, such as a poster or media source.
-struct RemoteResourceInformation: Codable {
-    let url: String
-    let mimeType: String
-}

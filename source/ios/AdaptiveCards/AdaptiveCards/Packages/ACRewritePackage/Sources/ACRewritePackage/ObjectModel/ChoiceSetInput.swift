@@ -56,24 +56,3 @@ struct ChoiceSetInput: Codable {
         return try JSONDecoder().decode(ChoiceSetInput.self, from: jsonData)
     }
 }
-
-enum ChoiceSetStyle: String, Codable {
-    case compact = "Compact"
-    case expanded = "Expanded"
-    case filtered = "Filtered"
-}
-
-struct ChoiceInput: Codable {
-    var title: String
-    var value: String
-
-    private enum CodingKeys: String, CodingKey {
-        case title = "Title"
-        case value = "Value"
-    }
-
-    init(title: String, value: String) {
-        self.title = title
-        self.value = value
-    }
-}

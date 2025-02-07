@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents an action to toggle visibility of elements in an Adaptive Card.
-class ToggleVisibilityAction: BaseActionElement, Codable {
+class ToggleVisibilityAction: BaseActionElement {
     /// The target elements whose visibility is toggled.
     var targetElements: [ToggleVisibilityTarget]
 

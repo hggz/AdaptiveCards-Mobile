@@ -15,7 +15,7 @@ struct Refresh: Codable {
         var json: [String: Any] = [:]
 
         if let action = action {
-            json["action"] = action.serializeToJson()
+            json["action"] = action.toJSON()
         }
 
         if !userIds.isEmpty {

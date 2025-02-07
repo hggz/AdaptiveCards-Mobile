@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a base element in an adaptive card.
-struct BaseElement: Codable {
+class BaseElement: Codable {
     var typeString: String
     var id: String?
     var internalId: InternalId
@@ -30,22 +30,37 @@ struct BaseElement: Codable {
         self.fallbackContent = fallbackContent
         self.canFallbackToAncestor = canFallbackToAncestor
     }
-
-    /// Deserialize from JSON
+    
+    /// Deserialize from JSON data.
     static func decode(from json: Data) throws -> BaseElement {
         return try JSONDecoder().decode(BaseElement.self, from: json)
     }
-
-    /// Serialize to JSON
-    func encode() throws -> Data {
+    
+    /// Serialize to JSON data.
+    func encodeToData() throws -> Data {
         return try JSONEncoder().encode(self)
     }
-
+    
+    /// Converts the element into a JSON dictionary.
+    func toJSON() -> [String: Any] {
+        var json: [String: Any] = ["type": typeString]
+        if let id = id {
+            json["id"] = id
+        }
+        if let additionalProperties = additionalProperties {
+            for (key, anyCodable) in additionalProperties {
+                json[key] = anyCodable.value
+            }
+        }
+        // Additional properties such as "requires", "fallbackType", etc. could be added if desired.
+        return json
+    }
+    
     /// Checks whether the element meets host requirements.
     func meetsRequirements(_ hostProvides: FeatureRegistration) -> Bool {
         guard let requires = requires else { return true }
         for (feature, requiredVersion) in requires {
-            if let hostVersion = hostProvides[feature], hostVersion < requiredVersion {
+            if let hostVersion = hostProvides.getFeatureVersion(feature: feature), hostVersion < requiredVersion {
                 return false
             }
         }
@@ -63,7 +78,6 @@ struct AnyCodable: Codable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-
         if let intValue = try? container.decode(Int.self) {
             value = intValue
         } else if let doubleValue = try? container.decode(Double.self) {
@@ -83,7 +97,6 @@ struct AnyCodable: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-
         if let intValue = value as? Int {
             try container.encode(intValue)
         } else if let doubleValue = value as? Double {

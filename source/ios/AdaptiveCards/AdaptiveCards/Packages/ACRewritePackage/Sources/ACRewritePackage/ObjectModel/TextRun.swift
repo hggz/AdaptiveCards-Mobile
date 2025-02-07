@@ -36,11 +36,11 @@ struct TextRun: Inline, Codable {
         json["highlight"] = highlight
         json["underline"] = underline
         if let language = language { json["language"] = language }
-        if let selectAction = selectAction { json["selectAction"] = selectAction.serializeToJson() }
+        if let selectAction = selectAction { json["selectAction"] = selectAction.toJSON()}
         return json
     }
 
-    static func deserialize(from json: [String: Any]) -> TextRun? {
+    static func deserialize(from json: [String: Any]) throws -> TextRun? {
         guard let text = json["text"] as? String else { return nil }
 
         var additionalProperties = json
@@ -57,7 +57,7 @@ struct TextRun: Inline, Codable {
         let highlight = json["highlight"] as? Bool ?? false
         let underline = json["underline"] as? Bool ?? false
         let language = json["language"] as? String
-        let selectAction = (json["selectAction"] as? [String: Any]).flatMap { BaseActionElement.deserialize(from: $0) }
+        let selectAction = try (json["selectAction"] as? [String: Any]).flatMap { try BaseActionElement.deserialize(from: $0) }
 
         return TextRun(
             additionalProperties: additionalProperties.mapValues { AnyCodable($0) },

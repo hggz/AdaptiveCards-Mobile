@@ -1,9 +1,5 @@
 import Foundation
 
-enum ContainerStyle: String, Codable {
-    case none, defaultStyle = "default"
-}
-
 enum VerticalContentAlignment: String, Codable {
     case top, center, bottom
 }

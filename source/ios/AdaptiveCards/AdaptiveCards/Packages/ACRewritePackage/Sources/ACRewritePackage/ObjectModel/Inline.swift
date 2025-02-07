@@ -34,33 +34,3 @@ extension Inline {
         }
     }
 }
-
-struct TextRun: Inline {
-    let inlineType: InlineElementType = .textRun
-    var additionalProperties: [String: AnyCodable] = [:]
-    var text: String
-
-    enum CodingKeys: String, CodingKey {
-        case inlineType = "type"
-        case text
-    }
-
-    func serializeToJson() -> [String: Any] {
-        var json = additionalProperties.mapValues { $0.value }
-        json["type"] = inlineType.rawValue
-        json["text"] = text
-        return json
-    }
-
-    static func deserialize(from json: [String: Any]) -> TextRun? {
-        guard let text = json["text"] as? String else {
-            return nil
-        }
-
-        var additionalProperties = json
-        additionalProperties.removeValue(forKey: "type")
-        additionalProperties.removeValue(forKey: "text")
-
-        return TextRun(additionalProperties: additionalProperties.mapValues { AnyCodable($0) }, text: text)
-    }
-}

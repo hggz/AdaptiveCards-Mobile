@@ -28,7 +28,7 @@ struct AreaGridLayout: Codable {
         var json: [String: Any] = [:]
 
         if !areas.isEmpty {
-            json["areas"] = areas.map { $0.serializeToJsonValue() }
+            json["areas"] = areas.map { $0.serializeToJson() }
         }
 
         if !columns.isEmpty {
@@ -76,27 +76,5 @@ struct AreaGridLayout: Codable {
             return nil
         }
         return deserialize(from: jsonDict)
-    }
-}
-
-// Assuming Spacing is an enum with a raw value of String
-enum Spacing: String, Codable {
-    case `default`
-    case none
-    case small
-    case medium
-    case large
-    case extraLarge
-    case padding
-}
-
-// Assuming GridArea is another struct that needs to be ported separately
-struct GridArea: Codable {
-    func serializeToJsonValue() -> [String: Any] {
-        return [:] // Placeholder: Implement this based on GridArea's properties
-    }
-
-    static func deserialize(from json: [String: Any]) -> GridArea {
-        return GridArea() // Placeholder: Implement actual deserialization
     }
 }

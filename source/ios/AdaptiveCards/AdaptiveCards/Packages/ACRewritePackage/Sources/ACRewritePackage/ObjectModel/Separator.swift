@@ -6,7 +6,7 @@ struct Separator: Codable {
     var color: ForegroundColor
 
     /// Default initializer
-    init(thickness: SeparatorThickness = .default, color: ForegroundColor = .default) {
+    init(thickness: SeparatorThickness = .defaultThickness, color: ForegroundColor = .default) {
         self.thickness = thickness
         self.color = color
     }
@@ -47,57 +47,4 @@ enum SeparatorThickness: String, Codable {
     init(from rawValue: String) {
         self = SeparatorThickness(rawValue: rawValue) ?? .defaultThickness
     }
-}
-
-/// Enum representing possible foreground colors.
-enum ForegroundColor: String, Codable {
-    case defaultColor = "Default"
-    case dark = "Dark"
-    case light = "Light"
-    case accent = "Accent"
-    case good = "Good"
-    case warning = "Warning"
-    case attention = "Attention"
-
-    init(from rawValue: String) {
-        self = ForegroundColor(rawValue: rawValue) ?? .defaultColor
-    }
-}
-
-/// Utility class for JSON parsing.
-struct ParseUtil {
-    static func getEnumValue<T: RawRepresentable>(_ json: [String: Any], key: AdaptiveCardSchemaKey, defaultValue: T, converter: (String) -> T) throws -> T {
-        guard let rawValue = json[key.rawValue] as? String else {
-            return defaultValue
-        }
-        return converter(rawValue)
-    }
-
-    static func getJsonDictionary(from jsonString: String) throws -> [String: Any] {
-        guard let data = jsonString.data(using: .utf8),
-              let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
-            throw ParseError.invalidJson
-        }
-        return json
-    }
-
-    static func jsonToString(_ dictionary: [String: Any]) throws -> String {
-        let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
-        guard let jsonString = String(data: data, encoding: .utf8) else {
-            throw ParseError.serializationFailed
-        }
-        return jsonString
-    }
-}
-
-/// Enum representing keys used in JSON parsing.
-enum AdaptiveCardSchemaKey: String {
-    case color = "color"
-    case thickness = "thickness"
-}
-
-/// Errors that can occur during parsing.
-enum ParseError: Error {
-    case invalidJson
-    case serializationFailed
 }

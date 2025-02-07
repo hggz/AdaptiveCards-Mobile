@@ -42,12 +42,12 @@ final class ActionParserRegistration {
 
     init() {
         let defaultParsers: [(String, ActionElementParser)] = [
-            (ActionType.execute.toString(), ExecuteActionParser()),
-            (ActionType.openUrl.toString(), OpenUrlActionParser()),
-            (ActionType.showCard.toString(), ShowCardActionParser()),
-            (ActionType.submit.toString(), SubmitActionParser()),
-            (ActionType.toggleVisibility.toString(), ToggleVisibilityActionParser()),
-            (ActionType.unknownAction.toString(), UnknownActionParser())
+            (ActionType.execute.rawValue, ExecuteActionParser()),
+            (ActionType.openUrl.rawValue, OpenUrlActionParser()),
+            (ActionType.showCard.rawValue, ShowCardActionParser()),
+            (ActionType.submit.rawValue, SubmitActionParser()),
+            (ActionType.toggleVisibility.rawValue, ToggleVisibilityActionParser()),
+            (ActionType.unknownAction.rawValue, UnknownActionParser())
         ]
 
         for (key, parser) in defaultParsers {

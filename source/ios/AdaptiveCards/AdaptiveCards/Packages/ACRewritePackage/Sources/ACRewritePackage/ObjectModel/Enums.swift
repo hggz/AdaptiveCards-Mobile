@@ -1,55 +1,58 @@
 import Foundation
 
-enum AdaptiveCardSchemaKey: String, Codable {
-    case accent, action, actionAlignment, actionMode, actionOrientation, actionRole, actionSet, actionSetConfig, actions, actionsOrientation, adaptiveCard
-    case allowCustomStyle, allowInlinePlayback, altText, name, associatedInputs, attention, authentication, backgroundColor, backgroundImage
-    case backgroundImageUrl, baseCardElement, baseContainerStyle, bleed, body, bolder, borderColor, bottom, badge, buttonSpacing, buttons
-    case captionSources, card, cellSpacing, cells, center, choiceSet, choices, choicesData, choicesDataType, color, colorConfig, column
-    case columnHeader, columnSet, columns, conditionallyEnabled, connectionName, container, containerStyles, borderWidth, cornerRadius
-    case dark, data, dataQuery, dataset, dateInput, defaultCase, defaultPoster, count, description, elementId, emphasis, errorMessage
-    case extraLarge, factSet, facts, fallback, fallbackText, fillMode, firstRowAsHeaders, fontFamily, fontSizes, fontType, fontTypes
-    case fontWeights, foregroundColor, foregroundColors, good, gridStyle, heading, headingLevel, height, highlight, highlightColor
-    case highlightColors, horizontalAlignment, horizontalCellContentAlignment, hostWidthBreakpoints, iconPlacement, iconSize, iconUrl, id
-    case image, icon, imageBaseUrl, imageSet, imageSize, imageSizes, images, inlineAction, inlineTopMargin, inlines, inputSpacing, inputs
-    case isEnabled, isMultiSelect, isMultiline, showBorder, roundedCorners, isRequired, isSelected, isSubtle, isVisible, italic, items, label
-    case language, large, left, light, lighter, lineColor, lineThickness, max, maxActions, maxImageHeight, maxLength, maxLines, maxWidth
-    case media, medium, metaData, method, mimeType, min, minHeight, mode, monospace, narrow, numberInput, ratingInput, ratingLabel
-    case optionalInputs, padding, placeholder, playButton, poster, providerId, refresh, regex, repeatCase, repeatHorizontally, repeatVertically
-    case requiredInputs, requires, richTextBlock, right, rows, rtl, schema, selectAction, separator, showActionMode, showCard
-    case showCardActionConfig, showGridLines, size, small, sources, spacing, spacingDefinition, speak, standard, stretch, strikethrough
-    case style, subtle, suffix, supportsInteractivity, table, tableCell, tableRow, targetElements, layout, itemFit, rowSpacing
-    case columnSpacing, itemWidth, minItemWidth, maxItemWidth, horizontalItemsAlignment, row, rowSpan, columnSpan, areaGridName
-    case areas, layouts, targetInputIds, targetWidth, text, textBlock, textConfig, textInput, textStyles, marigoldColor, neutralColor
-    case filledStar, emptyStar, ratingTextColor, countTextColor, textWeight, thickness, timeInput, title, toggleInput, tokenExchangeResource
-    case tooltip, top, type, underline, uri, url, userIds, value, valueChangedAction, valueChangedActionType, valueOff, valueOn
-    case verb, veryNarrow, version, verticalAlignment, verticalCellContentAlignment, verticalContentAlignment, warning, webUrl
-    case weight, width, wrap, compoundButton
-}
-
 enum CardElementType: String, Codable {
     case actionSet, adaptiveCard, choiceInput, choiceSetInput, column, columnSet, container, custom, dateInput, fact, factSet
     case image, icon, imageSet, media, numberInput, ratingInput, ratingLabel, richTextBlock, table, tableCell, tableRow, textBlock
     case textInput, timeInput, toggleInput, compoundButton, unknown
 }
 
+/// Enum representing possible text sizes.
 enum TextSize: String, Codable {
-    case small, `default`, medium, large, extraLarge
+    case defaultSize = "Default"
+    case small = "Small"
+    case medium = "Medium"
+    case large = "Large"
+    case extraLarge = "ExtraLarge"
+
+    init(from rawValue: String) {
+        self = TextSize(rawValue: rawValue) ?? .defaultSize
+    }
 }
 
+/// Enum representing possible text weights.
 enum TextWeight: String, Codable {
-    case lighter, `default`, bolder
+    case defaultWeight = "Default"
+    case lighter = "Lighter"
+    case bolder = "Bolder"
+
+    init(from rawValue: String) {
+        self = TextWeight(rawValue: rawValue) ?? .defaultWeight
+    }
 }
 
+/// Enum representing possible font types.
 enum FontType: String, Codable {
-    case `default`, monospace
+    case defaultFont = "Default"
+    case monospace = "Monospace"
+
+    init(from rawValue: String) {
+        self = FontType(rawValue: rawValue) ?? .defaultFont
+    }
 }
 
 enum ForegroundColor: String, Codable {
     case `default`, dark, light, accent, good, warning, attention
 }
 
+/// Enum representing possible horizontal alignments.
 enum HorizontalAlignment: String, Codable {
-    case left, center, right
+    case left = "Left"
+    case center = "Center"
+    case right = "Right"
+
+    init(from rawValue: String) {
+        self = HorizontalAlignment(rawValue: rawValue) ?? .left
+    }
 }
 
 enum VerticalAlignment: String, Codable {
@@ -73,7 +76,9 @@ enum ActionAlignment: String, Codable {
 }
 
 enum ChoiceSetStyle: String, Codable {
-    case compact, expanded, filtered
+    case compact = "Compact"
+    case expanded = "Expanded"
+    case filtered = "Filtered"
 }
 
 enum Spacing: String, Codable {
@@ -105,6 +110,15 @@ enum WarningStatusCode: String, Codable {
 
 enum HostWidth: String, Codable {
     case `default`, veryNarrow, narrow, standard, wide
+    static func < (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+    static func <= (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue <= rhs.rawValue
+    }
+    static func >= (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue >= rhs.rawValue
+    }
 }
 
 enum TargetWidthType: String, Codable {

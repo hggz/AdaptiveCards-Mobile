@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a base element in an Adaptive Card.
-struct BaseCardElement: BaseElement, Codable {
+class BaseCardElement: BaseElement {
     var type: CardElementType
     var spacing: Spacing?
     var height: HeightType?
@@ -18,7 +18,8 @@ struct BaseCardElement: BaseElement, Codable {
         targetWidth: TargetWidthType? = nil,
         separator: Bool? = nil,
         isVisible: Bool = true,
-        areaGridName: String? = nil
+        areaGridName: String? = nil,
+        id: String? = nil
     ) {
         self.type = type
         self.spacing = spacing
@@ -27,6 +28,8 @@ struct BaseCardElement: BaseElement, Codable {
         self.separator = separator
         self.isVisible = isVisible
         self.areaGridName = areaGridName
+        // Call the BaseElement initializer with the raw value of the CardElementType.
+        super.init(typeString: type.rawValue, id: id)
     }
 
     // MARK: - Serialization
@@ -41,7 +44,7 @@ struct BaseCardElement: BaseElement, Codable {
     }
 
     /// Serializes the BaseCardElement into JSON.
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(type.rawValue, forKey: .type)
         try container.encodeIfPresent(spacing?.rawValue, forKey: .spacing)
@@ -50,38 +53,50 @@ struct BaseCardElement: BaseElement, Codable {
         try container.encodeIfPresent(separator, forKey: .separator)
         try container.encode(isVisible, forKey: .isVisible)
         try container.encodeIfPresent(areaGridName, forKey: .areaGridName)
+        try super.encode(to: encoder)
     }
 
     /// Deserializes a BaseCardElement from JSON.
-    init(from decoder: Decoder) throws {
+    required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.type = try container.decode(CardElementType.self, forKey: .type)
-        self.spacing = try container.decodeIfPresent(Spacing.self, forKey: .spacing)
-        self.height = try container.decodeIfPresent(HeightType.self, forKey: .height)
-        self.targetWidth = try container.decodeIfPresent(TargetWidthType.self, forKey: .targetWidth)
+        // Decode the local properties.
+        let typeRaw = try container.decode(String.self, forKey: .type)
+        guard let decodedType = CardElementType(rawValue: typeRaw) else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        self.type = decodedType
+        if let spacingRaw = try container.decodeIfPresent(String.self, forKey: .spacing) {
+            self.spacing = Spacing(rawValue: spacingRaw)
+        }
+        if let heightRaw = try container.decodeIfPresent(String.self, forKey: .height) {
+            self.height = HeightType(rawValue: heightRaw)
+        }
+        if let targetWidthRaw = try container.decodeIfPresent(String.self, forKey: .targetWidth) {
+            self.targetWidth = TargetWidthType(rawValue: targetWidthRaw)
+        }
         self.separator = try container.decodeIfPresent(Bool.self, forKey: .separator)
         self.isVisible = try container.decodeIfPresent(Bool.self, forKey: .isVisible) ?? true
         self.areaGridName = try container.decodeIfPresent(String.self, forKey: .areaGridName)
+        // Decode the BaseElement properties.
+        try super.init(from: decoder)
     }
 }
 
 /// Utility methods for parsing BaseCardElement.
 extension BaseCardElement {
-    
     /// Parses a BaseCardElement from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> BaseCardElement {
         guard let typeString = json["type"] as? String,
               let type = CardElementType(rawValue: typeString) else {
             throw AdaptiveCardParseError.invalidType
         }
-
-        let spacing = (json["spacing"] as? String).flatMap(Spacing.init(rawValue:))
-        let height = (json["height"] as? String).flatMap(HeightType.init(rawValue:))
-        let targetWidth = (json["targetWidth"] as? String).flatMap(TargetWidthType.init(rawValue:))
+        let spacing = (json["spacing"] as? String).flatMap { Spacing(rawValue: $0) }
+        let height = (json["height"] as? String).flatMap { HeightType(rawValue: $0) }
+        let targetWidth = (json["targetWidth"] as? String).flatMap { TargetWidthType(rawValue: $0) }
         let separator = json["separator"] as? Bool
         let isVisible = json["isVisible"] as? Bool ?? true
         let areaGridName = json["areaGridName"] as? String
-
+        let id = json["id"] as? String
         return BaseCardElement(
             type: type,
             spacing: spacing,
@@ -89,7 +104,8 @@ extension BaseCardElement {
             targetWidth: targetWidth,
             separator: separator,
             isVisible: isVisible,
-            areaGridName: areaGridName
+            areaGridName: areaGridName,
+            id: id
         )
     }
 
@@ -100,7 +116,6 @@ extension BaseCardElement {
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseError.invalidJson
         }
-
         return try deserialize(from: jsonDict)
     }
 }

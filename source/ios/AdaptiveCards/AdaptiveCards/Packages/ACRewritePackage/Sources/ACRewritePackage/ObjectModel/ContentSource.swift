@@ -33,8 +33,3 @@ struct ContentSource: Codable {
         return try JSONDecoder().decode(ContentSource.self, from: jsonData)
     }
 }
-
-struct RemoteResourceInformation: Codable {
-    var url: String
-    var mimeType: String?
-}

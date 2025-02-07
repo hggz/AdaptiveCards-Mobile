@@ -38,13 +38,6 @@ struct RichTextBlockParser {
     }
 }
 
-/// Enum representing horizontal alignment.
-enum HorizontalAlignment: String, Codable {
-    case left = "Left"
-    case center = "Center"
-    case right = "Right"
-}
-
 /// Error type for parsing failures.
 enum ParsingError: Error {
     case invalidType(expected: String, found: String)

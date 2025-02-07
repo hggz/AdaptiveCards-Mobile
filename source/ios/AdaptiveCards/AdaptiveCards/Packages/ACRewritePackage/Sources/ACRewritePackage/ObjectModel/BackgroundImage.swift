@@ -4,14 +4,6 @@ enum ImageFillMode: String, Codable {
     case cover
 }
 
-enum HorizontalAlignment: String, Codable {
-    case left
-}
-
-enum VerticalAlignment: String, Codable {
-    case top
-}
-
 struct BackgroundImage: Codable {
     var url: String
     var fillMode: ImageFillMode
