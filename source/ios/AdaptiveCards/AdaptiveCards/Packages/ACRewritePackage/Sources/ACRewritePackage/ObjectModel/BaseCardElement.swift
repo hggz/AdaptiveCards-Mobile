@@ -118,4 +118,8 @@ extension BaseCardElement {
         }
         return try deserialize(from: jsonDict)
     }
+    
+    static func fromJSON(_ json: [String: Any]) -> BaseCardElement? {
+        return try? self.deserialize(from: json)
+    }
 }

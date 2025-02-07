@@ -17,7 +17,7 @@ struct ContentSource: Codable {
     }
 
     func getResourceInformation() -> RemoteResourceInformation? {
-        guard let url = url else { return nil }
+        guard let url = url, let mimeType = mimeType else { return nil }
         return RemoteResourceInformation(url: url, mimeType: mimeType)
     }
 

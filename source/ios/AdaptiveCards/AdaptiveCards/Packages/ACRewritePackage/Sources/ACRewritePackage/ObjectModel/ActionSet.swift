@@ -7,8 +7,8 @@ class ActionSet: BaseCardElement {
     // MARK: - Initializers
     init(actions: [BaseActionElement] = [], id: String? = nil) {
         self.actions = actions
-        // Initialize the BaseCardElement using the CardElementType.actionSet raw value.
-        super.init(typeString: CardElementType.actionSet.rawValue, id: id)
+        // Initialize the BaseCardElement using the CardElementType.actionSet value.
+        super.init(type: .actionSet, id: id)
     }
     
     required init(from decoder: Decoder) throws {
@@ -19,7 +19,7 @@ class ActionSet: BaseCardElement {
             throw AdaptiveCardParseError.invalidType
         }
         self.actions = try container.decodeIfPresent([BaseActionElement].self, forKey: .actions) ?? []
-        // Decode the rest of the properties from BaseElement.
+        // Decode the rest of the properties from BaseCardElement.
         try super.init(from: decoder)
     }
     
@@ -28,7 +28,7 @@ class ActionSet: BaseCardElement {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(CardElementType.actionSet.rawValue, forKey: .type)
         try container.encode(actions, forKey: .actions)
-        // Then encode the BaseElement properties.
+        // Then encode the BaseCardElement properties.
         try super.encode(to: encoder)
     }
     
@@ -48,17 +48,13 @@ struct ActionSetParser: BaseCardElementParser {
             throw AdaptiveCardParseError.invalidType
         }
         // Parse actions using the provided parsing utilities.
-        let actions = try ParseUtil.getActionCollection(context: &context, json: value, key: "actions")
+        let actions = try ParseUtil.getActionCollection(from: value, key: "actions")
         return ActionSet(actions: actions)
     }
     
     /// Parses an `ActionSet` from a JSON string.
     func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
-        guard let jsonData = value.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardParseError.invalidJson
-        }
+        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: &context, value: jsonDict)
     }
 }

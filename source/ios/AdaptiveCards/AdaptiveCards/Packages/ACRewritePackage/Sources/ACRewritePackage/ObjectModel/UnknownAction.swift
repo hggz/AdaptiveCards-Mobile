@@ -6,27 +6,37 @@ final class UnknownAction: BaseActionElement {
     init() {
         super.init(type: .unknownAction)
     }
-
+    
+    /// Required initializer for decoding.
+    required init(from decoder: Decoder) throws {
+        try super.init(from: decoder)
+    }
+    
     /// Serializes the unknown action into a JSON dictionary.
-    override func serializeToJsonValue() -> [String: Any] {
-        return additionalProperties
+    /// Returns additionalProperties if set, or an empty dictionary.
+    func serializeToJsonValue() -> [String: Any] {
+        return additionalProperties ?? [:]
     }
 }
 
 /// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
     /// Deserializes an `UnknownAction` from a JSON dictionary.
-    static func deserialize(context: inout ParseContext, json: [String: Any]) -> UnknownAction {
-        let actualType = ParseUtil.getTypeAsString(json: json)
-        let unknownAction = BaseActionElement.deserialize(UnknownAction.self, context: &context, json: json)
+    func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+        let actualType = try ParseUtil.getTypeAsString(from: json)
+        // Use the BaseActionElement deserialization method and cast to UnknownAction.
+        let base = try BaseActionElement.deserialize(from: json)
+        guard let unknownAction = base as? UnknownAction else {
+            throw AdaptiveCardParseError.invalidType
+        }
         unknownAction.setAdditionalProperties(json)
         unknownAction.setElementTypeString(actualType)
         return unknownAction
     }
-
+    
     /// Deserializes an `UnknownAction` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> UnknownAction {
-        let json = try ParseUtil.getJsonValue(from: jsonString)
-        return deserialize(context: &context, json: json)
+    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+        let json = try ParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(context: &context, from: json)
     }
 }

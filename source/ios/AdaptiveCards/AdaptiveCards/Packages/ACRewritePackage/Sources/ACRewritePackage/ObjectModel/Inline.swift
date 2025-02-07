@@ -28,7 +28,7 @@ extension Inline {
 
         switch type {
         case .textRun:
-            return TextRun.deserialize(from: json)
+            return try? TextRun.deserialize(from: json)
         case .unknown:
             return nil
         }

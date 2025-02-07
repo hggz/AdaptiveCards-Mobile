@@ -76,4 +76,15 @@ struct Layout: Codable {
 
         return json
     }
+    
+    static func fromJSON(_ json: [String: Any]) -> Layout? {
+        guard let data = try? JSONSerialization.data(withJSONObject: json, options: []) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(Layout.self, from: data)
+    }
+    
+    func toJSON() -> [String: Any] {
+        return self.serializeToJsonValue()
+    }
 }

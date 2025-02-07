@@ -17,23 +17,22 @@ struct StyledCollectionElement: Codable {
     var hasBleed: Bool
     var showBorder: Bool
     var roundedCorners: Bool
-    var parentalId: UUID?
+    var parentalId: InternalId?
     var backgroundImage: BackgroundImage?
     var selectAction: BaseActionElement?
 
-    init(type: String, 
-         style: ContainerStyle = .none, 
-         verticalContentAlignment: VerticalContentAlignment? = nil, 
-         bleedDirection: ContainerBleedDirection = .bleedAll, 
-         minHeight: UInt = 0, 
-         hasPadding: Bool = false, 
-         hasBleed: Bool = false, 
-         showBorder: Bool = false, 
-         roundedCorners: Bool = false, 
-         parentalId: UUID? = nil, 
-         backgroundImage: BackgroundImage? = nil, 
+    init(type: String,
+         style: ContainerStyle = .none,
+         verticalContentAlignment: VerticalContentAlignment? = nil,
+         bleedDirection: ContainerBleedDirection = .bleedAll,
+         minHeight: UInt = 0,
+         hasPadding: Bool = false,
+         hasBleed: Bool = false,
+         showBorder: Bool = false,
+         roundedCorners: Bool = false,
+         parentalId: InternalId? = nil,
+         backgroundImage: BackgroundImage? = nil,
          selectAction: BaseActionElement? = nil) {
-        
         self.style = style
         self.verticalContentAlignment = verticalContentAlignment
         self.bleedDirection = bleedDirection
@@ -57,7 +56,8 @@ struct StyledCollectionElement: Codable {
     }
 
     mutating func configPadding(context: ParseContext) {
-        self.hasPadding = (self.style != .none && context.parentalContainerStyle != self.style)
+        // Use the computed property from ParseContext; if nil, assume .none.
+        self.hasPadding = (self.style != .none && (context.parentalContainerStyle ?? .none) != self.style)
     }
 
     mutating func configBleed(context: ParseContext) {
@@ -78,7 +78,7 @@ struct StyledCollectionElement: Codable {
         var json: [String: Any] = [:]
 
         if let selectAction = selectAction {
-            json["selectAction"] = selectAction.serializeToJsonValue()
+            json["selectAction"] = selectAction.toJSON()
         }
 
         if let backgroundImage = backgroundImage, !backgroundImage.url.isEmpty {

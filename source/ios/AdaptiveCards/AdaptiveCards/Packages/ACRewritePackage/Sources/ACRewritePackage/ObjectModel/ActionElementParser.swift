@@ -18,8 +18,8 @@ final class ActionElementParserWrapper: ActionElementParser {
             throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Missing id property")
         }
         
-        let internalId = InternalId.next()
-        context.pushElement(id: idProperty, internalId: internalId)
+        // Use the correct parameter label for pushElement
+        context.pushElement(idJsonProperty: idProperty, internalId: InternalId.next())
         
         let element = try parser.deserialize(context: &context, from: json)
         context.popElement()

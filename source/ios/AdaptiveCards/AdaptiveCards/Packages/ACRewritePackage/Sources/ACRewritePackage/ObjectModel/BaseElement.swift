@@ -60,7 +60,12 @@ class BaseElement: Codable {
     func meetsRequirements(_ hostProvides: FeatureRegistration) -> Bool {
         guard let requires = requires else { return true }
         for (feature, requiredVersion) in requires {
-            if let hostVersion = hostProvides.getFeatureVersion(feature: feature), hostVersion < requiredVersion {
+            let hostVersionString = hostProvides.getFeatureVersion(featureName: feature)
+            guard let hostVersion = try? SemanticVersion(hostVersionString) else {
+                return false
+            }
+            
+            if hostVersion < requiredVersion {
                 return false
             }
         }

@@ -31,14 +31,12 @@ struct OpenUrlAction: Codable {
 }
 
 /// Parses `OpenUrlAction` elements from JSON.
-struct OpenUrlActionParser {
-    /// Parses an `OpenUrlAction` object from JSON data.
-    static func deserialize(from json: [String: Any]) throws -> OpenUrlAction {
-        return try OpenUrlAction.deserialize(from: json)
-    }
-
-    /// Parses an `OpenUrlAction` object from a JSON string.
-    static func deserialize(from jsonString: String) throws -> OpenUrlAction {
+struct OpenUrlActionParser: ActionElementParser {
+    func deserialize(context: inout ParseContext, from json: [String : Any]) throws -> BaseActionElement {
         return try OpenUrlAction.deserialize(from: jsonString)
+    }
+    
+    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+        return try OpenUrlAction.deserialize(from: json)
     }
 }

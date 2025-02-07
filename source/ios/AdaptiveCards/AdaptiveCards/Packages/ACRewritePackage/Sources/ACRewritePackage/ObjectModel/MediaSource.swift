@@ -23,4 +23,16 @@ struct MediaSource: Codable {
         }
         return try JSONDecoder().decode(MediaSource.self, from: jsonData)
     }
+    
+    func serializeToJson() -> [String: Any] {
+        var json: [String: Any] = ["url": url]
+        if let mimeType = mimeType {
+            json["mimeType"] = mimeType
+        }
+        return json
+    }
+    
+    func getResourceInformation() -> [RemoteResourceInformation] {
+        return [RemoteResourceInformation(url: url, mimeType: mimeType ?? "unknown")]
+    }
 }

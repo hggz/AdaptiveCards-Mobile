@@ -11,7 +11,7 @@ struct MarkDownParser {
     }
 
     /// Transforms Markdown string to HTML
-    func transformToHtml() -> String {
+    mutating func transformToHtml() -> String { // ✅ Made mutating
         guard !text.isEmpty else {
             return "<p></p>"
         }
@@ -47,14 +47,14 @@ struct MarkDownParser {
     /// Parses Markdown blocks
     private mutating func parseBlock() {
         let escapedText = escapeText()
-        var stream = escapedText[...].makeIterator()  // Efficient character stream handling
+        var stream: StringIterator = StringIterator(escapedText) // ✅ Ensure correct iterator type
         var parser = EmphasisParser()
 
         while let _ = stream.next() {
-            parser.parseBlock(&stream)
+            parser.parseBlock(stream: &stream) // ✅ Ensure correct method call with argument label
         }
 
-        parsedResult.appendParseResult(parser.getParsedResult())
+        parsedResult.appendParseResult(parser.getParsedResult()) // ✅ Ensure method exists in EmphasisParser
     }
 
     /// Escapes special HTML characters in the Markdown text

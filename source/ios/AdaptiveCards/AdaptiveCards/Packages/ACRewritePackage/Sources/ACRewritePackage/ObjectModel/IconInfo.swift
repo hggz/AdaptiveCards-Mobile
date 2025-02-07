@@ -77,16 +77,3 @@ struct IconInfo: Codable {
         return "\(name)/\(name).json"
     }
 }
-
-enum IconSize: String, Codable {
-    case standard = "standard"
-    case small = "small"
-    case medium = "medium"
-    case large = "large"
-}
-
-enum IconStyle: String, Codable {
-    case regular = "regular"
-    case outlined = "outlined"
-    case filled = "filled"
-}

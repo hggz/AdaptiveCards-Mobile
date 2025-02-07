@@ -54,7 +54,7 @@ struct ToggleVisibilityTarget: Codable {
         }
 
         guard let elementId = json["elementId"] as? String else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
         
         let isVisible: IsVisible = (json["isVisible"] as? Bool) == true ? .visible : .hidden
@@ -66,7 +66,7 @@ struct ToggleVisibilityTarget: Codable {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
         return try deserialize(from: jsonDict)
     }

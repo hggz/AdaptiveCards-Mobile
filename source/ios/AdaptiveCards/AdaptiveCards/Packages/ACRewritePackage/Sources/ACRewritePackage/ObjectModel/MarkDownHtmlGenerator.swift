@@ -117,6 +117,21 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
         
         return hasHtmlTags
     }
+    
+    // ✅ Fix: Added method to change direction to left
+    func changeDirectionToLeft() {
+        self.directionType = -1
+    }
+
+    // ✅ Fix: Added method to check if two tokens are the same type
+    func isSameType(_ other: MarkDownEmphasisHtmlGenerator) -> Bool {
+        return self.type == other.type
+    }
+
+    // ✅ Fix: Added method to check if this emphasis token is fully used
+    func isDone() -> Bool {
+        return self.numberOfUnusedDelimiters == 0
+    }
 }
 
 // - MarkDownLeftEmphasisHtmlGenerator

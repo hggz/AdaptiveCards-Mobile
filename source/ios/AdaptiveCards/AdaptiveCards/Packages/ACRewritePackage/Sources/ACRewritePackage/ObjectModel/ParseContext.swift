@@ -90,4 +90,19 @@ struct ParseContext {
     mutating func popBleedDirection() {
         _ = parentalBleedDirection.popLast()
     }
+    
+    /// Returns the most recently pushed container style, or nil if none exists.
+    var parentalContainerStyle: ContainerStyle? {
+        return self.parentalContainerStyles.last
+    }
+    
+    /// Returns the current bleed direction; if none was pushed, returns .bleedRestricted.
+    var bleedDirection: ContainerBleedDirection {
+        return self.parentalBleedDirection.last ?? .bleedRestricted
+    }
+    
+    /// Returns the most recently pushed padding parent InternalId.
+    var paddingParentId: InternalId? {
+        return self.paddingParentInternalId()
+    }
 }

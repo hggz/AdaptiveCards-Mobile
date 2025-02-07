@@ -66,7 +66,7 @@ struct CompoundButton: Codable {
             title: json["title"] as? String,
             description: json["description"] as? String,
             icon: (json["icon"] as? [String: Any]).flatMap { IconInfo.fromJSON($0) },
-            selectAction: (json["selectAction"] as? [String: Any]).flatMap { BaseActionElement.fromJSON($0) }
+            selectAction: (json["selectAction"] as? [String: Any]).flatMap { try? BaseActionElement.deserialize(from: $0) }
         )
     }
 

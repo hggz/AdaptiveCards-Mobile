@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - Container Model
+
 struct Container: Codable {
     var items: [BaseCardElement]
     var layouts: [Layout]
@@ -19,6 +21,7 @@ struct Container: Codable {
     func toJSON() -> [String: Any] {
         var json: [String: Any] = [:]
 
+        // Use the inherited toJSON() from BaseElement for each item.
         json["items"] = items.map { $0.toJSON() }
         json["layouts"] = layouts.map { $0.toJSON() }
 
@@ -38,7 +41,7 @@ struct Container: Codable {
         }
     }
 
-    // Deserialization
+    // Deserialization from a dictionary.
     static func fromJSON(_ json: [String: Any]) -> Container? {
         guard !json.isEmpty else { return nil }
 
