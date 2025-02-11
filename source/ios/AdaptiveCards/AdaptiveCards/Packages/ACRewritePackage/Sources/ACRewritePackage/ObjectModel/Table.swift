@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a Table in an Adaptive Card.
-class Table: CollectionCoreElement, Codable {
+class Table: CollectionCoreElement {
     /// Column definitions for the table.
     var columnDefinitions: [TableColumnDefinition]
 

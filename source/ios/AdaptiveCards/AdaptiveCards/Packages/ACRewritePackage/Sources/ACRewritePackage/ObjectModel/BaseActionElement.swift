@@ -89,6 +89,20 @@ class BaseActionElement: BaseElement {
     func setElementTypeString(_ type: String) {
         self.typeString = type
     }
+    
+    public func serializeToJsonValue() -> [String: Any] {
+        var json: [String: Any] = [:]
+        json["type"] = self.type.rawValue
+        if let title = self.title { json["title"] = title }
+        if let iconUrl = self.iconUrl { json["iconUrl"] = iconUrl }
+        if self.style != "default" { json["style"] = self.style }
+        if let tooltip = self.tooltip { json["tooltip"] = tooltip }
+        json["mode"] = self.mode.rawValue
+        json["isEnabled"] = self.isEnabled
+        json["actionRole"] = self.role.rawValue
+        if let id = self.id { json["id"] = id }
+        return json
+    }
 }
 
 extension BaseActionElement {

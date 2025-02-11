@@ -1,5 +1,19 @@
 import Foundation
 
+// MARK: - Stubbed Helper Types
+
+/// Enum representing possible separator thickness values.
+enum SeparatorThickness: String, Codable {
+    case defaultThickness = "Default"
+    case thick = "Thick"
+
+    init(from rawValue: String) {
+        self = SeparatorThickness(rawValue: rawValue) ?? .defaultThickness
+    }
+}
+
+/// MARK: - Separator Definition
+
 /// Represents a separator with color and thickness attributes.
 struct Separator: Codable {
     var thickness: SeparatorThickness
@@ -13,9 +27,8 @@ struct Separator: Codable {
 
     /// Decodes a `Separator` from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> Separator {
-        let color = try ParseUtil.getEnumValue(json, key: .color, defaultValue: .default, converter: ForegroundColor.init)
-        let thickness = try ParseUtil.getEnumValue(json, key: .thickness, defaultValue: .default, converter: SeparatorThickness.init)
-
+        let color = try ParseUtil.getEnumValue(from: json, key: AdaptiveCardSchemaKey.color.rawValue, defaultValue: ForegroundColor.default, converter: ForegroundColor.init)
+        let thickness = try ParseUtil.getEnumValue(from: json, key: AdaptiveCardSchemaKey.thickness.rawValue, defaultValue: SeparatorThickness.defaultThickness, converter: SeparatorThickness.init)
         return Separator(thickness: thickness, color: color)
     }
 
@@ -36,15 +49,5 @@ struct Separator: Codable {
     /// Encodes `Separator` to a JSON string.
     func serialize() throws -> String {
         return try ParseUtil.jsonToString(serializeToJsonValue())
-    }
-}
-
-/// Enum representing possible separator thickness values.
-enum SeparatorThickness: String, Codable {
-    case defaultThickness = "Default"
-    case thick = "Thick"
-
-    init(from rawValue: String) {
-        self = SeparatorThickness(rawValue: rawValue) ?? .defaultThickness
     }
 }

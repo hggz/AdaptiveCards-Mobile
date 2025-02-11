@@ -65,6 +65,9 @@ enum ImageSize: String, Codable {
 
 enum TextInputStyle: String, Codable {
     case text, tel, url, email, password
+    static func fromString(_ value: String) -> TextInputStyle? {
+        return TextInputStyle(rawValue: value)
+    }
 }
 
 enum ActionType: String, Codable {

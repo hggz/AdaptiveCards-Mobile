@@ -101,6 +101,8 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
     case underline, uri, url, userIds, value, valueChangedAction, valueChangedActionType, valueOff
     case valueOn, verb, veryNarrow, version, verticalAlignment, verticalCellContentAlignment
     case verticalContentAlignment, warning, webUrl, weight, width, wrap, compoundButton, authentication
+    case associatedInputs
+    case conditionallyEnabled
 
     static let mappings = EnumMapping([
         (.accent, "accent"),
@@ -176,6 +178,8 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
         (.highlightColor, "highlightColor"),
         (.highlightColors, "highlightColors"),
         (.horizontalAlignment, "horizontalAlignment"),
-        (.hostWidthBreakpoints, "hostWidthBreakpoints")
+        (.hostWidthBreakpoints, "hostWidthBreakpoints"),
+        (.associatedInputs, "associatedInputs"),
+        (.conditionallyEnabled, "conditionallyEnabled"),
     ])
 }

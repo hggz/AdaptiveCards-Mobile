@@ -44,7 +44,7 @@ struct TokenExchangeResource: Codable {
     /// Deserializes a `TokenExchangeResource` from a JSON string.
     static func deserialize(from jsonString: String) throws -> TokenExchangeResource {
         guard let jsonData = jsonString.data(using: .utf8) else {
-//            throw AdaptiveCardError.invalidJson // TODO
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "")
         }
         return try JSONDecoder().decode(TokenExchangeResource.self, from: jsonData)
     }

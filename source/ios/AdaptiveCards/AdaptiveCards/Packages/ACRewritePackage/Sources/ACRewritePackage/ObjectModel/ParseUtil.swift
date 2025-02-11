@@ -76,4 +76,70 @@ struct ParseUtil {
         }
         return []
     }
+    
+    /// Extracts an enum value from JSON.
+    static func getEnumValue<T: RawRepresentable>(
+        from json: [String: Any],
+        key: String,
+        defaultValue: T,
+        converter: (String) -> T?
+    ) throws -> T where T.RawValue == String {
+        if let value = json[key] as? String, let enumValue = converter(value) {
+            return enumValue
+        }
+        return defaultValue
+    }
+    
+    /// Parses a JSON string into a dictionary.
+    static func getJsonDictionary(from jsonString: String) throws -> [String: Any] {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: [])
+        guard let dict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "JSON is not a dictionary")
+        }
+        return dict
+    }
+    
+    /// Extend ParseUtil with the missing helper methods.
+    static func getOptionalEnumValue<T: RawRepresentable>(
+        from json: [String: Any],
+        key: String,
+        converter: (String) -> T?
+    ) throws -> T? where T.RawValue == String {
+        if let value = json[key] as? String {
+            return converter(value)
+        }
+        return nil
+    }
+    
+    static func getUInt(from json: [String: Any],
+                        key: String,
+                        defaultValue: UInt,
+                        isRequired: Bool = false) throws -> UInt {
+        if let number = json[key] as? NSNumber {
+            return number.uintValue
+        }
+        if isRequired {
+            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "\(key) is missing")
+        }
+        return defaultValue
+    }
+    
+    /// Returns an array of BaseActionElement parsed from the JSON under the specified key.
+    static func getActionCollection(from json: [String: Any], key: String) throws -> [BaseActionElement] {
+        let array = try getArray(from: json, key: key, isRequired: false)
+        // Assuming BaseActionElement has a static deserialize(from:) method.
+        return try array.map { try BaseActionElement.deserialize(from: $0) }
+    }
+    
+    static func getAction(from json: [String: Any], key: String, context: inout ParseContext) throws -> BaseActionElement? {
+        guard let actionJson = json[key] as? [String: Any] else {
+            return nil
+        }
+        // Assuming BaseActionElement has a static method `deserialize(from:context:)`
+//        return try BaseActionElement.deserialize(from: actionJson, context: &context) // TODO
+        return try BaseActionElement.deserialize(from: actionJson)
+    }
 }

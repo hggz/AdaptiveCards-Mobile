@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a toggle input field in an Adaptive Card.
-class ToggleInput: BaseInputElement, Codable {
+class ToggleInput: BaseInputElement {
     /// The display title for the toggle.
     var title: String?
 
@@ -18,7 +18,7 @@ class ToggleInput: BaseInputElement, Codable {
     var wrap: Bool
 
     /// Initializes a `ToggleInput` with default values.
-    override init() {
+    init() {
         self.title = nil
         self.value = nil
         self.valueOff = "false"
@@ -39,7 +39,7 @@ class ToggleInput: BaseInputElement, Codable {
     }
 
     /// Encodes a `ToggleInput` to JSON.
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(title, forKey: .title)
         try container.encodeIfPresent(value, forKey: .value)
@@ -57,11 +57,11 @@ class ToggleInput: BaseInputElement, Codable {
     /// Deserializes a `ToggleInput` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> ToggleInput {
         let toggleInput = ToggleInput()
-        toggleInput.title = try ParseUtil.getString(json, key: .title, required: true)
-        toggleInput.value = try ParseUtil.getString(json, key: .value)
-        toggleInput.wrap = try ParseUtil.getBool(json, key: .wrap, defaultValue: false)
-        toggleInput.valueOff = try ParseUtil.getString(json, key: .valueOff, defaultValue: "false")
-        toggleInput.valueOn = try ParseUtil.getString(json, key: .valueOn, defaultValue: "true")
+        toggleInput.title = try ParseUtil.getString(from: json, key: "title", isRequired: true)
+        toggleInput.value = try ParseUtil.getString(from: json, key: "value")
+        toggleInput.wrap = try ParseUtil.getBool(from: json, key: "wrap", defaultValue: false)
+        toggleInput.valueOff = try ParseUtil.getString(from: json, key: "valueOff")
+        toggleInput.valueOn = try ParseUtil.getString(from: json, key: "valueOn")
         return toggleInput
     }
 
@@ -70,7 +70,7 @@ class ToggleInput: BaseInputElement, Codable {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
         return try deserialize(from: jsonDict, context: &context)
     }

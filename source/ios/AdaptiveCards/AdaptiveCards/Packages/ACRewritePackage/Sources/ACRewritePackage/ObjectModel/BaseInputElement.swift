@@ -1,19 +1,26 @@
 import Foundation
 
-struct BaseInputElement: Codable {
+/// Convert BaseInputElement from a struct to a class.
+class BaseInputElement: Codable {
+    // New property to hold the type of element.
+    var cardElementType: CardElementType
+
     var id: String
     var label: String?
     var isRequired: Bool
     var errorMessage: String?
     var valueChangedAction: ValueChangedAction?
 
+    /// Designated initializer now requires a cardElementType.
     init(
+        cardElementType: CardElementType,
         id: String = "",
         label: String? = nil,
         isRequired: Bool = false,
         errorMessage: String? = nil,
         valueChangedAction: ValueChangedAction? = nil
     ) {
+        self.cardElementType = cardElementType
         self.id = id
         self.label = label
         self.isRequired = isRequired
@@ -22,13 +29,10 @@ struct BaseInputElement: Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id
-        case label
-        case isRequired
-        case errorMessage
-        case valueChangedAction
+        case cardElementType, id, label, isRequired, errorMessage, valueChangedAction
     }
-
+    
+    // Implement encode and decode if necessary.
     func serialize() -> String? {
         guard let jsonData = try? JSONEncoder().encode(self) else {
             return nil

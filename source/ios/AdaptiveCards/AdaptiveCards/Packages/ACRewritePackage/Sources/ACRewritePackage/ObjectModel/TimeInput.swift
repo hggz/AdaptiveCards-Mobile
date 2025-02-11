@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a time input field in an Adaptive Card.
-class TimeInput: BaseInputElement, Codable {
+class TimeInput: BaseInputElement {
     /// The maximum valid time value (e.g., `"23:59"`).
     var max: String?
 
@@ -15,7 +15,7 @@ class TimeInput: BaseInputElement, Codable {
     var value: String?
 
     /// Initializes a new `TimeInput` with default values.
-    override init() {
+    init() {
         self.max = nil
         self.min = nil
         self.placeholder = nil
@@ -34,7 +34,7 @@ class TimeInput: BaseInputElement, Codable {
     }
 
     /// Encodes a `TimeInput` to JSON.
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(max, forKey: .max)
         try container.encodeIfPresent(min, forKey: .min)
@@ -45,10 +45,10 @@ class TimeInput: BaseInputElement, Codable {
     /// Deserializes a `TimeInput` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> TimeInput {
         let timeInput = TimeInput()
-        timeInput.max = try ParseUtil.getString(json, key: .max)
-        timeInput.min = try ParseUtil.getString(json, key: .min)
-        timeInput.placeholder = try ParseUtil.getString(json, key: .placeholder)
-        timeInput.value = try ParseUtil.getString(json, key: .value)
+        timeInput.max = try ParseUtil.getString(from: json, key: "max")
+        timeInput.min = try ParseUtil.getString(from: json, key: "min")
+        timeInput.placeholder = try ParseUtil.getString(from: json, key: "placeholder")
+        timeInput.value = try ParseUtil.getString(from: json, key: "value")
         return timeInput
     }
 
@@ -57,7 +57,7 @@ class TimeInput: BaseInputElement, Codable {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
         return try deserialize(from: jsonDict, context: &context)
     }

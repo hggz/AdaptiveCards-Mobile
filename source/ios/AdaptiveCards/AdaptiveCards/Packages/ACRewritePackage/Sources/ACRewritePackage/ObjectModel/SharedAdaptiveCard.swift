@@ -126,6 +126,7 @@ class AdaptiveCard: Codable {
     }
     
     /// Deserializes an AdaptiveCard from a JSON dictionary.
+    /// Deserializes an AdaptiveCard from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> AdaptiveCard {
         let version = json[AdaptiveCardSchemaKey.version.rawValue] as? String ?? "1.0"
         let fallbackText = json[AdaptiveCardSchemaKey.fallbackText.rawValue] as? String
@@ -146,8 +147,15 @@ class AdaptiveCard: Codable {
         let body = try bodyJson.map { try BaseCardElement.deserialize(from: $0) }
         let actionsJson = json[AdaptiveCardSchemaKey.actions.rawValue] as? [[String: Any]] ?? []
         let actions = try actionsJson.map { try BaseActionElement.deserialize(from: $0) }
+        
         let layoutsJson = json[AdaptiveCardSchemaKey.layouts.rawValue] as? [[String: Any]] ?? []
-        let layouts = try layoutsJson.map { try Layout.deserialize(from: $0) }
+        let layouts = try layoutsJson.map { json in
+            guard let layout = Layout.fromJSON(json) else {
+                throw AdaptiveCardParseError.invalidJson
+            }
+            return layout
+        }
+        
         var selectAction: BaseActionElement? = nil
         if let selectActionJson = json[AdaptiveCardSchemaKey.selectAction.rawValue] as? [String: Any] {
             selectAction = try BaseActionElement.deserialize(from: selectActionJson)
@@ -174,10 +182,16 @@ class AdaptiveCard: Codable {
             fallbackType: .none
         )
     }
-    
+
     /// Deserializes an AdaptiveCard from a JSON string.
     static func deserialize(from jsonString: String) throws -> AdaptiveCard {
         let jsonDict = try ParseUtil.getJsonDictionary(from: jsonString)
         return try deserialize(from: jsonDict)
+    }
+    
+    func getResourceInformation() -> [RemoteResourceInformation] {
+        // Implement resource extraction logic if needed.
+        // For now, return an empty array.
+        return []
     }
 }

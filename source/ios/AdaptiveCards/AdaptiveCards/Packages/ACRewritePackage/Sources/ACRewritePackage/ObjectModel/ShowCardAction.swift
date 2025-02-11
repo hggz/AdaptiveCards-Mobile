@@ -1,13 +1,14 @@
 import Foundation
 
 /// Represents an action that displays a card when triggered.
-class ShowCardAction: BaseActionElement, Codable {
+class ShowCardAction: BaseActionElement {
     var card: AdaptiveCard?
 
     /// Default initializer
     init(card: AdaptiveCard? = nil) {
         self.card = card
-        super.init(actionType: .showCard)
+        // Use the correct parameter name for the base initializer.
+        super.init(type: .showCard)
     }
 
     /// Decodes a `ShowCardAction` from a JSON dictionary.
@@ -26,38 +27,37 @@ class ShowCardAction: BaseActionElement, Codable {
 
     /// Sets the language for the card if it does not already specify a language.
     func setLanguage(_ language: String) {
-        if card?.language.isEmpty ?? true {
+        // If card?.language is nil, treat it as empty.
+        if (card?.language ?? "").isEmpty {
             card?.language = language
         }
     }
 
-    /// Populates the known properties set.
-    override func populateKnownPropertiesSet() {
-        knownProperties.insert(AdaptiveCardSchemaKey.card.rawValue)
-    }
-
     /// Retrieves resource information from the card.
-    override func getResourceInformation() -> [RemoteResourceInformation] {
+    /// (This uses the extension method added to AdaptiveCard above.)
+    func getResourceInformation() -> [RemoteResourceInformation] {
         return card?.getResourceInformation() ?? []
     }
 
     /// Decodes a `ShowCardAction` from a JSON dictionary.
-    static func deserialize(from json: [String: Any]) throws -> ShowCardAction {
-        let base = try BaseActionElement.deserialize(from: json) as ShowCardAction
-        let cardJson = json[AdaptiveCardSchemaKey.card.rawValue] as? [String: Any]
-        base.card = try cardJson.map { try AdaptiveCard.deserialize(from: $0) }
-        return base
+    /// (Renamed to avoid conflict with BaseActionElement’s deserialize(from:) defined in an extension.)
+    static func deserializeShowCardAction(from json: [String: Any]) throws -> ShowCardAction {
+        let showCardAction = ShowCardAction()
+        if let cardJson = json[AdaptiveCardSchemaKey.card.rawValue] as? [String: Any] {
+            showCardAction.card = try AdaptiveCard.deserialize(from: cardJson)
+        }
+        return showCardAction
     }
 
     /// Decodes a `ShowCardAction` from a JSON string.
-    static func deserialize(from jsonString: String) throws -> ShowCardAction {
+    static func deserializeShowCardAction(from jsonString: String) throws -> ShowCardAction {
         let json = try ParseUtil.getJsonDictionary(from: jsonString)
-        return try deserialize(from: json)
+        return try deserializeShowCardAction(from: json)
     }
 
     /// Encodes `ShowCardAction` to a JSON dictionary.
     override func serializeToJsonValue() -> [String: Any] {
-        var json = super.serializeToJsonValue()
+        var json = [String: Any]()
         if let card = card {
             json[AdaptiveCardSchemaKey.card.rawValue] = card.serializeToJsonValue()
         }
@@ -65,7 +65,7 @@ class ShowCardAction: BaseActionElement, Codable {
     }
 
     /// Encodes `ShowCardAction` to a JSON string.
-    override func serialize() throws -> String {
+    func serialize() throws -> String {
         return try ParseUtil.jsonToString(serializeToJsonValue())
     }
 

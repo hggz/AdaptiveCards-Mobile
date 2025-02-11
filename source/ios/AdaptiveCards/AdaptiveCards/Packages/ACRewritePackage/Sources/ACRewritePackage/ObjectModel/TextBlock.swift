@@ -1,5 +1,19 @@
 import Foundation
 
+// MARK: - Stubbed Types and Keys
+
+/// Minimal stubs for text-related enums.
+enum TextStyle: String, Codable {
+    case defaultStyle = "Default"
+    case heading = "Heading"
+    
+    init(from rawValue: String) {
+        self = TextStyle(rawValue: rawValue) ?? .defaultStyle
+    }
+}
+
+// MARK: - TextBlock Definition
+
 /// Represents a text block element with customizable properties.
 struct TextBlock: Codable {
     var text: String
@@ -43,18 +57,18 @@ struct TextBlock: Codable {
 
     /// Decodes a `TextBlock` from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> TextBlock {
-        let text = try ParseUtil.getString(json, key: .text)
-        let textStyle = try ParseUtil.getOptionalEnumValue(json, key: .style, converter: TextStyle.init)
-        let textSize = try ParseUtil.getOptionalEnumValue(json, key: .size, converter: TextSize.init)
-        let textWeight = try ParseUtil.getOptionalEnumValue(json, key: .weight, converter: TextWeight.init)
-        let fontType = try ParseUtil.getOptionalEnumValue(json, key: .fontType, converter: FontType.init)
-        let textColor = try ParseUtil.getOptionalEnumValue(json, key: .color, converter: ForegroundColor.init)
-        let isSubtle = try ParseUtil.getOptionalBool(json, key: .isSubtle)
-        let wrap = try ParseUtil.getBool(json, key: .wrap, defaultValue: false)
-        let maxLines = try ParseUtil.getUInt(json, key: .maxLines, defaultValue: 0)
-        let horizontalAlignment = try ParseUtil.getOptionalEnumValue(json, key: .horizontalAlignment, converter: HorizontalAlignment.init)
-        let language = try ParseUtil.getOptionalString(json, key: .language)
-
+        let text = try ParseUtil.getString(from: json, key: AdaptiveCardSchemaKey.text.rawValue)
+        let textStyle = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.style.rawValue, converter: TextStyle.init)
+        let textSize = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.size.rawValue, converter: TextSize.init)
+        let textWeight = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.weight.rawValue, converter: TextWeight.init)
+        let fontType = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.fontType.rawValue, converter: FontType.init)
+        let textColor = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.color.rawValue, converter: ForegroundColor.init)
+        let isSubtle = ParseUtil.getOptionalBool(from: json, key: AdaptiveCardSchemaKey.isSubtle.rawValue)
+        let wrap = try ParseUtil.getBool(from: json, key: AdaptiveCardSchemaKey.wrap.rawValue, defaultValue: false)
+        let maxLines = try ParseUtil.getUInt(from: json, key: AdaptiveCardSchemaKey.maxLines.rawValue, defaultValue: 0)
+        let horizontalAlignment = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.horizontalAlignment.rawValue, converter: HorizontalAlignment.init)
+        let language = ParseUtil.getOptionalString(from: json, key: AdaptiveCardSchemaKey.language.rawValue)
+        
         return TextBlock(
             text: text,
             textStyle: textStyle,
@@ -83,7 +97,6 @@ struct TextBlock: Codable {
             AdaptiveCardSchemaKey.wrap.rawValue: wrap,
             AdaptiveCardSchemaKey.maxLines.rawValue: maxLines
         ]
-
         if let textStyle = textStyle { json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue }
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
@@ -92,22 +105,11 @@ struct TextBlock: Codable {
         if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
         if let horizontalAlignment = horizontalAlignment { json[AdaptiveCardSchemaKey.horizontalAlignment.rawValue] = horizontalAlignment.rawValue }
         if let language = language { json[AdaptiveCardSchemaKey.language.rawValue] = language }
-
         return json
     }
 
     /// Encodes `TextBlock` to a JSON string.
     func serialize() throws -> String {
         return try ParseUtil.jsonToString(serializeToJsonValue())
-    }
-}
-
-/// Enum representing possible text styles.
-enum TextStyle: String, Codable {
-    case defaultStyle = "Default"
-    case heading = "Heading"
-
-    init(from rawValue: String) {
-        self = TextStyle(rawValue: rawValue) ?? .defaultStyle
     }
 }

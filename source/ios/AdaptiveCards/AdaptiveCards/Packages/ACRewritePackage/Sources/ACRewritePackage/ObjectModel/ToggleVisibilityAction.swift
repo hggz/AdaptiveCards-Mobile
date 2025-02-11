@@ -6,20 +6,22 @@ class ToggleVisibilityAction: BaseActionElement {
     var targetElements: [ToggleVisibilityTarget]
 
     /// Initializes a `ToggleVisibilityAction` with default values.
-    override init() {
+    init() {
         self.targetElements = []
-        super.init(actionType: .toggleVisibility)
+        // Assuming that ActionType has a case named `toggleVisibility`
+        super.init(type: .toggleVisibility)
     }
 
     /// Decodes a `ToggleVisibilityAction` from JSON.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.targetElements = try container.decodeIfPresent([ToggleVisibilityTarget].self, forKey: .targetElements) ?? []
-        super.init(actionType: .toggleVisibility)
+        try super.init(from: decoder)
     }
 
     /// Encodes a `ToggleVisibilityAction` to JSON.
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
         if !targetElements.isEmpty {
             try container.encode(targetElements, forKey: .targetElements)
@@ -29,12 +31,14 @@ class ToggleVisibilityAction: BaseActionElement {
     /// Deserializes a `ToggleVisibilityAction` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> ToggleVisibilityAction {
         let toggleVisibilityAction = ToggleVisibilityAction()
-        toggleVisibilityAction.targetElements = try ParseUtil.getElementCollection(
-            from: json,
-            key: .targetElements,
-            context: &context,
-            elementType: ToggleVisibilityTarget.self
-        )
+        if let targetsArray = json["targetElements"] as? [[String: Any]] {
+            toggleVisibilityAction.targetElements = try targetsArray.map {
+                // Removed the extra context parameter here.
+                try ToggleVisibilityTarget.deserialize(from: $0)
+            }
+        } else {
+            toggleVisibilityAction.targetElements = []
+        }
         return toggleVisibilityAction
     }
 
@@ -43,7 +47,7 @@ class ToggleVisibilityAction: BaseActionElement {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseError.invalidJson
         }
         return try deserialize(from: jsonDict, context: &context)
     }
@@ -55,13 +59,11 @@ class ToggleVisibilityAction: BaseActionElement {
 
 /// Parses a `ToggleVisibilityAction` from JSON.
 class ToggleVisibilityActionParser: ActionElementParser {
-    /// Parses a `ToggleVisibilityAction` from JSON.
-    static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> BaseActionElement {
+    func deserialize(context: inout ParseContext, from json: [String : Any]) throws -> BaseActionElement {
         return try ToggleVisibilityAction.deserialize(from: json, context: &context)
     }
-
-    /// Parses a `ToggleVisibilityAction` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+    
+    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
         return try ToggleVisibilityAction.deserialize(from: jsonString, context: &context)
     }
 }

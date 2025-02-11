@@ -1,6 +1,6 @@
 import Foundation
 
-final class ExecuteAction: BaseActionElement, Codable {
+final class ExecuteAction: BaseActionElement {
     var dataJson: [String: Any]?
     var verb: String
     var associatedInputs: AssociatedInputs

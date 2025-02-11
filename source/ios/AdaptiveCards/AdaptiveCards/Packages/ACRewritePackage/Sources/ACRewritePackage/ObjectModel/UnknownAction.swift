@@ -14,7 +14,7 @@ final class UnknownAction: BaseActionElement {
     
     /// Serializes the unknown action into a JSON dictionary.
     /// Returns additionalProperties if set, or an empty dictionary.
-    func serializeToJsonValue() -> [String: Any] {
+    override func serializeToJsonValue() -> [String: Any] {
         return additionalProperties ?? [:]
     }
 }

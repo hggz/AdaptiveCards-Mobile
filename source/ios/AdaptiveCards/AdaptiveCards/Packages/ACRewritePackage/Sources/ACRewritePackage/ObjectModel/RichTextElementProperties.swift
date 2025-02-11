@@ -69,7 +69,7 @@ struct RichTextElementProperties: Codable {
     /// Parses a `RichTextElementProperties` from a JSON dictionary.
     static func fromJSON(_ json: [String: Any]) throws -> RichTextElementProperties {
         guard let text = json["text"] as? String else {
-            throw ParsingError.missingRequiredField("text")
+            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "text")
         }
 
         let textSize = (json["size"] as? String).flatMap(TextSize.init)
