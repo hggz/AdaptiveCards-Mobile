@@ -62,4 +62,9 @@ struct FlowLayout: Codable {
         case columnSpacing = "columnSpacing"
         case horizontalAlignment = "horizontalItemsAlignment"
     }
+    
+    static func deserialize(from json: [String: Any]) throws -> FlowLayout {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(FlowLayout.self, from: data)
+    }
 }

@@ -53,6 +53,10 @@ enum HorizontalAlignment: String, Codable {
     init(from rawValue: String) {
         self = HorizontalAlignment(rawValue: rawValue) ?? .left
     }
+    
+    static func fromString(_ value: String) -> HorizontalAlignment? {
+        return HorizontalAlignment(rawValue: value)
+    }
 }
 
 enum VerticalAlignment: String, Codable {
@@ -94,6 +98,9 @@ enum ActionsOrientation: String, Codable {
 
 enum ContainerStyle: String, Codable {
     case none, `default`, emphasis, good, attention, warning, accent
+    static func fromString(_ value: String) -> ContainerStyle? {
+        return ContainerStyle(rawValue: value)
+    }
 }
 
 enum Mode: String, Codable {

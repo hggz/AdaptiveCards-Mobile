@@ -2,6 +2,9 @@ import Foundation
 
 enum VerticalContentAlignment: String, Codable {
     case top, center, bottom
+    static func fromString(_ value: String) -> VerticalContentAlignment? {
+        return VerticalContentAlignment(rawValue: value)
+    }
 }
 
 enum ContainerBleedDirection: String, Codable {

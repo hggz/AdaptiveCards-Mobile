@@ -1,73 +1,52 @@
 import Foundation
 
-// MARK: - Container Model
-
-struct Container: Codable {
+/// Assume BaseCardElement is defined elsewhere.
+class Container: BaseCardElement {
     var items: [BaseCardElement]
     var layouts: [Layout]
     var rtl: Bool?
 
-    init(
-        items: [BaseCardElement] = [],
-        layouts: [Layout] = [],
-        rtl: Bool? = nil
-    ) {
+    /// Designated initializer accepting a card element type.
+    init(items: [BaseCardElement] = [],
+         layouts: [Layout] = [],
+         rtl: Bool? = nil,
+         cardElementType: CardElementType = .container) {
         self.items = items
         self.layouts = layouts
         self.rtl = rtl
+        // Call BaseCardElement initializer (adjust parameters as needed).
+        super.init(type: cardElementType)
     }
 
-    // Serialization to JSON
-    func toJSON() -> [String: Any] {
-        var json: [String: Any] = [:]
-
-        // Use the inherited toJSON() from BaseElement for each item.
-        json["items"] = items.map { $0.toJSON() }
-        json["layouts"] = layouts.map { $0.toJSON() }
-
-        if let rtl = rtl {
-            json["rtl"] = rtl
-        }
-
-        return json
+    /// Required initializer for Codable conformance.
+    required init(from decoder: Decoder) throws {
+        // Decode Container’s own properties.
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.items = try container.decode([BaseCardElement].self, forKey: .items)
+        self.layouts = try container.decode([Layout].self, forKey: .layouts)
+        self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
+        // Then decode properties of BaseCardElement.
+        try super.init(from: decoder)
     }
 
-    func toJSONString() -> String {
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: toJSON(), options: .prettyPrinted)
-            return String(data: jsonData, encoding: .utf8) ?? "{}"
-        } catch {
-            return "{}"
-        }
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(items, forKey: .items)
+        try container.encode(layouts, forKey: .layouts)
+        try container.encodeIfPresent(rtl, forKey: .rtl)
+        try super.encode(to: encoder)
     }
 
-    // Deserialization from a dictionary.
-    static func fromJSON(_ json: [String: Any]) -> Container? {
-        guard !json.isEmpty else { return nil }
-
-        return Container(
-            items: (json["items"] as? [[String: Any]])?.compactMap { BaseCardElement.fromJSON($0) } ?? [],
-            layouts: (json["layouts"] as? [[String: Any]])?.compactMap { Layout.fromJSON($0) } ?? [],
-            rtl: json["rtl"] as? Bool
-        )
+    private enum CodingKeys: String, CodingKey {
+        case items, layouts, rtl
     }
 
-    static func fromJSONString(_ jsonString: String) -> Container? {
-        guard let data = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            return nil
-        }
-        return fromJSON(jsonDict)
-    }
-}
-
-class ContainerParser {
-    static func deserialize(from json: [String: Any]) -> Container? {
-        return Container.fromJSON(json)
+    // Helper methods for TableCell to use.
+    func setRtl(_ rtl: Bool) {
+        self.rtl = rtl
     }
 
-    static func deserialize(from jsonString: String) -> Container? {
-        return Container.fromJSONString(jsonString)
+    func setLayouts(_ layouts: [Layout]) {
+        self.layouts = layouts
     }
 }

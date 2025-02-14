@@ -1,40 +1,51 @@
 import Foundation
 
 /// Represents a Table in an Adaptive Card.
-class Table: CollectionCoreElement {
+class Table: BaseCardElement, CollectionCoreElement {
     /// Column definitions for the table.
     var columnDefinitions: [TableColumnDefinition]
-
+    
     /// Rows in the table.
     var rows: [TableRow]
-
+    
     /// Whether grid lines should be shown.
     var showGridLines: Bool
-
+    
     /// Whether the first row should be used as headers.
     var firstRowAsHeaders: Bool
-
+    
     /// Whether the table should have rounded corners.
     var roundedCorners: Bool
-
+    
     /// The horizontal alignment of cell content.
     var horizontalCellContentAlignment: HorizontalAlignment?
-
+    
     /// The vertical alignment of cell content.
     var verticalCellContentAlignment: VerticalContentAlignment?
-
+    
     /// The grid style of the table.
     var gridStyle: ContainerStyle
 
+    private enum CodingKeys: String, CodingKey {
+        case columns
+        case rows
+        case showGridLines
+        case firstRowAsHeaders
+        case roundedCorners
+        case horizontalCellContentAlignment
+        case verticalCellContentAlignment
+        case gridStyle
+    }
+
     /// Initializes a new `Table` with default values.
-    override init() {
+    init() {
         self.columnDefinitions = []
         self.rows = []
         self.showGridLines = true
         self.firstRowAsHeaders = true
         self.roundedCorners = false
         self.gridStyle = .none
-        super.init(cardElementType: .table)
+        super.init(type: .table)
     }
 
     /// Decodes a `Table` from JSON.
@@ -48,20 +59,21 @@ class Table: CollectionCoreElement {
         self.horizontalCellContentAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
         self.verticalCellContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
         self.gridStyle = try container.decodeIfPresent(ContainerStyle.self, forKey: .gridStyle) ?? .none
-        super.init(cardElementType: .table)
+        try super.init(from: decoder)
     }
 
     /// Encodes a `Table` to JSON.
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(columnDefinitions, forKey: .columns)
-        try container.encodeIfPresent(rows, forKey: .rows)
-        try container.encodeIfPresent(showGridLines, forKey: .showGridLines)
-        try container.encodeIfPresent(firstRowAsHeaders, forKey: .firstRowAsHeaders)
-        try container.encodeIfPresent(roundedCorners, forKey: .roundedCorners)
+        try container.encode(columnDefinitions, forKey: .columns)
+        try container.encode(rows, forKey: .rows)
+        try container.encode(showGridLines, forKey: .showGridLines)
+        try container.encode(firstRowAsHeaders, forKey: .firstRowAsHeaders)
+        try container.encode(roundedCorners, forKey: .roundedCorners)
         try container.encodeIfPresent(horizontalCellContentAlignment, forKey: .horizontalCellContentAlignment)
         try container.encodeIfPresent(verticalCellContentAlignment, forKey: .verticalCellContentAlignment)
-        try container.encodeIfPresent(gridStyle, forKey: .gridStyle)
+        try container.encode(gridStyle, forKey: .gridStyle)
     }
 
     /// Sets the collection of columns.
@@ -79,19 +91,54 @@ class Table: CollectionCoreElement {
         let table = Table()
         
         table.columnDefinitions = try ParseUtil.getElementCollectionOfSingleType(
-            json, key: .columns, context: &context, deserializer: TableColumnDefinition.deserialize
-        )
-        table.rows = try ParseUtil.getElementCollectionOfSingleType(
-            json, key: .rows, context: &context, deserializer: TableRow.deserialize
+            from: json,
+            key: CodingKeys.columns.rawValue,
+            context: &context,
+            defaultValue: [],
+            converter: TableColumnDefinition.deserialize
         )
         
-        table.showGridLines = try ParseUtil.getBool(json, key: .showGridLines, defaultValue: true)
-        table.firstRowAsHeaders = try ParseUtil.getBool(json, key: .firstRowAsHeaders, defaultValue: true)
-        table.roundedCorners = try ParseUtil.getBool(json, key: .roundedCorners, defaultValue: false)
-        table.horizontalCellContentAlignment = try ParseUtil.getOptionalEnumValue(json, key: .horizontalCellContentAlignment, parser: HorizontalAlignment.fromString)
-        table.verticalCellContentAlignment = try ParseUtil.getOptionalEnumValue(json, key: .verticalCellContentAlignment, parser: VerticalContentAlignment.fromString)
-        table.gridStyle = try ParseUtil.getEnumValue(json, key: .gridStyle, defaultValue: .none, parser: ContainerStyle.fromString)
-
+        table.rows = try ParseUtil.getElementCollectionOfSingleType(
+            from: json,
+            key: CodingKeys.rows.rawValue,
+            context: &context,
+            defaultValue: [TableRow](),
+            converter: { (context: inout ParseContext, json: [String: Any]) throws -> TableRow in
+                return try TableRow.deserialize(from: json, context: &context)
+            }
+        )
+        table.showGridLines = try ParseUtil.getBool(
+            from: json,
+            key: CodingKeys.showGridLines.rawValue,
+            defaultValue: true
+        )
+        table.firstRowAsHeaders = try ParseUtil.getBool(
+            from: json,
+            key: CodingKeys.firstRowAsHeaders.rawValue,
+            defaultValue: true
+        )
+        table.roundedCorners = try ParseUtil.getBool(
+            from: json,
+            key: CodingKeys.roundedCorners.rawValue,
+            defaultValue: false
+        )
+        table.horizontalCellContentAlignment = try ParseUtil.getOptionalEnumValue(
+            from: json,
+            key: CodingKeys.horizontalCellContentAlignment.rawValue,
+            converter: { HorizontalAlignment(rawValue: $0) }
+        )
+        table.verticalCellContentAlignment = try ParseUtil.getOptionalEnumValue(
+            from: json,
+            key: CodingKeys.verticalCellContentAlignment.rawValue,
+            converter: { VerticalContentAlignment(rawValue: $0) }
+        )
+        table.gridStyle = try ParseUtil.getEnumValue(
+            from: json,
+            key: CodingKeys.gridStyle.rawValue,
+            defaultValue: .none,
+            converter: { ContainerStyle(rawValue: $0) }
+        )
+        
         return table
     }
 
@@ -100,19 +147,12 @@ class Table: CollectionCoreElement {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardError.invalidJson
+            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON")
         }
         return try deserialize(from: jsonDict, context: &context)
     }
-
-    private enum CodingKeys: String, CodingKey {
-        case columns
-        case rows
-        case showGridLines
-        case firstRowAsHeaders
-        case roundedCorners
-        case horizontalCellContentAlignment
-        case verticalCellContentAlignment
-        case gridStyle
+    
+    func deserializeChildren(from json: [String: Any]) throws {
+        // Table handles child deserialization within its custom `deserialize` method.
     }
 }

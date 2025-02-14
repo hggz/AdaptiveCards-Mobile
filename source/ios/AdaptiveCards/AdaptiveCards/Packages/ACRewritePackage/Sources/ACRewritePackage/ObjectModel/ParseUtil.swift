@@ -142,4 +142,24 @@ struct ParseUtil {
 //        return try BaseActionElement.deserialize(from: actionJson, context: &context) // TODO
         return try BaseActionElement.deserialize(from: actionJson)
     }
+    
+    /// Returns an array of elements of a single type from the JSON dictionary,
+    /// using the provided converter to deserialize each element.
+    static func getElementCollectionOfSingleType<T>(
+        from json: [String: Any],
+        key: String,
+        context: inout ParseContext,
+        defaultValue: [T] = [],
+        converter: (inout ParseContext, [String: Any]) throws -> T
+    ) throws -> [T] {
+        guard let array = json[key] as? [[String: Any]] else {
+            return defaultValue
+        }
+        var results: [T] = []
+        for item in array {
+            let parsedItem = try converter(&context, item)
+            results.append(parsedItem)
+        }
+        return results
+    }
 }

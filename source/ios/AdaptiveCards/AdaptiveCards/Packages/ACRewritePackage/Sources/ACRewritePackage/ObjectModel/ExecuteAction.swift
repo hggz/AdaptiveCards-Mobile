@@ -1,7 +1,8 @@
 import Foundation
 
+/// Represents the execute action element.
 final class ExecuteAction: BaseActionElement {
-    var dataJson: [String: Any]?
+    var dataJson: [String: AnyCodable]?
     var verb: String
     var associatedInputs: AssociatedInputs
     var conditionallyEnabled: Bool
@@ -18,31 +19,46 @@ final class ExecuteAction: BaseActionElement {
         self.verb = ""
         self.associatedInputs = .auto
         self.conditionallyEnabled = false
-        super.init(actionType: .execute)
+        // Use the correct parameter name "type" when calling the superclass initializer.
+        super.init(type: .execute)
     }
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.dataJson = try container.decodeIfPresent([String: Any].self, forKey: .dataJson)
+        self.dataJson = try container.decodeIfPresent([String: AnyCodable].self, forKey: .dataJson)
         self.verb = try container.decodeIfPresent(String.self, forKey: .verb) ?? ""
         self.associatedInputs = try container.decodeIfPresent(AssociatedInputs.self, forKey: .associatedInputs) ?? .auto
         self.conditionallyEnabled = try container.decodeIfPresent(Bool.self, forKey: .conditionallyEnabled) ?? false
-        super.init(actionType: .execute)
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(dataJson, forKey: .dataJson)
+        try container.encode(verb, forKey: .verb)
+        try container.encode(associatedInputs, forKey: .associatedInputs)
+        try container.encode(conditionallyEnabled, forKey: .conditionallyEnabled)
     }
 
+    /// Sets the `dataJson` property from a JSON string.
     func setDataJson(from jsonString: String) {
         guard let jsonData = jsonString.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
             return
         }
-        self.dataJson = json
+        // Convert [String: Any] into [String: AnyCodable]
+        self.dataJson = jsonDict.mapValues { AnyCodable($0) }
     }
 
+    /// Serializes the action into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
-        var json = super.serializeToJson()
+        var json = super.serializeToJsonValue()
 
         if let dataJson = dataJson {
-            json["data"] = dataJson
+            // Convert [String: AnyCodable] to [String: Any] by extracting underlying values.
+            json["data"] = dataJson.mapValues { $0.value }
         }
         if !verb.isEmpty {
             json["verb"] = verb
@@ -56,13 +72,20 @@ final class ExecuteAction: BaseActionElement {
     }
 }
 
+/// Parses JSON dictionaries into ExecuteAction elements.
 final class ExecuteActionParser: ActionElementParser {
     func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
         let executeAction = ExecuteAction()
         
-        executeAction.dataJson = json["data"] as? [String: Any]
+        if let data = json["data"] as? [String: Any] {
+            executeAction.dataJson = data.mapValues { AnyCodable($0) }
+        }
         executeAction.verb = json["verb"] as? String ?? ""
-        executeAction.associatedInputs = AssociatedInputs(rawValue: json["associatedInputs"] as? String ?? "auto") ?? .auto
+        if let associatedInputsStr = json["associatedInputs"] as? String {
+            executeAction.associatedInputs = AssociatedInputs(rawValue: associatedInputsStr) ?? .auto
+        } else {
+            executeAction.associatedInputs = .auto
+        }
         executeAction.conditionallyEnabled = json["conditionallyEnabled"] as? Bool ?? false
 
         return executeAction

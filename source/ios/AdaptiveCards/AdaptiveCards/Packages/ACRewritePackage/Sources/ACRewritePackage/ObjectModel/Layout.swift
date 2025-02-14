@@ -1,7 +1,7 @@
 import Foundation
 
 enum LayoutContainerType: String, Codable {
-    case none, stack
+    case none, stack, flow, areaGrid
 }
 
 struct Layout: Codable {
@@ -86,5 +86,20 @@ struct Layout: Codable {
     
     func toJSON() -> [String: Any] {
         return self.serializeToJsonValue()
+    }
+    
+    init() {}
+    
+    init(fromFlowLayout flow: FlowLayout) {
+        self.init()
+        self.layoutContainerType = .flow
+        // Copy additional properties from flow if needed.
+    }
+    
+    /// Conversion initializer to create a generic Layout from an AreaGridLayout.
+    init(fromAreaGridLayout areaGrid: AreaGridLayout) {
+        self.init()
+        self.layoutContainerType = .areaGrid
+        // Copy additional properties from areaGrid if needed.
     }
 }
