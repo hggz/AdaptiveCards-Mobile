@@ -10,6 +10,9 @@ class BaseElement: Codable {
     var fallbackType: FallbackType?
     var fallbackContent: BaseElement?
     var canFallbackToAncestor: Bool?
+    
+    // Add knownProperties for use in subclasses.
+    var knownProperties: Set<String> = []
 
     init(
         typeString: String,

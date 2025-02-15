@@ -105,7 +105,7 @@ class TextBlock: BaseCardElement {
     }
     
     /// Converts this TextBlock into a JSON dictionary.
-    func serializeToJsonValue() -> [String: Any] {
+    func serializeToJsonVal() -> [String: Any] {
         var json: [String: Any] = [
             AdaptiveCardSchemaKey.text.rawValue: text,
             AdaptiveCardSchemaKey.wrap.rawValue: wrap,
@@ -124,7 +124,7 @@ class TextBlock: BaseCardElement {
     
     /// Converts this TextBlock into a JSON string.
     func serialize() throws -> String {
-        return try ParseUtil.jsonToString(serializeToJsonValue())
+        return try ParseUtil.jsonToString(serializeToJsonVal())
     }
 }
 

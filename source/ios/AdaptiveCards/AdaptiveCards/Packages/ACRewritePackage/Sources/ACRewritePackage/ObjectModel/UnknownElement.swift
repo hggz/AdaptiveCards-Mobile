@@ -1,14 +1,13 @@
 import Foundation
 
 /// Represents an unknown element in Adaptive Cards.
-struct UnknownElement: Codable {
+class UnknownElement: BaseCardElement {
+    /// The raw type string of the unknown element.
     var elementType: String
-    var additionalProperties: [String: AnyCodable]
 
-    init(elementType: String, additionalProperties: [String: AnyCodable] = [:]) {
-        self.elementType = elementType
-        self.additionalProperties = additionalProperties
-    }
+    // Note: Do not redeclare additionalProperties.
+    // They are inherited from BaseElement as:
+    // var additionalProperties: [String: AnyCodable]?
     
     // MARK: - Dynamic CodingKey Implementation
     struct DynamicCodingKey: CodingKey {
@@ -19,43 +18,86 @@ struct UnknownElement: Codable {
         init?(intValue: Int) { return nil }
     }
     
+    // MARK: - Designated Initializer
+    init(id: String? = nil,
+         elementType: String,
+         additionalProperties: [String: AnyCodable] = [:],
+         spacing: Spacing? = nil,
+         height: HeightType? = nil,
+         targetWidth: TargetWidthType? = nil,
+         separator: Bool? = nil,
+         isVisible: Bool = true,
+         areaGridName: String? = nil) {
+        
+        self.elementType = elementType
+        // Call the BaseCardElement initializer (which does not accept additionalProperties).
+        super.init(
+            type: .unknown,
+            spacing: spacing,
+            height: height,
+            targetWidth: targetWidth,
+            separator: separator,
+            isVisible: isVisible,
+            areaGridName: areaGridName,
+            id: id
+        )
+        // Then set the additionalProperties on the inherited property.
+        self.additionalProperties = additionalProperties
+    }
+
     // MARK: - Codable Conformance
-    init(from decoder: Decoder) throws {
+    
+    required init(from decoder: Decoder) throws {
+        // Set default values for our own properties.
+        self.elementType = ""
+        // Do not reinitialize additionalProperties; it will be set later.
+        
+        // First, decode BaseCardElement properties.
+        try super.init(from: decoder)
+        
+        // Now use a dynamic container to capture all keys.
         let container = try decoder.container(keyedBy: DynamicCodingKey.self)
-        // Decode the known property "type"
+        // Decode the known "type" key.
         let typeKey = DynamicCodingKey(stringValue: "type")!
         self.elementType = try container.decode(String.self, forKey: typeKey)
         
-        // Capture any additional keys
+        // Capture any additional keys (skip "type").
         var additional = [String: AnyCodable]()
         for key in container.allKeys {
             if key.stringValue == "type" { continue }
             let value = try container.decode(AnyCodable.self, forKey: key)
             additional[key.stringValue] = value
         }
+        // Assign to the inherited additionalProperties (which is optional).
         self.additionalProperties = additional
     }
     
-    func encode(to encoder: Encoder) throws {
+    override func encode(to encoder: Encoder) throws {
+        // First, let BaseCardElement encode its properties.
+        try super.encode(to: encoder)
+        // Then encode our additional properties using a dynamic container.
         var container = encoder.container(keyedBy: DynamicCodingKey.self)
         let typeKey = DynamicCodingKey(stringValue: "type")!
         try container.encode(elementType, forKey: typeKey)
-        for (key, value) in additionalProperties {
+        // Use additionalProperties from the base (or an empty dictionary if nil)
+        let additional = self.additionalProperties ?? [:]
+        for (key, value) in additional {
             let dynamicKey = DynamicCodingKey(stringValue: key)!
             try container.encode(value, forKey: dynamicKey)
         }
     }
     
-    // MARK: - Helper Methods
+    // MARK: - JSON Serialization Helpers
     
     /// Serializes the UnknownElement into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
-        var json = additionalProperties.mapValues { $0.value }
+        // Use additionalProperties from the base (or an empty dictionary if nil)
+        var json = (self.additionalProperties ?? [:]).mapValues { $0.value }
         json["type"] = elementType
         return json
     }
     
-    /// Converts the UnknownElement to a JSON string.
+    /// Converts the UnknownElement to a pretty-printed JSON string.
     func serialize() -> String? {
         guard let data = try? JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted) else {
             return nil
@@ -63,35 +105,28 @@ struct UnknownElement: Codable {
         return String(data: data, encoding: .utf8)
     }
     
-    /// Deserializes an UnknownElement from a JSON dictionary.
-    static func deserialize(from json: [String: Any]) -> UnknownElement? {
-        guard let elementType = json["type"] as? String else {
-            return nil
-        }
-        var additional = json
-        additional.removeValue(forKey: "type")
-        let wrapped = additional.mapValues { AnyCodable($0) }
-        return UnknownElement(elementType: elementType, additionalProperties: wrapped)
+    /// Creates an UnknownElement object from a JSON dictionary.
+    static func createFromJSON(_ json: [String: Any]) throws -> UnknownElement {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(UnknownElement.self, from: data)
     }
     
-    /// Deserializes an UnknownElement from a JSON string.
-    static func deserialize(from jsonString: String) -> UnknownElement? {
-        guard let data = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            return nil
+    /// Creates an UnknownElement object from a JSON string.
+    static func createFromJSONString(_ jsonString: String) throws -> UnknownElement {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
         }
-        return deserialize(from: jsonDict)
+        return try JSONDecoder().decode(UnknownElement.self, from: data)
     }
 }
 
-/// A simple parser wrapper that exposes static methods for UnknownElement.
-struct UnknownElementParser {
-    static func deserialize(from json: [String: Any]) -> UnknownElement? {
-        return UnknownElement.deserialize(from: json)
+/// Parses UnknownElement elements in an Adaptive Card.
+class UnknownElementParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        return try UnknownElement.createFromJSON(value)
     }
     
-    static func deserialize(from jsonString: String) -> UnknownElement? {
-        return UnknownElement.deserialize(from: jsonString)
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        return try UnknownElement.createFromJSONString(value)
     }
 }

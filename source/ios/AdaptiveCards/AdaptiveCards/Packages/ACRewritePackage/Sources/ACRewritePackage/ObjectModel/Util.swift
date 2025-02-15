@@ -19,8 +19,8 @@ func validateColor(_ backgroundColor: String, warnings: inout [AdaptiveCardParse
     return backgroundColorLength == 7 ? "#FF\(backgroundColor.dropFirst())" : backgroundColor
 }
 
-/// Parses a string representing a size in pixels and returns an optional integer.
-func parseSizeForPixelSize(_ sizeString: String, warnings: inout [AdaptiveCardParseWarning]?) -> Int? {
+
+func parseSizeForPixelSize(_ sizeString: String, warnings: inout [AdaptiveCardParseWarning]) -> Int? {
     guard shouldParseForExplicitDimension(sizeString) else { return nil }
     return validateUserInputForDimensionWithUnit("px", sizeString, warnings: &warnings)
 }
@@ -44,18 +44,24 @@ func handleUnknownProperties(from json: [String: Any], knownProperties: Set<Stri
 }
 
 /// Validates user input for a dimension with a specified unit.
-private func validateUserInputForDimensionWithUnit(_ unit: String, _ requestedDimension: String, warnings: inout [AdaptiveCardParseWarning]?) -> Int? {
+private func validateUserInputForDimensionWithUnit(_ unit: String, _ requestedDimension: String, warnings: inout [AdaptiveCardParseWarning]) -> Int? {
     let regexPattern = #"^([1-9]\d*)(\.\d+)?(\#(unit))$"#
     let warningMessage = "Expected input argument to be specified as \\d+(\\.\\d+)?px with no spaces, but received \(requestedDimension)"
     
     guard let match = requestedDimension.range(of: regexPattern, options: .regularExpression) else {
-        warnings?.append(AdaptiveCardParseWarning(statusCode: .invalidDimensionSpecified, message: warningMessage))
+        warnings.append(AdaptiveCardParseWarning(
+            statusCode: .invalidDimensionSpecified,
+            message: "Invalid dimension format: \(requestedDimension)"
+        ))
         return nil
     }
     
     let numberString = String(requestedDimension[match])
     return Int(numberString) ?? {
-        warnings?.append(AdaptiveCardParseWarning(statusCode: .invalidDimensionSpecified, message: "Invalid number format: \(requestedDimension)"))
+        warnings.append(AdaptiveCardParseWarning(
+            statusCode: .invalidDimensionSpecified,
+            message: "Invalid number format: \(requestedDimension)"
+        ))
         return nil
     }()
 }

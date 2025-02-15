@@ -1,69 +1,130 @@
 import Foundation
 
-/// Represents a rating input element in an adaptive card.
-struct RatingInput: Codable {
+/// Represents a rating input element in an Adaptive Card.
+class RatingInput: BaseCardElement {
     var value: Double
     var max: Double
     var horizontalAlignment: HorizontalAlignment?
     var size: RatingSize
     var color: RatingColor
 
-    init(value: Double = 0, max: Double = 5, horizontalAlignment: HorizontalAlignment? = nil, size: RatingSize = .medium, color: RatingColor = .neutral) {
+    /// Designated initializer.
+    init(id: String? = nil,
+         value: Double = 0,
+         max: Double = 5,
+         horizontalAlignment: HorizontalAlignment? = nil,
+         size: RatingSize = .medium,
+         color: RatingColor = .neutral,
+         spacing: Spacing? = nil,
+         height: HeightType? = nil,
+         targetWidth: TargetWidthType? = nil,
+         separator: Bool? = nil,
+         isVisible: Bool = true,
+         areaGridName: String? = nil) {
+        
         self.value = value
         self.max = max
         self.horizontalAlignment = horizontalAlignment
         self.size = size
         self.color = color
+        
+        // Ensure CardElementType has a case for ratingInput.
+        super.init(
+            type: .ratingInput,
+            spacing: spacing,
+            height: height,
+            targetWidth: targetWidth,
+            separator: separator,
+            isVisible: isVisible,
+            areaGridName: areaGridName,
+            id: id
+        )
     }
-
-    /// Serializes `RatingInput` to a JSON dictionary.
+    
+    // MARK: - Codable
+    
+    private enum CodingKeys: String, CodingKey {
+        case value, max, horizontalAlignment, size, color
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.value = try container.decode(Double.self, forKey: .value)
+        self.max = try container.decode(Double.self, forKey: .max)
+        self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
+        self.size = try container.decode(RatingSize.self, forKey: .size)
+        self.color = try container.decode(RatingColor.self, forKey: .color)
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(value, forKey: .value)
+        try container.encode(max, forKey: .max)
+        try container.encodeIfPresent(horizontalAlignment, forKey: .horizontalAlignment)
+        try container.encode(size, forKey: .size)
+        try container.encode(color, forKey: .color)
+        try super.encode(to: encoder)
+    }
+    
+    // MARK: - JSON Serialization
+    
+    /// Converts the RatingInput object into a JSON dictionary.
+    /// This builds upon the BaseCardElement JSON by adding RatingInput–specific keys.
     func serializeToJson() -> [String: Any] {
-        var json: [String: Any] = [
-            "value": value,
-            "max": max
-        ]
-
+        var json = [String: Any]()
+        if let baseJson = try? self.serializeToJsonValue() {
+            json = baseJson
+        }
+        json["value"] = value
+        json["max"] = max
         if let alignment = horizontalAlignment {
             json["horizontalAlignment"] = alignment.rawValue
         }
-        
+        // Only include non-default values
         if size != .medium {
             json["size"] = size.rawValue
         }
-        
         if color != .neutral {
             json["color"] = color.rawValue
         }
-
         return json
     }
-
-    /// Deserializes a `RatingInput` from JSON.
-    static func deserialize(from json: [String: Any]) throws -> RatingInput {
-        let value = json["value"] as? Double ?? 0
-        let max = json["max"] as? Double ?? 5
-        let alignment = (json["horizontalAlignment"] as? String).flatMap { HorizontalAlignment(rawValue: $0) }
-        let size = (json["size"] as? String).flatMap { RatingSize(rawValue: $0) } ?? .medium
-        let color = (json["color"] as? String).flatMap { RatingColor(rawValue: $0) } ?? .neutral
-
-        return RatingInput(value: value, max: max, horizontalAlignment: alignment, size: size, color: color)
+    
+    /// Returns a JSON string representation.
+    func toJSONString() -> String {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted)
+            return String(data: data, encoding: .utf8) ?? "{}"
+        } catch {
+            return "{}"
+        }
+    }
+    
+    // MARK: - Utility Deserialization
+    
+    /// Creates a RatingInput object from a JSON dictionary.
+    static func createFromJSON(_ json: [String: Any]) throws -> RatingInput {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(RatingInput.self, from: data)
+    }
+    
+    /// Creates a RatingInput object from a JSON string.
+    static func createFromJSONString(_ jsonString: String) throws -> RatingInput {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
+        }
+        return try JSONDecoder().decode(RatingInput.self, from: data)
     }
 }
 
-/// Parses `RatingInput` elements from JSON.
-struct RatingInputParser {
-    /// Parses a `RatingInput` object from JSON data.
-    static func deserialize(from json: [String: Any]) throws -> RatingInput {
-        return try RatingInput.deserialize(from: json)
+/// Parses RatingInput elements in an Adaptive Card.
+class RatingInputParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        return try RatingInput.createFromJSON(value)
     }
-
-    /// Parses a `RatingInput` object from a JSON string.
-    static func deserialize(from jsonString: String) throws -> RatingInput {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try deserialize(from: jsonDict)
+    
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        return try RatingInput.createFromJSONString(value)
     }
 }

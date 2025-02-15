@@ -65,7 +65,20 @@ enum VerticalAlignment: String, Codable {
 
 enum ImageSize: String, Codable {
     case none, auto, stretch, small, medium, large
+    
+    static func fromString(_ value: String) -> ImageSize? {
+        return ImageSize(rawValue: value)
+    }
 }
+
+enum ImageStyle: String, Codable {
+    case defaultImageStyle, person, roundedCorners
+    
+    static func fromString(_ value: String) -> ImageStyle? {
+        return ImageStyle(rawValue: value)
+    }
+}
+
 
 enum TextInputStyle: String, Codable {
     case text, tel, url, email, password
@@ -108,7 +121,7 @@ enum Mode: String, Codable {
 }
 
 enum ErrorStatusCode: String, Codable {
-    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError
+    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType
 }
 
 enum WarningStatusCode: String, Codable {

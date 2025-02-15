@@ -1,23 +1,61 @@
 import Foundation
 
 /// Represents a media element containing sources and optional poster/alt text.
-struct Media: Codable {
+class Media: BaseCardElement {
     var poster: String?
     var altText: String?
     var sources: [MediaSource]
     var captionSources: [CaptionSource]
-
-    init(poster: String? = nil, altText: String? = nil, sources: [MediaSource] = [], captionSources: [CaptionSource] = []) {
+    
+    /// Designated initializer.
+    init(id: String? = nil,
+         poster: String? = nil,
+         altText: String? = nil,
+         sources: [MediaSource] = [],
+         captionSources: [CaptionSource] = []) {
         self.poster = poster
         self.altText = altText
         self.sources = sources
         self.captionSources = captionSources
+        super.init(
+            type: .media,
+            spacing: nil,
+            height: nil,
+            targetWidth: nil,
+            separator: nil,
+            isVisible: true,
+            areaGridName: nil,
+            id: id
+        )
     }
-
-    /// Serialize `Media` to a JSON dictionary.
+    
+    // MARK: - Codable
+    private enum CodingKeys: String, CodingKey {
+        case poster, altText, sources, captionSources
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.poster = try container.decodeIfPresent(String.self, forKey: .poster)
+        self.altText = try container.decodeIfPresent(String.self, forKey: .altText)
+        self.sources = try container.decode([MediaSource].self, forKey: .sources)
+        self.captionSources = try container.decode([CaptionSource].self, forKey: .captionSources)
+        try super.init(from: decoder)
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(poster, forKey: .poster)
+        try container.encodeIfPresent(altText, forKey: .altText)
+        try container.encode(sources, forKey: .sources)
+        try container.encode(captionSources, forKey: .captionSources)
+        try super.encode(to: encoder)
+    }
+    
+    // MARK: - JSON Serialization
+    /// Converts the Media object into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
         var json: [String: Any] = [:]
-
         if let poster = poster {
             json["poster"] = poster
         }
@@ -26,68 +64,56 @@ struct Media: Codable {
         }
         json["sources"] = sources.map { $0.serializeToJson() }
         json["captionSources"] = captionSources.map { $0.serializeToJson() }
-
         return json
     }
-
-    /// Deserialize a `Media` object from JSON.
-    static func deserialize(from json: [String: Any]) throws -> Media {
-        let jsonData = try JSONSerialization.data(withJSONObject: json)
-        return try JSONDecoder().decode(Media.self, from: jsonData)
-    }
-
-    /// Deserialize a `Media` object from a JSON string.
-    static func deserialize(from jsonString: String) throws -> Media {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
+    
+    /// Returns a JSON string representation.
+    func toJSONString() -> String {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted)
+            return String(data: data, encoding: .utf8) ?? "{}"
+        } catch {
+            return "{}"
         }
-        return try JSONDecoder().decode(Media.self, from: jsonData)
     }
-
-    /// Retrieves resource information (poster and media sources).
-    func getResourceInformation() -> [RemoteResourceInformation] {
+    
+    // MARK: - Resource Information
+    /// Retrieves resource information (from poster and media sources).
+    /// Renamed from `getResourceInformation()` to avoid conflicting with BaseCardElement’s extension.
+    func mediaResourceInformation() -> [RemoteResourceInformation] {
         var resourceInfo: [RemoteResourceInformation] = []
-
         if let poster = poster {
             resourceInfo.append(RemoteResourceInformation(url: poster, mimeType: "image"))
         }
-
         for source in sources {
             resourceInfo.append(contentsOf: source.getResourceInformation())
         }
-
         return resourceInfo
+    }
+    
+    // MARK: - Utility Deserialization
+    /// Creates a Media object from a JSON dictionary.
+    static func createFromJSON(_ json: [String: Any]) throws -> Media {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(Media.self, from: data)
+    }
+    
+    /// Creates a Media object from a JSON string.
+    static func createFromJSONString(_ jsonString: String) throws -> Media {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
+        }
+        return try JSONDecoder().decode(Media.self, from: data)
     }
 }
 
-/// Parses `Media` elements from JSON.
-struct MediaParser {
-    /// Parses a `Media` object from JSON data.
-    static func deserialize(from json: [String: Any]) throws -> Media {
-        guard let sourcesJson = json["sources"] as? [[String: Any]] else {
-            throw NSError(domain: "Missing Media Sources", code: 0, userInfo: nil)
-        }
-
-        let sources = try sourcesJson.map { try MediaSource.deserialize(from: $0) }
-
-        let captionSourcesJson = json["captionSources"] as? [[String: Any]] ?? []
-        let captionSources = try captionSourcesJson.map { try CaptionSource.deserialize(from: $0) }
-
-        let poster = json["poster"] as? String
-        let altText = json["altText"] as? String
-
-        return Media(poster: poster, altText: altText, sources: sources, captionSources: captionSources)
+/// Parses Media elements in an Adaptive Card.
+class MediaParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        return try Media.createFromJSON(value)
     }
-
-    /// Parses a `Media` object from a JSON string.
-    static func deserialize(from jsonString: String) throws -> Media {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any]
-        guard let json = jsonObject else {
-            throw NSError(domain: "Invalid JSON Format", code: 0, userInfo: nil)
-        }
-        return try deserialize(from: json)
+    
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        return try Media.createFromJSONString(value)
     }
 }

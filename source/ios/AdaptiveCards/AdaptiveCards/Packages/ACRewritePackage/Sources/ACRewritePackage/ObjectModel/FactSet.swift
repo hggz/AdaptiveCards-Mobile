@@ -30,7 +30,7 @@ class FactSet: BaseCardElement {
     }
 
     /// Returns a JSON dictionary representation.
-    func serializeToJsonValue() -> [String: Any] {
+    func serializeToJsonVal() -> [String: Any] {
         return ["facts": facts.map { $0.serializeToJson() }]
     }
 }

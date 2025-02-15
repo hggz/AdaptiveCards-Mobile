@@ -162,4 +162,31 @@ struct ParseUtil {
         }
         return results
     }
+    
+    // Added getElementCollection with the expected signature.
+    static func getElementCollection(isTopToBottomContainer: Bool,
+                                     context: inout ParseContext,
+                                     json: [String: Any],
+                                     key: String,
+                                     isRequired: Bool) throws -> [BaseCardElement] {
+        let array = try getArray(from: json, key: key, isRequired: isRequired)
+        var elements: [BaseCardElement] = []
+        for dict in array {
+            let element = try BaseCardElement.deserialize(from: dict)
+            elements.append(element)
+        }
+        return elements
+    }
+    
+    // Added simple getValueAsString
+    static func getValueAsString(from json: [String: Any], key: String) -> String {
+        return json[key] as? String ?? ""
+    }
+    
+    static func expectTypeString(_ json: [String: Any], expected: CardElementType) throws {
+        let actual = try getTypeAsString(from: json)
+        if actual != expected.rawValue {
+            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Expected type \(expected.rawValue) but found \(actual)")
+        }
+    }
 }

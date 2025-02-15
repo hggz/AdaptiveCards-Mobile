@@ -80,10 +80,6 @@ class BaseCardElement: BaseElement {
         // Decode the BaseElement properties.
         try super.init(from: decoder)
     }
-}
-
-/// Utility methods for parsing BaseCardElement.
-extension BaseCardElement {
     /// Parses a BaseCardElement from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> BaseCardElement {
         guard let typeString = json["type"] as? String,
@@ -108,7 +104,7 @@ extension BaseCardElement {
             id: id
         )
     }
-
+    
     /// Parses a BaseCardElement from a JSON string.
     static func deserialize(from jsonString: String) throws -> BaseCardElement {
         guard let jsonData = jsonString.data(using: .utf8),
@@ -121,5 +117,20 @@ extension BaseCardElement {
     
     static func fromJSON(_ json: [String: Any]) -> BaseCardElement? {
         return try? self.deserialize(from: json)
+    }
+    
+    // MARK: - Overridable Serialization Method
+    /// Serializes the BaseCardElement into a JSON dictionary.
+    public func serializeToJsonValue() throws -> [String: Any] {
+        let data = try JSONEncoder().encode(self)
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+        guard let dict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return dict
+    }
+    
+    static func serializeSelectAction(_ action: BaseActionElement) -> [String: Any] {
+        return action.serializeToJsonValue()
     }
 }

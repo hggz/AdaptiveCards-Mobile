@@ -4,7 +4,7 @@ enum LayoutContainerType: String, Codable {
     case none, stack, flow, areaGrid
 }
 
-struct Layout: Codable {
+class Layout: Codable {
     var layoutContainerType: LayoutContainerType = .none
     var targetWidth: TargetWidthType = .default
 
@@ -90,14 +90,14 @@ struct Layout: Codable {
     
     init() {}
     
-    init(fromFlowLayout flow: FlowLayout) {
+    convenience init(fromFlowLayout flow: FlowLayout) {
         self.init()
         self.layoutContainerType = .flow
         // Copy additional properties from flow if needed.
     }
     
     /// Conversion initializer to create a generic Layout from an AreaGridLayout.
-    init(fromAreaGridLayout areaGrid: AreaGridLayout) {
+    convenience init(fromAreaGridLayout areaGrid: AreaGridLayout) {
         self.init()
         self.layoutContainerType = .areaGrid
         // Copy additional properties from areaGrid if needed.

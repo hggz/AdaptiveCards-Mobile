@@ -1,80 +1,81 @@
 import Foundation
 
-struct AreaGridLayout: Codable {
+class AreaGridLayout: Layout {
     var columns: [String] = []
     var areas: [GridArea] = []
     var rowSpacing: Spacing = .default
     var columnSpacing: Spacing = .default
 
-    init() {}
-
+    override init() {
+        super.init()
+        self.layoutContainerType = .areaGrid
+    }
+    
     init(columns: [String], areas: [GridArea], rowSpacing: Spacing = .default, columnSpacing: Spacing = .default) {
         self.columns = columns
         self.areas = areas
         self.rowSpacing = rowSpacing
         self.columnSpacing = columnSpacing
+        super.init()
+        self.layoutContainerType = .areaGrid
     }
-
-    func shouldSerialize() -> Bool {
-        return true
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.columns = try container.decodeIfPresent([String].self, forKey: .columns) ?? []
+        self.areas = try container.decodeIfPresent([GridArea].self, forKey: .areas) ?? []
+        self.rowSpacing = try container.decodeIfPresent(Spacing.self, forKey: .rowSpacing) ?? .default
+        self.columnSpacing = try container.decodeIfPresent(Spacing.self, forKey: .columnSpacing) ?? .default
+        try super.init(from: decoder)
+        self.layoutContainerType = .areaGrid
     }
-
-    func serialize() -> String {
-        let jsonData = try? JSONEncoder().encode(self)
-        return jsonData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(columns, forKey: .columns)
+        try container.encode(areas, forKey: .areas)
+        try container.encode(rowSpacing, forKey: .rowSpacing)
+        try container.encode(columnSpacing, forKey: .columnSpacing)
+        try super.encode(to: encoder)
     }
-
-    func serializeToJsonValue() -> [String: Any] {
-        var json: [String: Any] = [:]
-
+    
+    private enum CodingKeys: String, CodingKey {
+        case columns, areas, rowSpacing, columnSpacing
+    }
+    
+    override func serializeToJsonValue() -> [String: Any] {
+        var json = super.serializeToJsonValue()
         if !areas.isEmpty {
             json["areas"] = areas.map { $0.serializeToJson() }
         }
-
         if !columns.isEmpty {
             json["columns"] = columns
         }
-
         if rowSpacing != .default {
             json["rowSpacing"] = rowSpacing.rawValue
         }
-
         if columnSpacing != .default {
             json["columnSpacing"] = columnSpacing.rawValue
         }
-
         return json
     }
-
-    static func deserialize(from json: [String: Any]) -> AreaGridLayout {
-        var layout = AreaGridLayout()
-
+    
+    class func deserialize(from json: [String: Any]) -> AreaGridLayout {
+        let instance = AreaGridLayout()
         if let columnArray = json["columns"] as? [String] {
-            layout.columns = columnArray
+            instance.columns = columnArray
         }
-
         if let areaArray = json["areas"] as? [[String: Any]] {
-            layout.areas = areaArray.map { GridArea.deserialize(from: $0) }
+            instance.areas = areaArray.map { GridArea.deserialize(from: $0) }
         }
-
         if let rowSpacingStr = json["rowSpacing"] as? String,
            let spacingEnum = Spacing(rawValue: rowSpacingStr) {
-            layout.rowSpacing = spacingEnum
+            instance.rowSpacing = spacingEnum
         }
-
         if let columnSpacingStr = json["columnSpacing"] as? String,
            let spacingEnum = Spacing(rawValue: columnSpacingStr) {
-            layout.columnSpacing = spacingEnum
+            instance.columnSpacing = spacingEnum
         }
-
-        return layout
-    }
-
-    static func deserialize(from jsonString: String) -> AreaGridLayout? {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
-            return nil
-        }
-        return deserialize(from: jsonDict)
+        return instance
     }
 }

@@ -1,5 +1,6 @@
 import Foundation
 
+/// Enumeration for vertical content alignment.
 enum VerticalContentAlignment: String, Codable {
     case top, center, bottom
     static func fromString(_ value: String) -> VerticalContentAlignment? {
@@ -7,11 +8,13 @@ enum VerticalContentAlignment: String, Codable {
     }
 }
 
+/// Enumeration for bleed directions.
 enum ContainerBleedDirection: String, Codable {
     case bleedAll, bleedRestricted
 }
 
-struct StyledCollectionElement: Codable {
+/// The styled collection element base class (made inheritable).
+class StyledCollectionElement: BaseCardElement {
     var style: ContainerStyle
     var verticalContentAlignment: VerticalContentAlignment?
     var bleedDirection: ContainerBleedDirection
@@ -23,8 +26,8 @@ struct StyledCollectionElement: Codable {
     var parentalId: InternalId?
     var backgroundImage: BackgroundImage?
     var selectAction: BaseActionElement?
-
-    init(type: String,
+    
+    init(type: CardElementType,
          style: ContainerStyle = .none,
          verticalContentAlignment: VerticalContentAlignment? = nil,
          bleedDirection: ContainerBleedDirection = .bleedAll,
@@ -35,7 +38,8 @@ struct StyledCollectionElement: Codable {
          roundedCorners: Bool = false,
          parentalId: InternalId? = nil,
          backgroundImage: BackgroundImage? = nil,
-         selectAction: BaseActionElement? = nil) {
+         selectAction: BaseActionElement? = nil,
+         id: String? = nil) {
         self.style = style
         self.verticalContentAlignment = verticalContentAlignment
         self.bleedDirection = bleedDirection
@@ -47,74 +51,63 @@ struct StyledCollectionElement: Codable {
         self.parentalId = parentalId
         self.backgroundImage = backgroundImage
         self.selectAction = selectAction
+        super.init(type: type, id: id)
     }
-
-    func shouldSerialize() -> Bool {
-        return true
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.style = try container.decode(ContainerStyle.self, forKey: .style)
+        self.verticalContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalContentAlignment)
+        self.bleedDirection = try container.decode(ContainerBleedDirection.self, forKey: .bleedDirection)
+        self.minHeight = try container.decode(UInt.self, forKey: .minHeight)
+        self.hasPadding = try container.decode(Bool.self, forKey: .hasPadding)
+        self.hasBleed = try container.decode(Bool.self, forKey: .hasBleed)
+        self.showBorder = try container.decode(Bool.self, forKey: .showBorder)
+        self.roundedCorners = try container.decode(Bool.self, forKey: .roundedCorners)
+        self.parentalId = try container.decodeIfPresent(InternalId.self, forKey: .parentalId)
+        self.backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
+        self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
+        try super.init(from: decoder)
     }
-
-    mutating func configForContainerStyle(context: ParseContext) {
-        configPadding(context: context)
-        configBleed(context: context)
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(style, forKey: .style)
+        try container.encodeIfPresent(verticalContentAlignment, forKey: .verticalContentAlignment)
+        try container.encode(bleedDirection, forKey: .bleedDirection)
+        try container.encode(minHeight, forKey: .minHeight)
+        try container.encode(hasPadding, forKey: .hasPadding)
+        try container.encode(hasBleed, forKey: .hasBleed)
+        try container.encode(showBorder, forKey: .showBorder)
+        try container.encode(roundedCorners, forKey: .roundedCorners)
+        try container.encodeIfPresent(parentalId, forKey: .parentalId)
+        try container.encodeIfPresent(backgroundImage, forKey: .backgroundImage)
+        try container.encodeIfPresent(selectAction, forKey: .selectAction)
+        try super.encode(to: encoder)
     }
-
-    mutating func configPadding(context: ParseContext) {
-        // Use the computed property from ParseContext; if nil, assume .none.
-        self.hasPadding = (self.style != .none && (context.parentalContainerStyle ?? .none) != self.style)
+    
+    enum CodingKeys: String, CodingKey {
+        case style, verticalContentAlignment, bleedDirection, minHeight, hasPadding, hasBleed, showBorder, roundedCorners, parentalId, backgroundImage, selectAction
     }
-
-    mutating func configBleed(context: ParseContext) {
-        if self.hasPadding && self.hasBleed && context.bleedDirection != .bleedRestricted {
-            self.parentalId = context.paddingParentId
-            self.bleedDirection = context.bleedDirection
-        } else {
-            self.bleedDirection = .bleedRestricted
-        }
-    }
-
-    func serialize() throws -> String {
-        let jsonData = try JSONEncoder().encode(self)
-        return String(data: jsonData, encoding: .utf8) ?? "{}"
-    }
-
-    func serializeToJsonValue() -> [String: Any] {
-        var json: [String: Any] = [:]
-
-        if let selectAction = selectAction {
-            json["selectAction"] = selectAction.toJSON()
-        }
-
-        if let backgroundImage = backgroundImage, !backgroundImage.url.isEmpty {
-            json["backgroundImage"] = backgroundImage.serializeToJsonValue()
-        }
-
-        if style != .none {
-            json["style"] = style.rawValue
-        }
-
+    
+    func serializeToJsonV() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        json["style"] = style.rawValue
         if let verticalAlignment = verticalContentAlignment {
             json["verticalContentAlignment"] = verticalAlignment.rawValue
         }
-
         if hasBleed {
             json["bleed"] = true
         }
-
         if minHeight > 0 {
             json["minHeight"] = "\(minHeight)px"
         }
-
-        return json
-    }
-
-    static func deserialize(from json: Data) throws -> StyledCollectionElement {
-        return try JSONDecoder().decode(StyledCollectionElement.self, from: json)
-    }
-
-    static func deserializeFromString(_ jsonString: String) throws -> StyledCollectionElement {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON string", code: -1, userInfo: nil)
+        if let selectAction = selectAction {
+            json["selectAction"] = selectAction.toJSON()
         }
-        return try deserialize(from: data)
+        if let backgroundImage = backgroundImage {
+            json["backgroundImage"] = backgroundImage.serializeToJsonValue()
+        }
+        return json
     }
 }
