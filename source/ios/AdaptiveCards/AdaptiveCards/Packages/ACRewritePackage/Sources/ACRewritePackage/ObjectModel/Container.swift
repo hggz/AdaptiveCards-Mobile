@@ -1,6 +1,6 @@
 import Foundation
 
-/// Assume BaseCardElement is defined elsewhere.
+/// Represents a Container element in an Adaptive Card.
 class Container: BaseCardElement {
     var items: [BaseCardElement]
     var layouts: [Layout]
@@ -18,9 +18,8 @@ class Container: BaseCardElement {
         super.init(type: cardElementType)
     }
 
-    /// Required initializer for Codable conformance.
+    /// Required initializer for Codable conformance (inherited from BaseCardElement).
     required init(from decoder: Decoder) throws {
-        // Decode Container’s own properties.
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.items = try container.decode([BaseCardElement].self, forKey: .items)
         self.layouts = try container.decode([Layout].self, forKey: .layouts)
@@ -41,12 +40,30 @@ class Container: BaseCardElement {
         case items, layouts, rtl
     }
 
-    // Helper methods for TableCell to use.
+    // Helper methods for other elements (e.g. TableCell) to use.
     func setRtl(_ rtl: Bool) {
         self.rtl = rtl
     }
 
     func setLayouts(_ layouts: [Layout]) {
         self.layouts = layouts
+    }
+}
+
+/// MARK: - Parser for Container
+
+/// Parses a Container element from JSON.
+struct ContainerParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        // Use the BaseCardElement deserialization extension and then cast.
+        guard let container = try BaseCardElement.deserialize(from: value) as? Container else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        return container
+    }
+
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: &context, value: jsonDict)
     }
 }

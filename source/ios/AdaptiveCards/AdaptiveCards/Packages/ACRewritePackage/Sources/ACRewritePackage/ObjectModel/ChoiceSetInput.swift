@@ -1,6 +1,8 @@
 import Foundation
 
-struct ChoiceSetInput: Codable {
+/// Represents a ChoiceSetInput in an Adaptive Card.
+/// Now implemented as a class that extends BaseCardElement so that it can be parsed directly.
+class ChoiceSetInput: BaseCardElement {
     var isMultiSelect: Bool
     var choiceSetStyle: ChoiceSetStyle
     var choices: [ChoiceInput]
@@ -19,6 +21,7 @@ struct ChoiceSetInput: Codable {
         case placeholder = "Placeholder"
     }
 
+    /// Designated initializer.
     init(
         isMultiSelect: Bool = false,
         choiceSetStyle: ChoiceSetStyle = .compact,
@@ -26,7 +29,8 @@ struct ChoiceSetInput: Codable {
         choicesData: ChoicesData? = nil,
         value: String = "",
         wrap: Bool = false,
-        placeholder: String = ""
+        placeholder: String = "",
+        id: String? = nil
     ) {
         self.isMultiSelect = isMultiSelect
         self.choiceSetStyle = choiceSetStyle
@@ -35,24 +39,51 @@ struct ChoiceSetInput: Codable {
         self.value = value
         self.wrap = wrap
         self.placeholder = placeholder
+        // Initialize the BaseCardElement with a type that represents a ChoiceSetInput.
+        super.init(type: .choiceSetInput, id: id)
     }
 
+    /// Required initializer for Codable conformance.
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.isMultiSelect = try container.decode(Bool.self, forKey: .isMultiSelect)
+        self.choiceSetStyle = try container.decode(ChoiceSetStyle.self, forKey: .choiceSetStyle)
+        self.choices = try container.decode([ChoiceInput].self, forKey: .choices)
+        self.choicesData = try container.decodeIfPresent(ChoicesData.self, forKey: .choicesData)
+        self.value = try container.decode(String.self, forKey: .value)
+        self.wrap = try container.decode(Bool.self, forKey: .wrap)
+        self.placeholder = try container.decode(String.self, forKey: .placeholder)
+        try super.init(from: decoder)
+    }
+
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(isMultiSelect, forKey: .isMultiSelect)
+        try container.encode(choiceSetStyle, forKey: .choiceSetStyle)
+        try container.encode(choices, forKey: .choices)
+        try container.encodeIfPresent(choicesData, forKey: .choicesData)
+        try container.encode(value, forKey: .value)
+        try container.encode(wrap, forKey: .wrap)
+        try container.encode(placeholder, forKey: .placeholder)
+        try super.encode(to: encoder)
+    }
+
+    /// Serializes the instance to a JSON string.
     func serializeToJson() -> String? {
-        guard let jsonData = try? JSONEncoder().encode(self) else {
-            return nil
-        }
+        guard let jsonData = try? JSONEncoder().encode(self) else { return nil }
         return String(data: jsonData, encoding: .utf8)
     }
+}
 
-    static func deserialize(from json: [String: Any]) throws -> ChoiceSetInput {
-        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(ChoiceSetInput.self, from: jsonData)
+/// Parses a ChoiceSetInput element from JSON.
+struct ChoiceSetInputParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        // Use the new class-based deserialization.
+        return try ChoiceSetInput.deserialize(from: value)
     }
-
-    static func deserialize(from jsonString: String) throws -> ChoiceSetInput {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "ChoiceSetInput", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
-        }
-        return try JSONDecoder().decode(ChoiceSetInput.self, from: jsonData)
+    
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: &context, value: jsonDict)
     }
 }

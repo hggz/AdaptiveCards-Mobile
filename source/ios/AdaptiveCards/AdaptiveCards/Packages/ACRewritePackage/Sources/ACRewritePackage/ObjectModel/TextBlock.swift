@@ -12,10 +12,8 @@ enum TextStyle: String, Codable {
     }
 }
 
-// MARK: - TextBlock Definition
-
-/// Represents a text block element with customizable properties.
-struct TextBlock: Codable {
+/// Represents a TextBlock element in an Adaptive Card.
+class TextBlock: BaseCardElement {
     var text: String
     var textStyle: TextStyle?
     var textSize: TextSize?
@@ -28,7 +26,7 @@ struct TextBlock: Codable {
     var horizontalAlignment: HorizontalAlignment?
     var language: String?
 
-    /// Default initializer
+    /// Designated initializer.
     init(
         text: String = "",
         textStyle: TextStyle? = nil,
@@ -40,7 +38,8 @@ struct TextBlock: Codable {
         wrap: Bool = false,
         maxLines: UInt = 0,
         horizontalAlignment: HorizontalAlignment? = nil,
-        language: String? = nil
+        language: String? = nil,
+        id: String? = nil
     ) {
         self.text = text
         self.textStyle = textStyle
@@ -53,44 +52,59 @@ struct TextBlock: Codable {
         self.maxLines = maxLines
         self.horizontalAlignment = horizontalAlignment
         self.language = language
+        // Initialize BaseCardElement with the textBlock type.
+        super.init(type: .textBlock, id: id)
     }
-
-    /// Decodes a `TextBlock` from a JSON dictionary.
-    static func deserialize(from json: [String: Any]) throws -> TextBlock {
-        let text = try ParseUtil.getString(from: json, key: AdaptiveCardSchemaKey.text.rawValue)
-        let textStyle = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.style.rawValue, converter: TextStyle.init)
-        let textSize = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.size.rawValue, converter: TextSize.init)
-        let textWeight = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.weight.rawValue, converter: TextWeight.init)
-        let fontType = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.fontType.rawValue, converter: FontType.init)
-        let textColor = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.color.rawValue, converter: ForegroundColor.init)
-        let isSubtle = ParseUtil.getOptionalBool(from: json, key: AdaptiveCardSchemaKey.isSubtle.rawValue)
-        let wrap = try ParseUtil.getBool(from: json, key: AdaptiveCardSchemaKey.wrap.rawValue, defaultValue: false)
-        let maxLines = try ParseUtil.getUInt(from: json, key: AdaptiveCardSchemaKey.maxLines.rawValue, defaultValue: 0)
-        let horizontalAlignment = try ParseUtil.getOptionalEnumValue(from: json, key: AdaptiveCardSchemaKey.horizontalAlignment.rawValue, converter: HorizontalAlignment.init)
-        let language = ParseUtil.getOptionalString(from: json, key: AdaptiveCardSchemaKey.language.rawValue)
-        
-        return TextBlock(
-            text: text,
-            textStyle: textStyle,
-            textSize: textSize,
-            textWeight: textWeight,
-            fontType: fontType,
-            textColor: textColor,
-            isSubtle: isSubtle,
-            wrap: wrap,
-            maxLines: maxLines,
-            horizontalAlignment: horizontalAlignment,
-            language: language
-        )
+    
+    /// Required initializer for decoding.
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.text = try container.decode(String.self, forKey: .text)
+        self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle)
+        self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
+        self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
+        self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
+        self.textColor = try container.decodeIfPresent(ForegroundColor.self, forKey: .textColor)
+        self.isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
+        self.wrap = try container.decode(Bool.self, forKey: .wrap)
+        self.maxLines = try container.decode(UInt.self, forKey: .maxLines)
+        self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
+        self.language = try container.decodeIfPresent(String.self, forKey: .language)
+        try super.init(from: decoder)
     }
-
-    /// Decodes a `TextBlock` from a JSON string.
-    static func deserialize(from jsonString: String) throws -> TextBlock {
-        let json = try ParseUtil.getJsonDictionary(from: jsonString)
-        return try deserialize(from: json)
+    
+    /// Encodes the TextBlock to JSON.
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(text, forKey: .text)
+        try container.encodeIfPresent(textStyle, forKey: .textStyle)
+        try container.encodeIfPresent(textSize, forKey: .textSize)
+        try container.encodeIfPresent(textWeight, forKey: .textWeight)
+        try container.encodeIfPresent(fontType, forKey: .fontType)
+        try container.encodeIfPresent(textColor, forKey: .textColor)
+        try container.encodeIfPresent(isSubtle, forKey: .isSubtle)
+        try container.encode(wrap, forKey: .wrap)
+        try container.encode(maxLines, forKey: .maxLines)
+        try container.encodeIfPresent(horizontalAlignment, forKey: .horizontalAlignment)
+        try container.encodeIfPresent(language, forKey: .language)
+        try super.encode(to: encoder)
     }
-
-    /// Encodes `TextBlock` to a JSON dictionary.
+    
+    private enum CodingKeys: String, CodingKey {
+        case text = "text"
+        case textStyle = "style"
+        case textSize = "size"
+        case textWeight = "weight"
+        case fontType = "fontType"
+        case textColor = "color"
+        case isSubtle = "isSubtle"
+        case wrap = "wrap"
+        case maxLines = "maxLines"
+        case horizontalAlignment = "horizontalAlignment"
+        case language = "language"
+    }
+    
+    /// Converts this TextBlock into a JSON dictionary.
     func serializeToJsonValue() -> [String: Any] {
         var json: [String: Any] = [
             AdaptiveCardSchemaKey.text.rawValue: text,
@@ -107,9 +121,30 @@ struct TextBlock: Codable {
         if let language = language { json[AdaptiveCardSchemaKey.language.rawValue] = language }
         return json
     }
-
-    /// Encodes `TextBlock` to a JSON string.
+    
+    /// Converts this TextBlock into a JSON string.
     func serialize() throws -> String {
         return try ParseUtil.jsonToString(serializeToJsonValue())
+    }
+}
+
+/// Parses TextBlock elements in an Adaptive Card.
+struct TextBlockParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        // Verify the type.
+        guard let typeString = value["type"] as? String,
+              typeString == CardElementType.textBlock.rawValue else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        // Use the global deserialization helper (provided by BaseCardElement) and cast.
+        guard let textBlock = try BaseCardElement.deserialize(from: value) as? TextBlock else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        return textBlock
+    }
+    
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: &context, value: jsonDict)
     }
 }

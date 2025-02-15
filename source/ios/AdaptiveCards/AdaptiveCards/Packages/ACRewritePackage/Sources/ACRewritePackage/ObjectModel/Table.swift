@@ -86,73 +86,29 @@ class Table: BaseCardElement, CollectionCoreElement {
         self.rows = value
     }
 
-    /// Deserializes a `Table` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> Table {
-        let table = Table()
-        
-        table.columnDefinitions = try ParseUtil.getElementCollectionOfSingleType(
-            from: json,
-            key: CodingKeys.columns.rawValue,
-            context: &context,
-            defaultValue: [],
-            converter: TableColumnDefinition.deserialize
-        )
-        
-        table.rows = try ParseUtil.getElementCollectionOfSingleType(
-            from: json,
-            key: CodingKeys.rows.rawValue,
-            context: &context,
-            defaultValue: [TableRow](),
-            converter: { (context: inout ParseContext, json: [String: Any]) throws -> TableRow in
-                return try TableRow.deserialize(from: json, context: &context)
-            }
-        )
-        table.showGridLines = try ParseUtil.getBool(
-            from: json,
-            key: CodingKeys.showGridLines.rawValue,
-            defaultValue: true
-        )
-        table.firstRowAsHeaders = try ParseUtil.getBool(
-            from: json,
-            key: CodingKeys.firstRowAsHeaders.rawValue,
-            defaultValue: true
-        )
-        table.roundedCorners = try ParseUtil.getBool(
-            from: json,
-            key: CodingKeys.roundedCorners.rawValue,
-            defaultValue: false
-        )
-        table.horizontalCellContentAlignment = try ParseUtil.getOptionalEnumValue(
-            from: json,
-            key: CodingKeys.horizontalCellContentAlignment.rawValue,
-            converter: { HorizontalAlignment(rawValue: $0) }
-        )
-        table.verticalCellContentAlignment = try ParseUtil.getOptionalEnumValue(
-            from: json,
-            key: CodingKeys.verticalCellContentAlignment.rawValue,
-            converter: { VerticalContentAlignment(rawValue: $0) }
-        )
-        table.gridStyle = try ParseUtil.getEnumValue(
-            from: json,
-            key: CodingKeys.gridStyle.rawValue,
-            defaultValue: .none,
-            converter: { ContainerStyle(rawValue: $0) }
-        )
-        
+    /// Conforms to CollectionCoreElement.
+    func deserializeChildren(from json: [String: Any]) throws {
+        // Table handles child deserialization within its custom logic.
+    }
+}
+
+/// Parses Table elements in an Adaptive Card.
+struct TableParser: BaseCardElementParser {
+    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        // Verify that the type is correct.
+        guard let typeString = value["type"] as? String,
+              typeString == CardElementType.table.rawValue else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        // Use the global BaseCardElement deserialization and cast to Table.
+        guard let table = try BaseCardElement.deserialize(from: value) as? Table else {
+            throw AdaptiveCardParseError.invalidType
+        }
         return table
     }
-
-    /// Deserializes a `Table` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> Table {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON")
-        }
-        return try deserialize(from: jsonDict, context: &context)
-    }
     
-    func deserializeChildren(from json: [String: Any]) throws {
-        // Table handles child deserialization within its custom `deserialize` method.
+    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: &context, value: jsonDict)
     }
 }
