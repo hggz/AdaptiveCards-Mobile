@@ -194,4 +194,105 @@ class AdaptiveCard: Codable {
         // For now, return an empty array.
         return []
     }
+    
+    private enum CodingKeys: String, CodingKey {
+        case version
+        case fallbackText
+        case backgroundImage
+        case refresh
+        case authentication
+        case speak
+        case style
+        case language
+        case verticalContentAlignment
+        case height
+        case minHeight
+        case rtl
+        case body
+        case actions
+        case layouts
+        case selectAction
+        case requires
+        case fallbackContent
+        case fallbackType
+    }
+
+    required convenience init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Strings
+        let version = try container.decodeIfPresent(String.self, forKey: .version) ?? "1.0"
+        let fallbackText = try container.decodeIfPresent(String.self, forKey: .fallbackText)
+        let speak = try container.decodeIfPresent(String.self, forKey: .speak)
+        let language = try container.decodeIfPresent(String.self, forKey: .language)
+
+        // ContainerStyle with a default if missing
+        let styleRaw = try container.decodeIfPresent(String.self, forKey: .style) ?? "none"
+        let style = ContainerStyle(rawValue: styleRaw) ?? .none
+
+        // Optional booleans
+        let rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
+
+        // FallbackType
+        let fallbackTypeRaw = try container.decodeIfPresent(String.self, forKey: .fallbackType) ?? "none"
+        let fallbackType = FallbackType(rawValue: fallbackTypeRaw) ?? .none
+
+        // More complex objects
+        let backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
+        let refresh = try container.decodeIfPresent(Refresh.self, forKey: .refresh)
+        let authentication = try container.decodeIfPresent(Authentication.self, forKey: .authentication)
+
+        // Body (array of BaseCardElement)
+        let body = try container.decodeIfPresent([BaseCardElement].self, forKey: .body) ?? []
+
+        // Actions
+        let actions = try container.decodeIfPresent([BaseActionElement].self, forKey: .actions) ?? []
+
+        // Layouts
+        let layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
+
+        // selectAction
+        let selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
+
+        // Vertical Content Alignment
+        let verticalAlignmentRaw = try container.decodeIfPresent(String.self, forKey: .verticalContentAlignment) ?? "top"
+        let verticalContentAlignment = VerticalContentAlignment(rawValue: verticalAlignmentRaw) ?? .top
+
+        // Height
+        let heightRaw = try container.decodeIfPresent(String.self, forKey: .height) ?? "auto"
+        let height = HeightType(rawValue: heightRaw) ?? .auto
+
+        // minHeight
+        let minHeight = try container.decodeIfPresent(UInt.self, forKey: .minHeight) ?? 0
+
+        // requires
+        let requiresDict = try container.decodeIfPresent([String: SemanticVersion].self, forKey: .requires) ?? [:]
+
+        // fallbackContent – if you have a custom approach, implement decode here or set it nil by default
+        let fallbackContent = try container.decodeIfPresent(BaseElement.self, forKey: .fallbackContent)
+
+        // Initialize using your existing init
+        self.init(
+            version: version,
+            fallbackText: fallbackText,
+            backgroundImage: backgroundImage,
+            refresh: refresh,
+            authentication: authentication,
+            speak: speak,
+            style: style,
+            language: language,
+            verticalContentAlignment: verticalContentAlignment,
+            height: height,
+            minHeight: minHeight,
+            rtl: rtl,
+            body: body,
+            actions: actions,
+            layouts: layouts,
+            selectAction: selectAction,
+            requires: requiresDict,
+            fallbackContent: fallbackContent,
+            fallbackType: fallbackType
+        )
+    }
+
 }
