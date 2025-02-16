@@ -186,7 +186,7 @@ struct ColorsConfig: Codable {
 }
 
 // 8. TextStyleConfig
-struct TextStyleConfig: Codable {
+struct TextStyleConfig: Codable, Equatable {
     var weight: TextWeight
     var size: TextSize
     var isSubtle: Bool
@@ -194,15 +194,21 @@ struct TextStyleConfig: Codable {
     var fontType: FontType
     
     static func deserialize(from json: [String: Any], defaultValue: TextStyleConfig) -> TextStyleConfig {
+        // Use the fromString methods (with capitalization if needed)
         let weightStr = json["weight"] as? String ?? defaultValue.weight.rawValue
-        let weight = TextWeight(rawValue: weightStr) ?? defaultValue.weight
+        let weight = TextWeight.fromString(weightStr.capitalized) ?? defaultValue.weight
+        
         let sizeStr = json["size"] as? String ?? defaultValue.size.rawValue
-        let size = TextSize(rawValue: sizeStr) ?? defaultValue.size
+        let size = TextSize.fromString(sizeStr) ?? defaultValue.size
+        
         let isSubtle = json["isSubtle"] as? Bool ?? defaultValue.isSubtle
+        
         let colorStr = json["color"] as? String ?? defaultValue.color.rawValue
-        let color = ForegroundColor(rawValue: colorStr) ?? defaultValue.color
+        let color = ForegroundColor.fromString(colorStr) ?? defaultValue.color
+        
         let fontTypeStr = json["fontType"] as? String ?? defaultValue.fontType.rawValue
-        let fontType = FontType(rawValue: fontTypeStr) ?? defaultValue.fontType
+        let fontType = FontType.fromString(fontTypeStr.capitalized) ?? defaultValue.fontType
+        
         return TextStyleConfig(weight: weight, size: size, isSubtle: isSubtle, color: color, fontType: fontType)
     }
 }
@@ -652,8 +658,9 @@ struct HostConfig: Codable {
                                    errorMessage: ErrorMessageConfig(size: .defaultSize, spacing: .default, weight: .defaultWeight))
         self.hostWidth = HostWidthConfig(veryNarrow: 0, narrow: 0, standard: 0)
         self.textBlock = TextBlockConfig(headingLevel: 2)
-        let defaultTextStyle = TextStyleConfig(weight: .bolder, size: .large, isSubtle: false, color: .default, fontType: .defaultFont)
-        self.textStyles = TextStylesConfig(heading: defaultTextStyle, columnHeader: defaultTextStyle)
+        let defaultTextStyle = TextStyleConfig(weight: .defaultWeight, size: .defaultSize, isSubtle: false, color: .default, fontType: .defaultFont)
+        let defaultColumnHeaderStyle = TextStyleConfig(weight: .bolder, size: .defaultSize, isSubtle: false, color: .default, fontType: .defaultFont)
+        self.textStyles = TextStylesConfig(heading: defaultTextStyle, columnHeader: defaultColumnHeaderStyle)
         self.ratingLabelConfig = RatingElementConfig(filledStar: RatingStarCofig(marigoldColor: "#EAA300", neutralColor: "#212121"),
                                                       emptyStar: RatingStarCofig(marigoldColor: "#EAA300", neutralColor: "#212121"),
                                                       ratingTextColor: "#000000",
