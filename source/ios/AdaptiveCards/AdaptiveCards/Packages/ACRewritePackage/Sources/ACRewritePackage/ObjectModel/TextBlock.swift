@@ -12,6 +12,8 @@ enum TextStyle: String, Codable {
     }
 }
 
+// MARK: - TextBlock Implementation
+
 /// Represents a TextBlock element in an Adaptive Card.
 class TextBlock: BaseCardElement {
     var text: String
@@ -41,7 +43,8 @@ class TextBlock: BaseCardElement {
         language: String? = nil,
         id: String? = nil
     ) {
-        self.text = text
+        // Use the helper to decode HTML entities on initialization
+        self.text = TextBlock.decodeHTMLEntities(text)
         self.textStyle = textStyle
         self.textSize = textSize
         self.textWeight = textWeight
@@ -59,14 +62,15 @@ class TextBlock: BaseCardElement {
     /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.text = try container.decode(String.self, forKey: .text)
+        // Decoding and then performing HTML decoding here if needed.
+        let rawText = try container.decode(String.self, forKey: .text)
+        self.text = TextBlock.decodeHTMLEntities(rawText)
         self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle)
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
         self.textColor = try container.decodeIfPresent(ForegroundColor.self, forKey: .textColor)
         self.isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
-        // Use decodeIfPresent and provide defaults when keys are missing.
         self.wrap = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
         self.maxLines = try container.decodeIfPresent(UInt.self, forKey: .maxLines) ?? 0
         self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
@@ -107,13 +111,10 @@ class TextBlock: BaseCardElement {
     
     /// Converts this TextBlock into a JSON dictionary.
     func serializeToJsonVal() -> [String: Any] {
-        // Always include the "type" and "text" keys.
         var json: [String: Any] = [
             AdaptiveCardSchemaKey.type.rawValue: "TextBlock",
             AdaptiveCardSchemaKey.text.rawValue: text
         ]
-        
-        // Only add other keys if they differ from default values.
         if let textStyle = textStyle { json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue }
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
@@ -130,7 +131,6 @@ class TextBlock: BaseCardElement {
     
     /// Converts this TextBlock into a JSON string.
     func serialize() throws -> String {
-        // Use .sortedKeys to force a predictable key order.
         let data = try JSONSerialization.data(withJSONObject: serializeToJsonVal(), options: [.sortedKeys])
         guard let jsonString = String(data: data, encoding: .utf8) else {
             throw AdaptiveCardParseError.serializationFailed
@@ -141,6 +141,60 @@ class TextBlock: BaseCardElement {
     /// Returns a DateTimePreparser initialized with the current text.
     func getTextForDateParsing() -> DateTimePreparser {
         return DateTimePreparser(input: self.text)
+    }
+}
+
+// MARK: - Added Methods for Unit Test Compatibility
+
+extension TextBlock {
+    /// Sets the text after performing a single-pass HTML entity decode.
+    func setText(_ newText: String) {
+        self.text = TextBlock.decodeHTMLEntities(newText)
+    }
+    
+    /// Returns the (decoded) text.
+    func getText() -> String {
+        return self.text
+    }
+    
+    /// Decodes HTML entities in the provided string using a single pass.
+    /// Supported entities: &amp;, &lt;, &gt;, &nbsp;
+    static func decodeHTMLEntities(_ input: String) -> String {
+        let pattern = "&([a-zA-Z]+);"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return input }
+        let nsInput = input as NSString
+        let matches = regex.matches(in: input, options: [], range: NSRange(location: 0, length: nsInput.length))
+        
+        var result = ""
+        var lastRangeEnd = 0
+        
+        for match in matches {
+            let matchRange = match.range
+            // Append text between last match and current match.
+            result.append(nsInput.substring(with: NSRange(location: lastRangeEnd, length: matchRange.location - lastRangeEnd)))
+            
+            let entityName = nsInput.substring(with: match.range(at: 1))
+            let replacement: String
+            switch entityName {
+            case "amp":
+                replacement = "&"
+            case "lt":
+                replacement = "<"
+            case "gt":
+                replacement = ">"
+            case "nbsp":
+                replacement = "\u{00A0}"
+            default:
+                // Leave unsupported entities unchanged.
+                replacement = nsInput.substring(with: matchRange)
+            }
+            
+            result.append(replacement)
+            lastRangeEnd = matchRange.location + matchRange.length
+        }
+        // Append any remaining text.
+        result.append(nsInput.substring(from: lastRangeEnd))
+        return result
     }
 }
 
