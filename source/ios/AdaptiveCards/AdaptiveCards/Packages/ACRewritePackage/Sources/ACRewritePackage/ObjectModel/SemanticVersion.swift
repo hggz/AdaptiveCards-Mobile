@@ -19,16 +19,25 @@ struct SemanticVersion: Codable, Comparable, CustomStringConvertible {
             throw SemanticVersionError.invalidVersion(version)
         }
 
-        func extract(_ index: Int) -> UInt {
-            guard index < match.numberOfRanges, let range = Range(match.range(at: index), in: version),
-                  let value = UInt(version[range]) else { return 0 }
+        // Helper function to extract and convert each captured group.
+        func extract(_ index: Int) throws -> UInt {
+            // If the group didn't match, return 0.
+            guard index < match.numberOfRanges,
+                  let range = Range(match.range(at: index), in: version) else {
+                return 0
+            }
+            let substring = String(version[range])
+            // Try to convert the captured substring to UInt.
+            guard let value = UInt(substring) else {
+                throw SemanticVersionError.invalidVersion(version)
+            }
             return value
         }
 
-        self.major = extract(1)
-        self.minor = extract(2)
-        self.build = extract(3)
-        self.revision = extract(4)
+        self.major = try extract(1)
+        self.minor = try extract(2)
+        self.build = try extract(3)
+        self.revision = try extract(4)
     }
 
     var description: String {
