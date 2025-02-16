@@ -65,7 +65,7 @@ class ColumnSet: StyledCollectionElement {
             context: &context,
             json: json,
             key: "columns",
-            isRequired: false
+            required: false
         )
         // Filter for Column instances.
         self.columns = elements.compactMap { $0 as? Column }

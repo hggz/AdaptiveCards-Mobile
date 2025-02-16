@@ -157,7 +157,7 @@ class Column: StyledCollectionElement {
             context: &context,
             json: json,
             key: "items",
-            isRequired: false
+            required: false
         )
         self.items = cardElements
     }
@@ -191,7 +191,7 @@ struct ColumnParser: BaseCardElementParser {
         column.setWidth(columnWidth, warnings: &context.warnings)
         column.setRtl(ParseUtil.getOptionalBool(from: value, key: "rtl"))
         
-        if let layoutArray: [[String: Any]] = try? ParseUtil.getArray(from: value, key: "layouts", isRequired: false), !layoutArray.isEmpty {
+        if let layoutArray: [[String: Any]] = try? ParseUtil.getArray(from: value, key: "layouts", required: false), !layoutArray.isEmpty {
             var parsedLayouts: [Layout] = []
             for layoutJson in layoutArray {
                 guard let baseLayout = Layout.fromJSON(layoutJson) else {

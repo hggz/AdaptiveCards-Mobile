@@ -36,7 +36,7 @@ enum Mode: String, Codable {
 }
 
 enum ErrorStatusCode: String, Codable {
-    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType
+    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType, serializationFailed
 }
 
 enum WarningStatusCode: String, Codable {

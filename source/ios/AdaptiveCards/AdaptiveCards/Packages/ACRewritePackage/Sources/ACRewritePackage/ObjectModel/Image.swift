@@ -228,7 +228,7 @@ struct ImageParser: BaseCardElementParser {
         let image: Image = try BaseCardElement.deserialize(from: value) as! Image
         
         // Populate properties.
-        image.setUrl(try ParseUtil.getString(from: value, key: "url", isRequired: true))
+        image.setUrl(try ParseUtil.getString(from: value, key: "url", required: true))
         image.setBackgroundColor(validateColor(try ParseUtil.getString(from: value, key: "backgroundColor"), warnings: &context.warnings))
         image.setImageStyle(try ParseUtil.getEnumValue(from: value, key: "style", defaultValue: .defaultImageStyle, converter: ImageStyle.fromString))
         image.setAltText(try ParseUtil.getString(from: value, key: "altText"))

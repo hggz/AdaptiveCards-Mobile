@@ -80,7 +80,7 @@ struct ImageSetParser: BaseCardElementParser {
         imageSet.imageSize = try ParseUtil.getEnumValue(from: value, key: "imageSize", defaultValue: .none, converter: ImageSize.fromString)
         
         // Parse the images array.
-        let imagesArray: [[String: Any]] = try ParseUtil.getArray(from: value, key: "images", isRequired: true)
+        let imagesArray: [[String: Any]] = try ParseUtil.getArray(from: value, key: "images", required: true)
         var images: [Image] = []
         for imageJson in imagesArray {
             // Deserialize each image (using the global helper).

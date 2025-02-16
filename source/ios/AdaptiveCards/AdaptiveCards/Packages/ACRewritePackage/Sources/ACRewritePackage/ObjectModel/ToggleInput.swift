@@ -74,9 +74,9 @@ class ToggleInput: BaseInputElement {
 struct ToggleInputParser: BaseCardElementParser {
     func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
         let toggleInput = ToggleInput()
-        toggleInput.title = try ParseUtil.getString(from: value, key: "title", isRequired: true)
+        toggleInput.title = try ParseUtil.getString(from: value, key: "title", required: true)
         toggleInput.value = try ParseUtil.getString(from: value, key: "value")
-        toggleInput.wrap = try ParseUtil.getBool(from: value, key: "wrap", defaultValue: false)
+        toggleInput.wrap = try ParseUtil.getBool(from: value, key: "wrap", defaultValue: false, required: false)
         toggleInput.valueOff = try ParseUtil.getString(from: value, key: "valueOff")
         toggleInput.valueOn = try ParseUtil.getString(from: value, key: "valueOn")
         return toggleInput

@@ -81,8 +81,8 @@ struct TextInputParser: BaseCardElementParser {
         // Populate properties using ParseUtil helper methods.
         textInput.placeholder = try ParseUtil.getString(from: value, key: "placeholder")
         textInput.value = try ParseUtil.getString(from: value, key: "value")
-        textInput.isMultiline = try ParseUtil.getBool(from: value, key: "isMultiline", defaultValue: false)
-        textInput.maxLength = try ParseUtil.getUInt(from: value, key: "maxLength", defaultValue: 0)
+        textInput.isMultiline = try ParseUtil.getBool(from: value, key: "isMultiline", defaultValue: false, required: false)
+        textInput.maxLength = try ParseUtil.getUInt(from: value, key: "maxLength", defaultValue: 0, required: false)
         textInput.style = try ParseUtil.getEnumValue(from: value, key: "style", defaultValue: .text, converter: TextInputStyle.fromString)
         textInput.inlineAction = try ParseUtil.getAction(from: value, key: "inlineAction", context: &context)
         textInput.regex = try ParseUtil.getString(from: value, key: "regex")
