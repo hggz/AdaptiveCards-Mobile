@@ -9,6 +9,19 @@ struct AdaptiveCardParseException: Error {
         self.statusCode = statusCode
         self.message = message
     }
+    
+    // Added to satisfy tests:
+    func what() -> String {
+        return message
+    }
+    
+    func getStatusCode() -> ErrorStatusCode {
+        return statusCode
+    }
+    
+    func getReason() -> String {
+        return message
+    }
 }
 
 extension AdaptiveCardParseException: LocalizedError {
