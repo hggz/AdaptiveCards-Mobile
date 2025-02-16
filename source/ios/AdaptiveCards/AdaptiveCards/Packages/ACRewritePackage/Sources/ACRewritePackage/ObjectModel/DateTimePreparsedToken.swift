@@ -1,35 +1,44 @@
 import Foundation
 
-enum DateTimePreparsedTokenFormat: String, Codable {
-    case regularString
-    case dateShort
-    case dateLong
-    case dateCompact
+public enum DateTimePreparsedTokenFormat: Equatable, Codable {
+    case RegularString
+    case DateCompact
+    case DateShort
+    case DateLong
 }
 
-struct DateTimePreparsedToken: Codable {
-    let text: String
-    let date: Date?
-    let format: DateTimePreparsedTokenFormat
+public class DateTimePreparsedToken: Codable {
+    public let text: String
+    public let format: DateTimePreparsedTokenFormat
+    private var dateValue: Date?
 
-    init(text: String, date: Date? = nil, format: DateTimePreparsedTokenFormat = .regularString) {
+    public init(text: String, format: DateTimePreparsedTokenFormat) {
         self.text = text
-        self.date = date
         self.format = format
     }
-
-    var day: Int? {
-        guard let date = date else { return nil }
+    
+    public init(text: String, date: Date, format: DateTimePreparsedTokenFormat) {
+        self.text = text
+        self.dateValue = date
+        self.format = format
+    }
+    
+    /// Returns the day component if a date was parsed; otherwise 0.
+    public var day: Int {
+        guard let date = dateValue else { return 0 }
         return Calendar.current.component(.day, from: date)
     }
-
-    var month: Int? {
-        guard let date = date else { return nil }
-        return Calendar.current.component(.month, from: date) - 1 // Adjust to match C++ (0-11)
+    
+    /// Returns the month component (zero-indexed to match C++ tests).
+    public var month: Int {
+        guard let date = dateValue else { return 0 }
+        // Calendar gives 1 for January, so subtract 1.
+        return Calendar.current.component(.month, from: date) - 1
     }
-
-    var year: Int? {
-        guard let date = date else { return nil }
+    
+    /// Returns the year component.
+    public var year: Int {
+        guard let date = dateValue else { return 0 }
         return Calendar.current.component(.year, from: date)
     }
 }

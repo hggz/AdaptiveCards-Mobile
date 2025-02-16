@@ -137,6 +137,11 @@ class TextBlock: BaseCardElement {
         }
         return jsonString + "\n"
     }
+    
+    /// Returns a DateTimePreparser initialized with the current text.
+    func getTextForDateParsing() -> DateTimePreparser {
+        return DateTimePreparser(input: self.text)
+    }
 }
 
 /// Parses TextBlock elements in an Adaptive Card.

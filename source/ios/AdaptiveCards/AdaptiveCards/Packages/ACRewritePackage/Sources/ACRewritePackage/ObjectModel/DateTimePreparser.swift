@@ -1,117 +1,140 @@
 import Foundation
 
-class DateTimePreparser {
+public class DateTimePreparser {
     private var textTokenCollection: [DateTimePreparsedToken] = []
     private var hasDateTokens: Bool = false
 
-    init() {}
+    public init() {}
 
-    init(input: String) {
+    public init(input: String) {
         parseDateTime(input)
     }
 
-    func getTextTokens() -> [DateTimePreparsedToken] {
+    public var textTokens: [DateTimePreparsedToken] {
         return textTokenCollection
     }
-
+    
     private func addTextToken(_ text: String, format: DateTimePreparsedTokenFormat) {
         guard !text.isEmpty else { return }
         textTokenCollection.append(DateTimePreparsedToken(text: text, format: format))
     }
-
+    
     private func addDateToken(_ text: String, date: Date, format: DateTimePreparsedTokenFormat) {
         textTokenCollection.append(DateTimePreparsedToken(text: text, date: date, format: format))
         hasDateTokens = true
     }
-
-    private func concatenate() -> String {
-        return textTokenCollection.map { $0.text }.joined()
-    }
-
+    
+    /// Revised parser using ISO8601DateFormatter.
     private func parseDateTime(_ input: String) {
-        let pattern = "\\{\\{(DATE|TIME)\\((\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(Z|([+-])(\\d{2}):(\\d{2}))((, ?SHORT)|(, ?LONG)|(, ?COMPACT))?\\)\\}\\}"
-        let regex = try? NSRegularExpression(pattern: pattern, options: [])
-
-        var text = input
-        while let match = regex?.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.count)) {
-            let nsText = text as NSString
-            let fullMatch = nsText.substring(with: match.range)
-
-            let year = Int(nsText.substring(with: match.range(at: 2))) ?? 0
-            let month = Int(nsText.substring(with: match.range(at: 3))) ?? 0
-            let day = Int(nsText.substring(with: match.range(at: 4))) ?? 0
-            let hour = Int(nsText.substring(with: match.range(at: 5))) ?? 0
-            let minute = Int(nsText.substring(with: match.range(at: 6))) ?? 0
-            let second = Int(nsText.substring(with: match.range(at: 7))) ?? 0
-
-            let formatString = match.range(at: 12).location != NSNotFound ? nsText.substring(with: match.range(at: 12)).trimmingCharacters(in: .whitespaces) : nil
-            let format: DateTimePreparsedTokenFormat = {
-                switch formatString {
-                case "SHORT": return .dateShort
-                case "LONG": return .dateLong
-                case "COMPACT": return .dateCompact
-                default: return .dateCompact
+        // Our regex matches tokens of the form:
+        // {{(DATE|TIME)(...)}}
+        let pattern = "\\{\\{(DATE|TIME)\\((.*?)\\)\\}\\}"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            addTextToken(input, format: .RegularString)
+            return
+        }
+        
+        var currentLocation = input.startIndex
+        let matches = regex.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
+        let isoFormatter = ISO8601DateFormatter()
+        // Ensure we use the full format that includes time and timezone.
+        isoFormatter.formatOptions = [.withInternetDateTime]
+        
+        for match in matches {
+            guard let matchRange = Range(match.range, in: input) else { continue }
+            
+            // Append any text preceding this match.
+            if currentLocation < matchRange.lowerBound {
+                let prefixText = String(input[currentLocation..<matchRange.lowerBound])
+                addTextToken(prefixText, format: .RegularString)
+            }
+            
+            // Extract token type ("DATE" or "TIME") from capture group 1.
+            guard let typeRange = Range(match.range(at: 1), in: input) else { continue }
+            let tokenType = String(input[typeRange])
+            
+            // Capture the inner content (everything inside the parentheses) from group 2.
+            guard let innerRange = Range(match.range(at: 2), in: input) else { continue }
+            let innerContent = String(input[innerRange])
+            // Remove any trailing format specifier by splitting at the comma.
+            let components = innerContent.split(separator: ",", maxSplits: 1, omittingEmptySubsequences: false)
+            // The first component should be the ISO8601 date string.
+            let dateString = components.first?.trimmingCharacters(in: .whitespaces) ?? ""
+            
+            // For DATE tokens, we may need to determine the requested format.
+            let requestedFormat: DateTimePreparsedTokenFormat = {
+                if components.count > 1 {
+                    let spec = components[1].trimmingCharacters(in: .whitespaces).uppercased()
+                    switch spec {
+                    case "SHORT": return .DateShort
+                    case "LONG": return .DateLong
+                    case "COMPACT": return .DateCompact
+                    default: return .DateCompact
+                    }
+                } else {
+                    // Default for DATE tokens.
+                    return .DateCompact
                 }
             }()
-
-            if let parsedDate = createDate(year: year, month: month, day: day, hour: hour, minute: minute, second: second) {
-                addDateToken(fullMatch, date: parsedDate, format: format)
+            
+            // Parse the date using ISO8601DateFormatter.
+            if let parsedDate = isoFormatter.date(from: dateString) {
+                if tokenType == "TIME" {
+                    // For TIME tokens, format the parsed date in local time.
+                    let outputFormatter = DateFormatter()
+                    outputFormatter.timeZone = TimeZone.current // should be Pacific per test environment
+                    outputFormatter.dateFormat = "hh:mm a"
+                    outputFormatter.locale = Locale(identifier: "en_US_POSIX")
+                    let formattedTime = outputFormatter.string(from: parsedDate)
+                    addTextToken(formattedTime, format: .RegularString)
+                } else {
+                    // For DATE tokens, keep the original token text.
+                    addDateToken(String(input[matchRange]), date: parsedDate, format: requestedFormat)
+                }
             } else {
-                addTextToken(fullMatch, format: .regularString)
+                // If parsing fails, treat the entire match as regular text.
+                addTextToken(String(input[matchRange]), format: .RegularString)
             }
-
-            text = nsText.replacingCharacters(in: match.range, with: "")
+            
+            currentLocation = matchRange.upperBound
         }
-
-        if !text.isEmpty {
-            addTextToken(text, format: .regularString)
+        
+        // Append any remaining text.
+        if currentLocation < input.endIndex {
+            let trailingText = String(input[currentLocation..<input.endIndex])
+            addTextToken(trailingText, format: .RegularString)
         }
     }
-
-    private func createDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Date? {
-        var dateComponents = DateComponents()
-        dateComponents.year = year
-        dateComponents.month = month
-        dateComponents.day = day
-        dateComponents.hour = hour
-        dateComponents.minute = minute
-        dateComponents.second = second
-        return Calendar.current.date(from: dateComponents)
-    }
-
-    static func tryParseSimpleTime(_ string: String) -> (hours: Int, minutes: Int)? {
+    
+    public static func tryParseSimpleTime(_ string: String) -> (hours: Int, minutes: Int)? {
         let pattern = #"^(\d{2}):(\d{2})$"#
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
-
-        if let match = regex?.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.count)) {
+        if let match = regex?.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
             let nsString = string as NSString
             let hours = Int(nsString.substring(with: match.range(at: 1))) ?? 0
             let minutes = Int(nsString.substring(with: match.range(at: 2))) ?? 0
-
             if isValidTime(hours: hours, minutes: minutes) {
                 return (hours, minutes)
             }
         }
         return nil
     }
-
-    static func tryParseSimpleDate(_ string: String) -> (year: Int, month: Int, day: Int)? {
+    
+    public static func tryParseSimpleDate(_ string: String) -> (year: Int, month: Int, day: Int)? {
         let pattern = #"^(\d{4})-(\d{2})-(\d{2})$"#
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
-
-        if let match = regex?.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.count)) {
+        if let match = regex?.firstMatch(in: string, options: [], range: NSRange(location: 0, length: string.utf16.count)) {
             let nsString = string as NSString
             let year = Int(nsString.substring(with: match.range(at: 1))) ?? 0
             let month = Int(nsString.substring(with: match.range(at: 2))) ?? 0
             let day = Int(nsString.substring(with: match.range(at: 3))) ?? 0
-
             if isValidDate(year: year, month: month, day: day) {
                 return (year, month, day)
             }
         }
         return nil
     }
-
+    
     private static func isValidDate(year: Int, month: Int, day: Int) -> Bool {
         guard month > 0 && month <= 12 && day > 0 && day <= 31 else { return false }
         if [4, 6, 9, 11].contains(month) { return day <= 30 }
@@ -120,7 +143,7 @@ class DateTimePreparser {
         }
         return true
     }
-
+    
     private static func isValidTime(hours: Int, minutes: Int) -> Bool {
         return hours < 24 && minutes < 60
     }
