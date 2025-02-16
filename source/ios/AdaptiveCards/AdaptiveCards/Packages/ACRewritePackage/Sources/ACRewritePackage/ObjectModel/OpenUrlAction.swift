@@ -76,11 +76,11 @@ class OpenUrlAction: BaseActionElement {
 struct OpenUrlActionParser: ActionElementParser {
     func deserialize(context: inout ParseContext, from json: [String : Any]) throws -> BaseActionElement {
         // Use the correct parameter name and return type.
-        return try OpenUrlAction.deserialize(from: json)
+        return try OpenUrlAction.deserializeAction(from: json)
     }
     
     func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
         // Use the correct parameter name.
-        return try OpenUrlAction.deserialize(from: jsonString)
+        return try OpenUrlAction.deserializeAction(from: jsonString)
     }
 }

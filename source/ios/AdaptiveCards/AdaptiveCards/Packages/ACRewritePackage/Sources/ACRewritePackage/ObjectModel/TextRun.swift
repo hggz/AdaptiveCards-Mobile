@@ -57,7 +57,7 @@ struct TextRun: Inline, Codable {
         let highlight = json["highlight"] as? Bool ?? false
         let underline = json["underline"] as? Bool ?? false
         let language = json["language"] as? String
-        let selectAction = try (json["selectAction"] as? [String: Any]).flatMap { try BaseActionElement.deserialize(from: $0) }
+        let selectAction = try (json["selectAction"] as? [String: Any]).flatMap { try BaseActionElement.deserializeAction(from: $0) }
 
         return TextRun(
             additionalProperties: additionalProperties.mapValues { AnyCodable($0) },

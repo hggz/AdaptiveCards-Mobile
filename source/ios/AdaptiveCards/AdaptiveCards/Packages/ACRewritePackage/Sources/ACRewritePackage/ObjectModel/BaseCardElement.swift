@@ -130,7 +130,19 @@ class BaseCardElement: BaseElement {
         return dict
     }
     
-    static func serializeSelectAction(_ action: BaseActionElement) -> [String: Any] {
-        return action.serializeToJsonValue()
+    static func serializeSelectAction(_ action: BaseActionElement) throws -> [String: Any] {
+        return try action.serializeToJsonValue()
+    }
+    
+    func setAdditionalProperties(_ json: [String: Any]) {
+        var codableDict = [String: AnyCodable]()
+        for (key, value) in json {
+            codableDict[key] = AnyCodable(value)
+        }
+        self.additionalProperties = codableDict
+    }
+
+    func setElementTypeString(_ type: String) {
+        self.typeString = type
     }
 }

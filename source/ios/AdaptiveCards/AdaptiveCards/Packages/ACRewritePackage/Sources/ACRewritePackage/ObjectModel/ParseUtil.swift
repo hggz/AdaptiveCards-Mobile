@@ -17,6 +17,15 @@ struct ParseUtil {
     
     // MARK: – Type & Value Retrieval
     
+    static func getJsonValue(from string: String) -> [String: Any] {
+        guard let data = string.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            return [:]
+        }
+        return jsonDict
+    }
+    
     static func getTypeAsString(from json: [String: Any]) throws -> String {
         guard let type = json["type"] as? String else {
             throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "type")
@@ -195,14 +204,14 @@ struct ParseUtil {
 
     static func getActionCollection(from json: [String: Any], key: String) throws -> [BaseActionElement] {
         let array = try getArray(from: json, key: key, required: false)
-        return try array.map { try BaseActionElement.deserialize(from: $0) }
+        return try array.map { try BaseActionElement.deserializeAction(from: $0) }
     }
     
     static func getAction(from json: [String: Any], key: String, context: inout ParseContext) throws -> BaseActionElement? {
         guard let actionJson = json[key] as? [String: Any] else {
             return nil
         }
-        return try BaseActionElement.deserialize(from: actionJson)
+        return try BaseActionElement.deserializeAction(from: actionJson)
     }
     
     static func getElementCollectionOfSingleType<T>(

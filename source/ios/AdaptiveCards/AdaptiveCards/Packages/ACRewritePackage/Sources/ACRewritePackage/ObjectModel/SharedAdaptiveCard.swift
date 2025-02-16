@@ -140,7 +140,7 @@ class AdaptiveCard: Codable {
         let bodyJson = json[AdaptiveCardSchemaKey.body.rawValue] as? [[String: Any]] ?? []
         let body = try bodyJson.map { try BaseCardElement.deserialize(from: $0) }
         let actionsJson = json[AdaptiveCardSchemaKey.actions.rawValue] as? [[String: Any]] ?? []
-        let actions = try actionsJson.map { try BaseActionElement.deserialize(from: $0) }
+        let actions = try actionsJson.map { try BaseActionElement.deserializeAction(from: $0) }
         
         let layoutsJson = json[AdaptiveCardSchemaKey.layouts.rawValue] as? [[String: Any]] ?? []
         let layouts = try layoutsJson.map { json in
@@ -152,7 +152,7 @@ class AdaptiveCard: Codable {
         
         var selectAction: BaseActionElement? = nil
         if let selectActionJson = json[AdaptiveCardSchemaKey.selectAction.rawValue] as? [String: Any] {
-            selectAction = try BaseActionElement.deserialize(from: selectActionJson)
+            selectAction = try BaseActionElement.deserializeAction(from: selectActionJson)
         }
         return AdaptiveCard(
             version: version,

@@ -114,7 +114,7 @@ class Image: BaseCardElement {
         }
         
         if let action = selectAction {
-            json["selectAction"] = BaseCardElement.serializeSelectAction(action)
+            json["selectAction"] = try BaseCardElement.serializeSelectAction(action)
         }
         
         return json

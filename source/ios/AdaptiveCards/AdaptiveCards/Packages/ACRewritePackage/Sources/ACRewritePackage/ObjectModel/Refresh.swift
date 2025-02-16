@@ -32,7 +32,7 @@ struct Refresh: Codable {
 
     /// Deserializes a `Refresh` from JSON.
     static func deserialize(from json: [String: Any]) throws -> Refresh {
-        let action: BaseActionElement? = try? BaseActionElement.deserialize(from: json["action"] as? [String: Any] ?? [:])
+        let action: BaseActionElement? = try? BaseActionElement.deserializeAction(from: json["action"] as? [String: Any] ?? [:])
         let userIds = json["userIds"] as? [String] ?? []
         return Refresh(action: action, userIds: userIds)
     }

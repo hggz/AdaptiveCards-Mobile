@@ -7,31 +7,30 @@ protocol BaseCardElementParser {
 }
 
 /// Wrapper for a `BaseCardElementParser` to handle ID collision detection in `ParseContext`.
+// BaseCardElementParser.swift
 struct BaseCardElementParserWrapper: BaseCardElementParser {
     private let parser: BaseCardElementParser
-
+    var actualParser: BaseCardElementParser { return parser }
+    
     init(parser: BaseCardElementParser) {
         self.parser = parser
     }
-
+    
     func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
         let idProperty = value["id"] as? String ?? ""
         let internalId = InternalId.next()
-
         context.pushElement(idJsonProperty: idProperty, internalId: internalId)
         let element = try parser.deserialize(context: &context, value: value)
         context.popElement()
-
         return element
     }
-
+    
     func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
         guard let jsonData = value.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseError.invalidJson
         }
-
         return try deserialize(context: &context, value: jsonDict)
     }
 }

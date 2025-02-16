@@ -14,7 +14,7 @@ final class UnknownAction: BaseActionElement {
     
     /// Serializes the unknown action into a JSON dictionary.
     /// Returns additionalProperties if set, or an empty dictionary.
-    override func serializeToJsonValue() -> [String: Any] {
+    override func serializeToJsonValue() throws -> [String: Any] {
         return additionalProperties ?? [:]
     }
 }
@@ -24,8 +24,8 @@ final class UnknownActionParser: ActionElementParser {
     /// Deserializes an `UnknownAction` from a JSON dictionary.
     func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
         let actualType = try ParseUtil.getTypeAsString(from: json)
-        // Use the BaseActionElement deserialization method and cast to UnknownAction.
-        let base = try BaseActionElement.deserialize(from: json)
+        // Use the BaseActionElement deserialization method for actions.
+        let base = try BaseActionElement.deserializeAction(from: json)
         guard let unknownAction = base as? UnknownAction else {
             throw AdaptiveCardParseError.invalidType
         }

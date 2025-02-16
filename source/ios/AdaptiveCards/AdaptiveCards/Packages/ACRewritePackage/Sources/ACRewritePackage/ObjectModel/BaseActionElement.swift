@@ -1,17 +1,15 @@
 import Foundation
 
-// MARK: - Stub Definitions for Missing Types
-
 /// The role of an action – originally defined in C++.
 enum ActionRole: String, Codable {
     case button, link, tab, menu, menuItem
 }
 
-// MARK: - BaseActionElement Implementation
-
 /// Represents a base action element in an Adaptive Card.
-class BaseActionElement: BaseElement {
-    var type: ActionType
+/// (Note: BaseActionElement subclasses BaseCardElement.)
+class BaseActionElement: BaseCardElement {
+    // Instead of “type” (declared in BaseCardElement), we use “actionType”
+    let actionType: ActionType
     var title: String?
     var iconUrl: String?
     var style: String?
@@ -20,7 +18,6 @@ class BaseActionElement: BaseElement {
     var isEnabled: Bool = true
     var role: ActionRole
 
-    // MARK: - Initializers
     init(
         type: ActionType,
         title: String? = nil,
@@ -32,38 +29,39 @@ class BaseActionElement: BaseElement {
         role: ActionRole? = nil,
         id: String? = nil
     ) {
-        self.type = type
+        self.actionType = type
+        // Map the action’s raw value into a CardElementType (assume they match for custom types)
+        let cardType = CardElementType(rawValue: type.rawValue) ?? .custom
+        self.role = role ?? (type == .openUrl ? .link : .button)
+        super.init(type: cardType, id: id)
         self.title = title
         self.iconUrl = iconUrl
         self.style = style
         self.tooltip = tooltip
         self.mode = mode
         self.isEnabled = isEnabled
-        self.role = role ?? (type == .openUrl ? .link : .button)
-        // Pass the action type’s raw value as the type string.
-        super.init(typeString: type.rawValue, id: id)
     }
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let typeRaw = try container.decode(String.self, forKey: .type)
-        guard let decodedType = ActionType(rawValue: typeRaw) else {
+        guard let decodedActionType = ActionType(rawValue: typeRaw) else {
             throw AdaptiveCardParseError.invalidType
         }
-        self.type = decodedType
+        self.actionType = decodedActionType
         self.title = try container.decodeIfPresent(String.self, forKey: .title)
         self.iconUrl = try container.decodeIfPresent(String.self, forKey: .iconUrl)
         self.style = try container.decodeIfPresent(String.self, forKey: .style) ?? "default"
         self.tooltip = try container.decodeIfPresent(String.self, forKey: .tooltip)
         self.mode = try container.decodeIfPresent(Mode.self, forKey: .mode) ?? .primary
         self.isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
-        self.role = try container.decodeIfPresent(ActionRole.self, forKey: .role) ?? (decodedType == .openUrl ? .link : .button)
+        self.role = try container.decodeIfPresent(ActionRole.self, forKey: .role) ?? (decodedActionType == .openUrl ? .link : .button)
         try super.init(from: decoder)
     }
     
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(type.rawValue, forKey: .type)
+        try container.encode(actionType.rawValue, forKey: .type)
         try container.encodeIfPresent(title, forKey: .title)
         try container.encodeIfPresent(iconUrl, forKey: .iconUrl)
         if style != "default" { try container.encode(style, forKey: .style) }
@@ -78,36 +76,12 @@ class BaseActionElement: BaseElement {
         case type, title, iconUrl, style, tooltip, mode, isEnabled, role = "actionRole"
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Action-Specific Deserialization
+    //
+    // Instead of overriding BaseCardElement.deserialize(...),
+    // add new methods that return BaseActionElement.
     
-    /// Store any additional properties from JSON.
-    func setAdditionalProperties(_ json: [String: Any]) {
-        self.additionalProperties = json.mapValues { AnyCodable($0) }
-    }
-    
-    /// Update the element’s type string.
-    func setElementTypeString(_ type: String) {
-        self.typeString = type
-    }
-    
-    public func serializeToJsonValue() -> [String: Any] {
-        var json: [String: Any] = [:]
-        json["type"] = self.type.rawValue
-        if let title = self.title { json["title"] = title }
-        if let iconUrl = self.iconUrl { json["iconUrl"] = iconUrl }
-        if self.style != "default" { json["style"] = self.style }
-        if let tooltip = self.tooltip { json["tooltip"] = tooltip }
-        json["mode"] = self.mode.rawValue
-        json["isEnabled"] = self.isEnabled
-        json["actionRole"] = self.role.rawValue
-        if let id = self.id { json["id"] = id }
-        return json
-    }
-}
-
-extension BaseActionElement {
-    /// Parses a BaseActionElement from a JSON dictionary.
-    static func deserialize(from json: [String: Any]) throws -> BaseActionElement {
+    class func deserializeAction(from json: [String: Any]) throws -> BaseActionElement {
         guard let typeString = json["type"] as? String,
               let type = ActionType(rawValue: typeString) else {
             throw AdaptiveCardParseError.invalidType
@@ -134,15 +108,17 @@ extension BaseActionElement {
         )
     }
     
-    /// Parses a BaseActionElement from a JSON string.
-    static func deserialize(from jsonString: String) throws -> BaseActionElement {
+    class func deserializeAction(from jsonString: String) throws -> BaseActionElement {
         guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseError.invalidJson
         }
-        return try deserialize(from: jsonObject)
+        return try deserializeAction(from: jsonDict)
     }
-    
+}
+
+extension BaseActionElement {
     /// Extracts an SVG path from the icon URL.
     func getSVGPath() -> String {
         guard let iconUrl = iconUrl else { return "" }

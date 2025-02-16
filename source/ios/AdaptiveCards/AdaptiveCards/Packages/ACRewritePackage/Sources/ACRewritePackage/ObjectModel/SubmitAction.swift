@@ -66,19 +66,23 @@ class SubmitAction: BaseActionElement {
     
     /// Serializes the action into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
-        var json = super.serializeToJsonValue()
-        
-        if let dataJson = self.dataJson {
-            json[AdaptiveCardSchemaKey.data.rawValue] = dataJson
+        do {
+            var json = try super.serializeToJsonValue()
+            
+            if let dataJson = self.dataJson {
+                json[AdaptiveCardSchemaKey.data.rawValue] = dataJson
+            }
+            
+            if associatedInputs != .auto {
+                json[AdaptiveCardSchemaKey.associatedInputs.rawValue] = associatedInputs.rawValue
+            }
+            
+            json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
+            return json
+        } catch {
+            debugPrint("submit action error serializing to json")
+            return [:]
         }
-        
-        if associatedInputs != .auto {
-            json[AdaptiveCardSchemaKey.associatedInputs.rawValue] = associatedInputs.rawValue
-        }
-        
-        json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
-        
-        return json
     }
     
     /// Converts the action into a JSON string.

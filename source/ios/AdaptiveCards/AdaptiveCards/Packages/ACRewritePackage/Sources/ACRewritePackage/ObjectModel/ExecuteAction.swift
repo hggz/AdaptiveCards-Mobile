@@ -54,21 +54,26 @@ final class ExecuteAction: BaseActionElement {
 
     /// Serializes the action into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
-        var json = super.serializeToJsonValue()
-
-        if let dataJson = dataJson {
-            // Convert [String: AnyCodable] to [String: Any] by extracting underlying values.
-            json["data"] = dataJson.mapValues { $0.value }
+        do {
+            var json = try super.serializeToJsonValue()
+            
+            if let dataJson = dataJson {
+                // Convert [String: AnyCodable] to [String: Any] by extracting underlying values.
+                json["data"] = dataJson.mapValues { $0.value }
+            }
+            if !verb.isEmpty {
+                json["verb"] = verb
+            }
+            if associatedInputs != .auto {
+                json["associatedInputs"] = associatedInputs.rawValue
+            }
+            json["conditionallyEnabled"] = conditionallyEnabled
+            
+            return json
+        } catch {
+            debugPrint("execute action error serializing to json")
+            return [:]
         }
-        if !verb.isEmpty {
-            json["verb"] = verb
-        }
-        if associatedInputs != .auto {
-            json["associatedInputs"] = associatedInputs.rawValue
-        }
-        json["conditionallyEnabled"] = conditionallyEnabled
-
-        return json
     }
 }
 

@@ -33,12 +33,6 @@ class ShowCardAction: BaseActionElement {
         }
     }
 
-    /// Retrieves resource information from the card.
-    /// (This uses the extension method added to AdaptiveCard above.)
-    func getResourceInformation() -> [RemoteResourceInformation] {
-        return card?.getResourceInformation() ?? []
-    }
-
     /// Decodes a `ShowCardAction` from a JSON dictionary.
     /// (Renamed to avoid conflict with BaseActionElement’s deserialize(from:) defined in an extension.)
     static func deserializeShowCardAction(from json: [String: Any]) throws -> ShowCardAction {

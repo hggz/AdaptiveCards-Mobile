@@ -85,7 +85,7 @@ class Icon: BaseCardElement {
             foregroundColor: ForegroundColor(rawValue: json["color"] as? String ?? ForegroundColor.default.rawValue) ?? .default,
             iconSize: IconSize(rawValue: json["size"] as? String ?? IconSize.standard.rawValue) ?? .standard,
             iconStyle: IconStyle(rawValue: json["style"] as? String ?? IconStyle.regular.rawValue) ?? .regular,
-            selectAction: try? BaseActionElement.deserialize(from: json["selectAction"] as? [String: Any] ?? [:])
+            selectAction: try? BaseActionElement.deserializeAction(from: json["selectAction"] as? [String: Any] ?? [:])
         )
     }
     
