@@ -46,16 +46,29 @@ class StyledCollectionElement: BaseCardElement {
         super.init(type: type, id: id)
     }
     
+    
+    // MARK: - Decodable
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.style = try container.decode(ContainerStyle.self, forKey: .style)
+        
+        // If "style" is missing, default to .none
+        self.style = try container.decodeIfPresent(ContainerStyle.self, forKey: .style) ?? .none
+        
+        // For verticalContentAlignment, it's optional. If there's no key, remain nil
         self.verticalContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalContentAlignment)
-        self.bleedDirection = try container.decode(ContainerBleedDirection.self, forKey: .bleedDirection)
-        self.minHeight = try container.decode(UInt.self, forKey: .minHeight)
-        self.hasPadding = try container.decode(Bool.self, forKey: .hasPadding)
-        self.hasBleed = try container.decode(Bool.self, forKey: .hasBleed)
-        self.showBorder = try container.decode(Bool.self, forKey: .showBorder)
-        self.roundedCorners = try container.decode(Bool.self, forKey: .roundedCorners)
+        
+        // If "bleedDirection" is missing, default to .bleedAll
+        self.bleedDirection = try container.decodeIfPresent(ContainerBleedDirection.self, forKey: .bleedDirection) ?? .bleedAll
+        
+        // If "minHeight" is missing, default to 0
+        self.minHeight = try container.decodeIfPresent(UInt.self, forKey: .minHeight) ?? 0
+        
+        // For these booleans, if missing, default to false
+        self.hasPadding = try container.decodeIfPresent(Bool.self, forKey: .hasPadding) ?? false
+        self.hasBleed = try container.decodeIfPresent(Bool.self, forKey: .hasBleed) ?? false
+        self.showBorder = try container.decodeIfPresent(Bool.self, forKey: .showBorder) ?? false
+        self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
+        
         self.parentalId = try container.decodeIfPresent(InternalId.self, forKey: .parentalId)
         self.backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
         self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
@@ -78,10 +91,22 @@ class StyledCollectionElement: BaseCardElement {
         try super.encode(to: encoder)
     }
     
+    // MARK: - CodingKeys
     enum CodingKeys: String, CodingKey {
-        case style, verticalContentAlignment, bleedDirection, minHeight, hasPadding, hasBleed, showBorder, roundedCorners, parentalId, backgroundImage, selectAction
+        case style
+        case verticalContentAlignment
+        case bleedDirection
+        case minHeight
+        case hasPadding
+        case hasBleed
+        case showBorder
+        case roundedCorners
+        case parentalId
+        case backgroundImage
+        case selectAction
     }
     
+    // MARK: - Custom Serialization
     func serializeToJsonV() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
         json["style"] = style.rawValue

@@ -45,6 +45,7 @@ class Column: StyledCollectionElement {
     var rtl: Bool?
     var layouts: [Layout]
     
+    // MARK: - Initializer
     init(id: String? = nil) {
         // Set initial values without triggering observers.
         self.width = "Auto"
@@ -69,21 +70,36 @@ class Column: StyledCollectionElement {
         self.populateKnownPropertiesSet()
     }
     
+    // MARK: - Codable
     private enum CodingKeys: String, CodingKey {
         case width, pixelWidth, items, rtl, layouts
     }
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Decode the stored values directly
-        self.width = try container.decode(String.self, forKey: .width)
-        self.pixelWidth = try container.decode(Int.self, forKey: .pixelWidth)
-        self.items = try container.decode([BaseCardElement].self, forKey: .items)
+
+        self.width = try container.decodeIfPresent(String.self, forKey: .width) ?? "Auto"
+        self.pixelWidth = try container.decodeIfPresent(Int.self, forKey: .pixelWidth) ?? 0
+
+        // Instead of decoding `[BaseCardElement].self`, decode a raw array of dictionaries.
+        if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
+            self.items = try rawItems.map { rawDict in
+                // Convert [String: AnyCodable] → [String: Any], then let BaseCardElement do the polymorphic decode.
+                let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
+                guard let dict = unwrapped as? [String: Any] else {
+                    throw AdaptiveCardParseError.invalidJson
+                }
+                return try BaseCardElement.deserialize(from: dict)
+            }
+        } else {
+            self.items = []
+        }
+
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
         try super.init(from: decoder)
     }
-    
+
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(width, forKey: .width)
@@ -114,21 +130,17 @@ class Column: StyledCollectionElement {
     }
     
     // MARK: - setWidth Methods
-    
-    // Method expected by parser – takes a warnings array.
     func setWidth(_ value: String, warnings: inout [AdaptiveCardParseWarning]) {
-        self.width = value  // Property observer on 'width' will update pixelWidth.
+        self.width = value  // Property observer on 'width' will update pixelWidth
     }
     
-    // Convenience method – if warnings are not needed.
     func setWidth(_ value: String) {
         var dummyWarnings = [AdaptiveCardParseWarning]()
         setWidth(value, warnings: &dummyWarnings)
     }
     
-    // MARK: - setPixelWidth
     func setPixelWidth(_ value: Int) {
-        self.pixelWidth = value  // Observer on 'pixelWidth' will update 'width'
+        self.pixelWidth = value // Observer on 'pixelWidth' will update 'width'
     }
     
     func getPixelWidth() -> Int {

@@ -49,12 +49,12 @@ class Image: BaseCardElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.url = try container.decode(String.self, forKey: .url)
-        self.backgroundColor = try container.decode(String.self, forKey: .backgroundColor)
-        self.imageStyle = try container.decode(ImageStyle.self, forKey: .imageStyle)
-        self.imageSize = try container.decode(ImageSize.self, forKey: .imageSize)
-        self.pixelWidth = try container.decode(UInt.self, forKey: .pixelWidth)
-        self.pixelHeight = try container.decode(UInt.self, forKey: .pixelHeight)
-        self.altText = try container.decode(String.self, forKey: .altText)
+        self.backgroundColor = try container.decodeIfPresent(String.self, forKey: .backgroundColor) ?? ""
+        self.imageStyle = try container.decodeIfPresent(ImageStyle.self, forKey: .imageStyle) ?? .defaultImageStyle
+        self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
+        self.pixelWidth = try container.decodeIfPresent(UInt.self, forKey: .pixelWidth) ?? 0
+        self.pixelHeight = try container.decodeIfPresent(UInt.self, forKey: .pixelHeight) ?? 0
+        self.altText = try container.decodeIfPresent(String.self, forKey: .altText) ?? ""
         self.hAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .hAlignment)
         self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
         try super.init(from: decoder)

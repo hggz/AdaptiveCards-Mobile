@@ -81,30 +81,37 @@ class BaseCardElement: BaseElement {
         try super.init(from: decoder)
     }
     /// Parses a BaseCardElement from a JSON dictionary.
-    static func deserialize(from json: [String: Any]) throws -> BaseCardElement {
-        guard let typeString = json["type"] as? String,
-              let type = CardElementType(rawValue: typeString) else {
+    static func deserialize(from originalJson: [String: Any]) throws -> BaseCardElement {
+        // 1) Unwrap first
+        let unwrapped = ParseUtil.unwrapAnyCodable(from: originalJson)
+        guard let jsonDict = unwrapped as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        
+        // 2) Now "type" is definitely a String if present
+        guard let typeString = jsonDict["type"] as? String else {
             throw AdaptiveCardParseError.invalidType
         }
-        let spacing = (json["spacing"] as? String).flatMap { Spacing(rawValue: $0) }
-        let height = (json["height"] as? String).flatMap { HeightType(rawValue: $0) }
-        let targetWidth = (json["targetWidth"] as? String).flatMap { TargetWidthType(rawValue: $0) }
-        let separator = json["separator"] as? Bool
-        let isVisible = json["isVisible"] as? Bool ?? true
-        let areaGridName = json["areaGridName"] as? String
-        let id = json["id"] as? String
-        return BaseCardElement(
-            type: type,
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName,
-            id: id
-        )
+
+        // 3) Convert to Data and decode
+        let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
+        let decoder = JSONDecoder()
+        switch typeString {
+        case CardElementType.textBlock.rawValue:
+            return try decoder.decode(TextBlock.self, from: data)
+        case CardElementType.columnSet.rawValue:
+            return try decoder.decode(ColumnSet.self, from: data)
+        case CardElementType.container.rawValue:
+            return try decoder.decode(Container.self, from: data)
+        case CardElementType.column.rawValue:
+            return try decoder.decode(Column.self, from: data)
+        case CardElementType.image.rawValue:
+            return try decoder.decode(Image.self, from: data)
+        default:
+            return try decoder.decode(BaseCardElement.self, from: data)
+        }
     }
-    
+
     /// Parses a BaseCardElement from a JSON string.
     static func deserialize(from jsonString: String) throws -> BaseCardElement {
         guard let jsonData = jsonString.data(using: .utf8),
@@ -121,15 +128,13 @@ class BaseCardElement: BaseElement {
     
     // MARK: - Overridable Serialization Method
     /// Serializes the BaseCardElement into a JSON dictionary.
-    public func serializeToJsonValue() throws -> [String: Any] {
-        let data = try JSONEncoder().encode(self)
-        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-        guard let dict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardParseError.invalidJson
-        }
-        return dict
+    func serializeToJsonValue() throws -> [String: Any] {
+        let json = self.toJSON()
+        // Validate that the dictionary can be serialized.
+        _ = try JSONSerialization.data(withJSONObject: json, options: [])
+        return json
     }
-    
+
     static func serializeSelectAction(_ action: BaseActionElement) throws -> [String: Any] {
         return try action.serializeToJsonValue()
     }

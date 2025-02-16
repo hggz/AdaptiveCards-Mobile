@@ -21,10 +21,25 @@ class Container: BaseCardElement {
     /// Required initializer for Codable conformance (inherited from BaseCardElement).
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.items = try container.decode([BaseCardElement].self, forKey: .items)
-        self.layouts = try container.decode([Layout].self, forKey: .layouts)
+
+        // Decode "items" polymorphically
+        if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
+            self.items = try rawItems.map { rawDict in
+                let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
+                guard let dict = unwrapped as? [String: Any] else {
+                    throw AdaptiveCardParseError.invalidJson
+                }
+                return try BaseCardElement.deserialize(from: dict)
+            }
+        } else {
+            self.items = []
+        }
+        
+        // Same for layouts if you want them to be dynamic.
+        // (But your Layout is likely a single type, so you can keep it as is or do the same approach.)
+        self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
+
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
-        // Then decode properties of BaseCardElement.
         try super.init(from: decoder)
     }
 

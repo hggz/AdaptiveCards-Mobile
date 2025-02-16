@@ -36,7 +36,6 @@ class BaseElement: Codable {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Decode using the mapped key "type"
         self.typeString = try container.decode(String.self, forKey: .typeString)
         self.id = try container.decodeIfPresent(String.self, forKey: .id)
         self.internalId = try container.decodeIfPresent(InternalId.self, forKey: .internalId) ?? InternalId.current()
@@ -45,6 +44,22 @@ class BaseElement: Codable {
         self.fallbackType = try container.decodeIfPresent(FallbackType.self, forKey: .fallbackType)
         self.fallbackContent = try container.decodeIfPresent(BaseElement.self, forKey: .fallbackContent)
         self.canFallbackToAncestor = try container.decodeIfPresent(Bool.self, forKey: .canFallbackToAncestor)
+        
+        // --- New code to also support the "fallback" key in the JSON ---
+        if container.contains(.fallback) {
+            // If the fallback is given as a string (e.g. "drop")
+            if let fallbackString = try? container.decode(String.self, forKey: .fallback) {
+                if fallbackString.lowercased() == "drop" {
+                    self.fallbackType = .drop
+                }
+            }
+            // Otherwise try to decode it as an object.
+            else if let rawFallback = try? container.decode([String: AnyCodable].self, forKey: .fallback) {
+                // Convert [String: AnyCodable] to a [String: Any] dictionary.
+                let fallbackDict = rawFallback.mapValues { $0.value }
+                self.fallbackContent = try BaseCardElement.deserialize(from: fallbackDict)
+            }
+        }
     }
     
     func encode(to encoder: Encoder) throws {
@@ -61,7 +76,7 @@ class BaseElement: Codable {
     }
     
     private enum CodingKeys: String, CodingKey {
-        case typeString = "type"  // Map the property typeString to the key "type"
+        case typeString = "type"
         case id
         case internalId
         case additionalProperties
@@ -69,6 +84,7 @@ class BaseElement: Codable {
         case fallbackType
         case fallbackContent
         case canFallbackToAncestor
+        case fallback  // <-- New key for “fallback”
     }
     
     /// Deserialize from JSON data.
@@ -92,9 +108,19 @@ class BaseElement: Codable {
                 json[key] = anyCodable.value
             }
         }
-        // Additional properties (e.g. "requires", "fallbackType", etc.) can be added if desired.
+        // Add fallback info using the "fallback" key:
+        if let fallbackContent = fallbackContent {
+            json["fallback"] = fallbackContent.toJSON()
+        } else if let fallbackType = fallbackType {
+            json["fallback"] = fallbackType.rawValue
+        }
+        // Recursively unwrap AnyCodable values.
+        if let unwrapped = ParseUtil.unwrapAnyCodable(from: json) as? [String: Any] {
+            return unwrapped
+        }
         return json
     }
+
     /// Checks whether the element meets host requirements.
     func meetsRequirements(_ hostProvides: FeatureRegistration) -> Bool {
         guard let requires = requires else { return true }

@@ -236,8 +236,13 @@ class AdaptiveCard: Codable {
         let refresh = try container.decodeIfPresent(Refresh.self, forKey: .refresh)
         let authentication = try container.decodeIfPresent(Authentication.self, forKey: .authentication)
 
-        // Body (array of BaseCardElement)
-        let body = try container.decodeIfPresent([BaseCardElement].self, forKey: .body) ?? []
+        // Instead of automatic decoding, decode the body as an array of dictionaries,
+        // then use our factory method to create the proper subclass instances.
+        let rawBody = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .body) ?? []
+        let body = try rawBody.map { rawElement in
+            let dict = rawElement.mapValues { $0.value }
+            return try BaseCardElement.deserialize(from: dict)
+        }
 
         // Actions
         let actions = try container.decodeIfPresent([BaseActionElement].self, forKey: .actions) ?? []

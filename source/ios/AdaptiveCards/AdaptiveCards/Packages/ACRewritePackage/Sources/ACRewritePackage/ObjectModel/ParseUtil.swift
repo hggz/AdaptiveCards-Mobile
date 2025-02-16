@@ -110,7 +110,7 @@ struct ParseUtil {
         }
         return defaultValue
     }
-
+    
     // MARK: – JSON Dictionary & Value Extraction
     
     static func getJsonDictionary(from jsonString: String) throws -> [String: Any] {
@@ -201,7 +201,7 @@ struct ParseUtil {
         }
         return []
     }
-
+    
     static func getActionCollection(from json: [String: Any], key: String) throws -> [BaseActionElement] {
         let array = try getArray(from: json, key: key, required: false)
         return try array.map { try BaseActionElement.deserializeAction(from: $0) }
@@ -239,13 +239,18 @@ struct ParseUtil {
                                      required: Bool) throws -> [BaseCardElement] {
         let array = try getArray(from: json, key: key, required: required)
         var elements: [BaseCardElement] = []
-        for dict in array {
-            let element = try BaseCardElement.deserialize(from: dict)
+        for rawItem in array {
+            // Recursively remove AnyCodable wrappers before passing to deserialize
+            let unwrappedAny = unwrapAnyCodable(from: rawItem)
+            guard let unwrappedDict = unwrappedAny as? [String: Any] else {
+                throw AdaptiveCardParseError.invalidJson
+            }
+            let element = try BaseCardElement.deserialize(from: unwrappedDict)
             elements.append(element)
         }
         return elements
     }
-    
+
     static func getValueAsString(from json: [String: Any], key: String) -> String {
         return json[key] as? String ?? ""
     }
@@ -297,5 +302,28 @@ struct ParseUtil {
             return result + "\n"
         }
         return "\(value)\n"
+    }
+    
+    static func unwrapAnyCodable(from object: Any) -> Any {
+        if let anyCodable = object as? AnyCodable {
+            // Recursively unwrap the inner value.
+            return unwrapAnyCodable(from: anyCodable.value)
+        } else if let array = object as? [Any] {
+            return array.map { unwrapAnyCodable(from: $0) }
+        } else if let dict = object as? [String: Any] {
+            var newDict = [String: Any]()
+            for (key, value) in dict {
+                newDict[key] = unwrapAnyCodable(from: value)
+            }
+            return newDict
+        } else if let dict = object as? [String: AnyCodable] {
+            var newDict = [String: Any]()
+            for (key, value) in dict {
+                newDict[key] = unwrapAnyCodable(from: value)
+            }
+            return newDict
+        } else {
+            return object
+        }
     }
 }
