@@ -1,17 +1,5 @@
 import Foundation
 
-// MARK: - Stubbed Helper Types
-
-/// Enum representing possible separator thickness values.
-enum SeparatorThickness: String, Codable {
-    case defaultThickness = "Default"
-    case thick = "Thick"
-
-    init(from rawValue: String) {
-        self = SeparatorThickness(rawValue: rawValue) ?? .defaultThickness
-    }
-}
-
 /// MARK: - Separator Definition
 
 /// Represents a separator with color and thickness attributes.

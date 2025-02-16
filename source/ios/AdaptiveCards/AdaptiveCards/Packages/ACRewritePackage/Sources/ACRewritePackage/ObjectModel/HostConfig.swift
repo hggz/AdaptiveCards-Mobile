@@ -43,14 +43,6 @@ extension TextWeight {
     }
 }
 
-enum ActionMode: String, Codable {
-    case inline
-}
-
-enum IconPlacement: String, Codable {
-    case aboveTitle, leftOfTitle
-}
-
 // MARK: - Configuration Structures
 
 // 1. FontSizesConfig

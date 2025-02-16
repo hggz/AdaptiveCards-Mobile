@@ -2,12 +2,6 @@ import Foundation
 
 // MARK: - Additional Missing Types
 
-/// Represents the height setting for a card element.
-enum HeightType: String, Codable {
-    case auto
-    case stretch
-}
-
 /// Represents the fallback behavior for an element.
 enum FallbackType: String, Codable {
     case none

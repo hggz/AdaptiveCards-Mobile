@@ -1,13 +1,5 @@
 import Foundation
 
-/// Enumeration for vertical content alignment.
-enum VerticalContentAlignment: String, Codable {
-    case top, center, bottom
-    static func fromString(_ value: String) -> VerticalContentAlignment? {
-        return VerticalContentAlignment(rawValue: value)
-    }
-}
-
 /// Enumeration for bleed directions.
 enum ContainerBleedDirection: String, Codable {
     case bleedAll, bleedRestricted

@@ -29,12 +29,10 @@ struct EnumMapping<T: Hashable & Codable>: Codable {
     init(_ mappings: [(T, String)]) {
         var eToS = [T: String]()
         var sToE = [String: T]()
-
         for (enumValue, stringValue) in mappings {
             eToS[enumValue] = stringValue
             sToE[stringValue.lowercased()] = enumValue
         }
-
         self.enumToString = eToS
         self.stringToEnum = sToE
     }
@@ -56,7 +54,7 @@ enum EnumMappingError: Error {
     case invalidValue(String)
 }
 
-// Enum mapping accessor functions
+// Protocol to allow enums to use the mapping
 protocol AdaptiveCardEnum: Codable, Hashable {
     static var mappings: EnumMapping<Self> { get }
 }
@@ -65,7 +63,6 @@ extension AdaptiveCardEnum {
     func toString() -> String {
         return Self.mappings.toString(self)
     }
-
     static func fromString(_ value: String) throws -> Self {
         return try Self.mappings.fromString(value)
     }
@@ -182,4 +179,14 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
         (AdaptiveCardSchemaKey.associatedInputs, "associatedInputs"),
         (AdaptiveCardSchemaKey.conditionallyEnabled, "conditionallyEnabled"),
     ])
+}
+
+extension AdaptiveCardSchemaKey {
+    static func fromString(_ s: String) -> AdaptiveCardSchemaKey? {
+        return try? mappings.fromString(s)
+    }
+
+    static func toString(_ value: AdaptiveCardSchemaKey) -> String {
+        return mappings.toString(value)
+    }
 }
