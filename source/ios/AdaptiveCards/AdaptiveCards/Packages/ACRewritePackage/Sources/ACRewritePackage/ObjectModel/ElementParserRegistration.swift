@@ -105,4 +105,5 @@ enum AdaptiveCardParseError: Error {
     case idCollision
     case invalidType
     case customError
+    case serializationFailed
 }

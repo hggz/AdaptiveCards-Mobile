@@ -34,6 +34,43 @@ class BaseElement: Codable {
         self.canFallbackToAncestor = canFallbackToAncestor
     }
     
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // Decode using the mapped key "type"
+        self.typeString = try container.decode(String.self, forKey: .typeString)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.internalId = try container.decodeIfPresent(InternalId.self, forKey: .internalId) ?? InternalId.current()
+        self.additionalProperties = try container.decodeIfPresent([String: AnyCodable].self, forKey: .additionalProperties)
+        self.requires = try container.decodeIfPresent([String: SemanticVersion].self, forKey: .requires)
+        self.fallbackType = try container.decodeIfPresent(FallbackType.self, forKey: .fallbackType)
+        self.fallbackContent = try container.decodeIfPresent(BaseElement.self, forKey: .fallbackContent)
+        self.canFallbackToAncestor = try container.decodeIfPresent(Bool.self, forKey: .canFallbackToAncestor)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        // Encode typeString using the key "type"
+        try container.encode(typeString, forKey: .typeString)
+        try container.encodeIfPresent(id, forKey: .id)
+        try container.encode(internalId, forKey: .internalId)
+        try container.encodeIfPresent(additionalProperties, forKey: .additionalProperties)
+        try container.encodeIfPresent(requires, forKey: .requires)
+        try container.encodeIfPresent(fallbackType, forKey: .fallbackType)
+        try container.encodeIfPresent(fallbackContent, forKey: .fallbackContent)
+        try container.encodeIfPresent(canFallbackToAncestor, forKey: .canFallbackToAncestor)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case typeString = "type"  // Map the property typeString to the key "type"
+        case id
+        case internalId
+        case additionalProperties
+        case requires
+        case fallbackType
+        case fallbackContent
+        case canFallbackToAncestor
+    }
+    
     /// Deserialize from JSON data.
     static func decode(from json: Data) throws -> BaseElement {
         return try JSONDecoder().decode(BaseElement.self, from: json)
@@ -55,10 +92,9 @@ class BaseElement: Codable {
                 json[key] = anyCodable.value
             }
         }
-        // Additional properties such as "requires", "fallbackType", etc. could be added if desired.
+        // Additional properties (e.g. "requires", "fallbackType", etc.) can be added if desired.
         return json
     }
-    
     /// Checks whether the element meets host requirements.
     func meetsRequirements(_ hostProvides: FeatureRegistration) -> Bool {
         guard let requires = requires else { return true }

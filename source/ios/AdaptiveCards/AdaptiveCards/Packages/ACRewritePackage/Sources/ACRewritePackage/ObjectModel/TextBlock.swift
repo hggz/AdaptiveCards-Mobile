@@ -66,8 +66,9 @@ class TextBlock: BaseCardElement {
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
         self.textColor = try container.decodeIfPresent(ForegroundColor.self, forKey: .textColor)
         self.isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
-        self.wrap = try container.decode(Bool.self, forKey: .wrap)
-        self.maxLines = try container.decode(UInt.self, forKey: .maxLines)
+        // Use decodeIfPresent and provide defaults when keys are missing.
+        self.wrap = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
+        self.maxLines = try container.decodeIfPresent(UInt.self, forKey: .maxLines) ?? 0
         self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
         self.language = try container.decodeIfPresent(String.self, forKey: .language)
         try super.init(from: decoder)
@@ -106,25 +107,35 @@ class TextBlock: BaseCardElement {
     
     /// Converts this TextBlock into a JSON dictionary.
     func serializeToJsonVal() -> [String: Any] {
+        // Always include the "type" and "text" keys.
         var json: [String: Any] = [
-            AdaptiveCardSchemaKey.text.rawValue: text,
-            AdaptiveCardSchemaKey.wrap.rawValue: wrap,
-            AdaptiveCardSchemaKey.maxLines.rawValue: maxLines
+            AdaptiveCardSchemaKey.type.rawValue: "TextBlock",
+            AdaptiveCardSchemaKey.text.rawValue: text
         ]
+        
+        // Only add other keys if they differ from default values.
         if let textStyle = textStyle { json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue }
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
         if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
         if let textColor = textColor { json[AdaptiveCardSchemaKey.color.rawValue] = textColor.rawValue }
         if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
+        if wrap != false { json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap }
+        if maxLines != 0 { json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines }
         if let horizontalAlignment = horizontalAlignment { json[AdaptiveCardSchemaKey.horizontalAlignment.rawValue] = horizontalAlignment.rawValue }
         if let language = language { json[AdaptiveCardSchemaKey.language.rawValue] = language }
+        
         return json
     }
     
     /// Converts this TextBlock into a JSON string.
     func serialize() throws -> String {
-        return try ParseUtil.jsonToString(serializeToJsonVal())
+        // Use .sortedKeys to force a predictable key order.
+        let data = try JSONSerialization.data(withJSONObject: serializeToJsonVal(), options: [.sortedKeys])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw AdaptiveCardParseError.serializationFailed
+        }
+        return jsonString + "\n"
     }
 }
 
@@ -136,10 +147,13 @@ struct TextBlockParser: BaseCardElementParser {
               typeString == CardElementType.textBlock.rawValue else {
             throw AdaptiveCardParseError.invalidType
         }
-        // Use the global deserialization helper (provided by BaseCardElement) and cast.
-        guard let textBlock = try BaseCardElement.deserialize(from: value) as? TextBlock else {
-            throw AdaptiveCardParseError.invalidType
-        }
+        
+        // Convert the JSON dictionary into Data.
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        
+        // Decode a TextBlock directly using the type information.
+        let textBlock = try decoder.decode(TextBlock.self, from: data)
         return textBlock
     }
     

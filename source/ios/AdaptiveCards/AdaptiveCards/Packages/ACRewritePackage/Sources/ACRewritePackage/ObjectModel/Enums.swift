@@ -1,9 +1,34 @@
 import Foundation
 
 enum CardElementType: String, Codable {
-    case actionSet, adaptiveCard, choiceInput, choiceSetInput, column, columnSet, container, custom, dateInput, fact, factSet
-    case image, icon, imageSet, media, numberInput, ratingInput, ratingLabel, richTextBlock, table, tableCell, tableRow, textBlock
-    case textInput, timeInput, toggleInput, compoundButton, unknown
+    case actionSet = "ActionSet"
+    case adaptiveCard = "AdaptiveCard"
+    case choiceInput = "ChoiceInput"
+    case choiceSetInput = "ChoiceSetInput"
+    case column = "Column"
+    case columnSet = "ColumnSet"
+    case container = "Container"
+    case custom = "Custom"
+    case dateInput = "DateInput"
+    case fact = "Fact"
+    case factSet = "FactSet"
+    case image = "Image"
+    case icon = "Icon"
+    case imageSet = "ImageSet"
+    case media = "Media"
+    case numberInput = "NumberInput"
+    case ratingInput = "RatingInput"
+    case ratingLabel = "RatingLabel"
+    case richTextBlock = "RichTextBlock"
+    case table = "Table"
+    case tableCell = "TableCell"
+    case tableRow = "TableRow"
+    case textBlock = "TextBlock"
+    case textInput = "TextInput"
+    case timeInput = "TimeInput"
+    case toggleInput = "ToggleInput"
+    case compoundButton = "CompoundButton"
+    case unknown = "Unknown"
 }
 
 enum Mode: String, Codable {
