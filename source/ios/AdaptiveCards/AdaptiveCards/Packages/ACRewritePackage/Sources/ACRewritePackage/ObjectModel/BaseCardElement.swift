@@ -107,6 +107,16 @@ class BaseCardElement: BaseElement {
             return try decoder.decode(Column.self, from: data)
         case CardElementType.image.rawValue:
             return try decoder.decode(Image.self, from: data)
+        case CardElementType.inputText.rawValue:
+            return try decoder.decode(TextInput.self, from: data)
+        case CardElementType.inputChoiceSet.rawValue:
+            return try decoder.decode(ChoiceSetInput.self, from: data)
+        case CardElementType.inputToggle.rawValue:
+            return try decoder.decode(ToggleInput.self, from: data)
+        case CardElementType.media.rawValue:
+            return try decoder.decode(Media.self, from: data)
+        case CardElementType.unknown.rawValue:
+            fallthrough
         default:
             return try decoder.decode(BaseCardElement.self, from: data)
         }

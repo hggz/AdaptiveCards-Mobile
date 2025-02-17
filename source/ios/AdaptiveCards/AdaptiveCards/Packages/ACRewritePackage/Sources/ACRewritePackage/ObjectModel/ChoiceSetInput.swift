@@ -12,15 +12,14 @@ class ChoiceSetInput: BaseCardElement {
     var placeholder: String
 
     private enum CodingKeys: String, CodingKey {
-        case isMultiSelect = "IsMultiSelect"
-        case choiceSetStyle = "Style"
-        case choices = "Choices"
-        case choicesData = "ChoicesData"
-        case value = "Value"
-        case wrap = "Wrap"
-        case placeholder = "Placeholder"
+        case isMultiSelect  = "isMultiSelect"
+        case choiceSetStyle = "style"
+        case choices        = "choices"
+        case choicesData    = "choicesData"
+        case value          = "value"
+        case wrap           = "wrap"
+        case placeholder    = "placeholder"
     }
-
     /// Designated initializer.
     init(
         isMultiSelect: Bool = false,
@@ -46,13 +45,13 @@ class ChoiceSetInput: BaseCardElement {
     /// Required initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.isMultiSelect = try container.decode(Bool.self, forKey: .isMultiSelect)
-        self.choiceSetStyle = try container.decode(ChoiceSetStyle.self, forKey: .choiceSetStyle)
-        self.choices = try container.decode([ChoiceInput].self, forKey: .choices)
-        self.choicesData = try container.decodeIfPresent(ChoicesData.self, forKey: .choicesData)
-        self.value = try container.decode(String.self, forKey: .value)
-        self.wrap = try container.decode(Bool.self, forKey: .wrap)
-        self.placeholder = try container.decode(String.self, forKey: .placeholder)
+        self.isMultiSelect  = try container.decodeIfPresent(Bool.self,  forKey: .isMultiSelect)  ?? false
+        self.choiceSetStyle = try container.decodeIfPresent(ChoiceSetStyle.self, forKey: .choiceSetStyle) ?? .compact
+        self.choices        = try container.decodeIfPresent([ChoiceInput].self, forKey: .choices) ?? []
+        self.choicesData    = try container.decodeIfPresent(ChoicesData.self, forKey: .choicesData)
+        self.value          = try container.decodeIfPresent(String.self, forKey: .value) ?? ""
+        self.wrap           = try container.decodeIfPresent(Bool.self,  forKey: .wrap)  ?? false
+        self.placeholder    = try container.decodeIfPresent(String.self, forKey: .placeholder) ?? ""
         try super.init(from: decoder)
     }
 

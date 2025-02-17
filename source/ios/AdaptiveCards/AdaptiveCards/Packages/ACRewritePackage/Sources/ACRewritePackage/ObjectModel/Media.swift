@@ -39,7 +39,7 @@ class Media: BaseCardElement {
         self.poster = try container.decodeIfPresent(String.self, forKey: .poster)
         self.altText = try container.decodeIfPresent(String.self, forKey: .altText)
         self.sources = try container.decode([MediaSource].self, forKey: .sources)
-        self.captionSources = try container.decode([CaptionSource].self, forKey: .captionSources)
+        self.captionSources = try container.decodeIfPresent([CaptionSource].self, forKey: .captionSources) ?? []
         try super.init(from: decoder)
     }
     

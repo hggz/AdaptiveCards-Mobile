@@ -28,6 +28,9 @@ enum CardElementType: String, Codable {
     case timeInput = "TimeInput"
     case toggleInput = "ToggleInput"
     case compoundButton = "CompoundButton"
+    case inputText = "Input.Text"
+    case inputChoiceSet = "Input.ChoiceSet"
+    case inputToggle = "Input.Toggle"
     case unknown = "Unknown"
 }
 
@@ -100,6 +103,9 @@ extension CardElementType {
         case .toggleInput: return "toggleInput"
         case .compoundButton: return "compoundButton"
         case .unknown: return "unknown"
+        case .inputText: return "inputText"
+        case .inputChoiceSet: return "inputChoiceSet"
+        case .inputToggle: return "inputToggle"
         }
     }
     
@@ -382,6 +388,23 @@ extension ImageStyle {
 
 enum TextInputStyle: String, Codable {
     case text, tel, url, email, password
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        switch raw.lowercased() {
+        case "password":
+            self = .password
+        case "tel":
+            self = .tel
+        case "url":
+            self = .url
+        case "email":
+            self = .email
+        default:
+            self = .text
+        }
+    }
 }
 
 extension TextInputStyle {

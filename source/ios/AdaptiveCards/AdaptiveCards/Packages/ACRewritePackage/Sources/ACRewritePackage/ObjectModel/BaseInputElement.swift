@@ -72,7 +72,7 @@ class BaseInputElement: BaseCardElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.label = try container.decodeIfPresent(String.self, forKey: .label)
-        self.isRequired = try container.decode(Bool.self, forKey: .isRequired)
+        self.isRequired = try container.decodeIfPresent(Bool.self, forKey: .isRequired) ?? false
         self.errorMessage = try container.decodeIfPresent(String.self, forKey: .errorMessage)
         self.valueChangedAction = try container.decodeIfPresent(ValueChangedAction.self, forKey: .valueChangedAction)
         try super.init(from: decoder)

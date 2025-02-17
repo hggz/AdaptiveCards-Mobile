@@ -94,18 +94,27 @@ class ColumnSet: StyledCollectionElement {
 /// Parses ColumnSet elements in an Adaptive Card.
 struct ColumnSetParser: BaseCardElementParser {
     func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
-        // Verify that the type is ColumnSet.
-        guard let typeString = value["type"] as? String,
-              typeString == CardElementType.columnSet.rawValue else {
-            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Invalid type for ColumnSet")
+        try ParseUtil.expectTypeString(value, expected: .columnSet)
+        let columnSet = try BaseCardElement.deserialize(from: value) as! ColumnSet
+        
+        let columnsArray: [[String: Any]] = try ParseUtil.getArray(from: value, key: "columns", required: true)
+        var columns: [Column] = []
+        for colJson in columnsArray {
+            var temp = colJson
+            if temp["type"] == nil {
+                temp["type"] = "Column"
+            }
+            
+            let base = try BaseCardElement.deserialize(from: temp)
+            guard let col = base as? Column else {
+                throw AdaptiveCardParseError.invalidType
+            }
+            columns.append(col)
         }
-        // Use the global deserialization helper to decode a BaseCardElement and cast to ColumnSet.
-        guard let columnSet = try BaseCardElement.deserialize(from: value) as? ColumnSet else {
-            throw AdaptiveCardParseException(statusCode: .unsupportedParserOverride, message: "ColumnSet deserialization failed")
-        }
+        columnSet.columns = columns
         return columnSet
     }
-    
+
     func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: &context, value: jsonDict)

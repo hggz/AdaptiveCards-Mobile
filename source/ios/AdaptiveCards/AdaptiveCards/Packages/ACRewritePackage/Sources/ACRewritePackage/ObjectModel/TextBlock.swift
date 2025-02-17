@@ -10,6 +10,21 @@ enum TextStyle: String, Codable {
     init(from rawValue: String) {
         self = TextStyle(rawValue: rawValue) ?? .defaultStyle
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        
+        switch raw.lowercased() {
+        case "default":
+            self = .defaultStyle
+        case "heading":
+            self = .heading
+        default:
+            // If unknown, fall back to .defaultStyle:
+            self = .defaultStyle
+        }
+    }
 }
 
 // MARK: - TextBlock Implementation

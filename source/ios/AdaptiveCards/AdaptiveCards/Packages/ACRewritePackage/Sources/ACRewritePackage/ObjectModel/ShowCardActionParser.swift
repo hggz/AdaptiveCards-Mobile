@@ -5,7 +5,11 @@ class ShowCardActionParser: ActionElementParser {
     
     /// Deserializes a `ShowCardAction` from a JSON dictionary.
     func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
-        let showCardAction = try ShowCardAction.deserializeAction(from: json)
+        let action = try ShowCardAction.deserializeAction(from: json)
+        guard let showCardAction = action as? ShowCardAction else {
+            debugPrint("unable to deserialize showcard action")
+            return action
+        }
         
         // Extract and parse the card
         if let cardJson = json[AdaptiveCardSchemaKey.card.rawValue] as? [String: Any] {
@@ -16,7 +20,10 @@ class ShowCardActionParser: ActionElementParser {
 //            context.warnings.append(contentsOf: parseResult.warnings) // TODO
             
             // Assign the parsed card to the action
-//            showCardAction.card = parseResult.card
+            if let cardObj = json["card"] as? [String: Any] {
+                let subCard = try AdaptiveCard.deserialize(from: cardObj)
+                showCardAction.card = subCard
+            }
         }
         
         return showCardAction

@@ -70,30 +70,30 @@ class ImageSet: BaseCardElement {
 /// Parses ImageSet elements in an Adaptive Card.
 struct ImageSetParser: BaseCardElementParser {
     func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
-        // Verify that the type is "ImageSet".
-        try ParseUtil.expectTypeString(value, expected: .imageSet)
+        try ParseUtil.expectTypeString(value, expected: .imageSet) // Already present
+        let imageSet = try BaseCardElement.deserialize(from: value) as! ImageSet
         
-        // Deserialize an ImageSet using the generic helper.
-        let imageSet: ImageSet = try BaseCardElement.deserialize(from: value) as! ImageSet
-        
-        // Set the imageSize property.
-        imageSet.imageSize = try ParseUtil.getEnumValue(from: value, key: "imageSize", defaultValue: .none, converter: ImageSize.fromString)
-        
-        // Parse the images array.
+        // Grab the "images" array
         let imagesArray: [[String: Any]] = try ParseUtil.getArray(from: value, key: "images", required: true)
         var images: [Image] = []
         for imageJson in imagesArray {
-            // Deserialize each image (using the global helper).
-            let baseElement = try BaseCardElement.deserialize(from: imageJson)
-            if let image = baseElement as? Image {
-                images.append(image)
+            // 1) If "type" is missing, set it to "Image"
+            var temp = imageJson
+            if temp["type"] == nil {
+                temp["type"] = "Image"
             }
+            
+            // 2) Parse it. If it’s not actually an Image, throw.
+            let base = try BaseCardElement.deserialize(from: temp)
+            guard let asImage = base as? Image else {
+                throw AdaptiveCardParseError.invalidType
+            }
+            images.append(asImage)
         }
         imageSet.images = images
-        
         return imageSet
     }
-    
+
     func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: &context, value: jsonDict)
