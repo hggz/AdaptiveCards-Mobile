@@ -32,7 +32,7 @@ enum TextStyle: String, Codable {
 /// Represents a TextBlock element in an Adaptive Card.
 class TextBlock: BaseCardElement {
     var text: String
-    var textStyle: TextStyle?
+    var textStyle: TextStyle = .defaultStyle
     var textSize: TextSize?
     var textWeight: TextWeight?
     var fontType: FontType?
@@ -46,7 +46,7 @@ class TextBlock: BaseCardElement {
     /// Designated initializer.
     init(
         text: String = "",
-        textStyle: TextStyle? = nil,
+        textStyle: TextStyle = .defaultStyle,
         textSize: TextSize? = nil,
         textWeight: TextWeight? = nil,
         fontType: FontType? = nil,
@@ -80,7 +80,18 @@ class TextBlock: BaseCardElement {
         // Decoding and then performing HTML decoding here if needed.
         let rawText = try container.decode(String.self, forKey: .text)
         self.text = TextBlock.decodeHTMLEntities(rawText)
-        self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle)
+        if container.contains(.textStyle) {
+            let rawStyle = try container.decode(String.self, forKey: .textStyle)
+            // Convert case-insensitively. If unknown => defaultStyle
+            switch rawStyle.lowercased() {
+            case "heading": self.textStyle = .heading
+            case "default": self.textStyle = .defaultStyle
+            default:
+                self.textStyle = .defaultStyle
+            }
+        } else {
+            self.textStyle = .defaultStyle
+        }
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
@@ -130,7 +141,7 @@ class TextBlock: BaseCardElement {
             AdaptiveCardSchemaKey.type.rawValue: "TextBlock",
             AdaptiveCardSchemaKey.text.rawValue: text
         ]
-        if let textStyle = textStyle { json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue }
+        json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
         if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
@@ -215,7 +226,7 @@ extension TextBlock {
 
 /// Parses TextBlock elements in an Adaptive Card.
 struct TextBlockParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Verify the type.
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.textBlock.rawValue else {
@@ -231,8 +242,8 @@ struct TextBlockParser: BaseCardElementParser {
         return textBlock
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

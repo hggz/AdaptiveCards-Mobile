@@ -72,7 +72,7 @@ class ToggleInput: BaseInputElement {
 
 /// Parses ToggleInput elements in an Adaptive Card.
 struct ToggleInputParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         let toggleInput = ToggleInput()
         toggleInput.title = try ParseUtil.getString(from: value, key: "title", required: true)
         toggleInput.value = try ParseUtil.getString(from: value, key: "value")
@@ -82,8 +82,8 @@ struct ToggleInputParser: BaseCardElementParser {
         return toggleInput
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

@@ -36,7 +36,24 @@ class ColumnSet: StyledCollectionElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.columns = try container.decodeIfPresent([Column].self, forKey: .columns) ?? []
+        
+        // We decode an array of raw dictionaries, then enforce "type = Column" if missing.
+        let rawColumns = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .columns) ?? []
+        var builtColumns = [Column]()
+        for raw in rawColumns {
+            var dict = raw.mapValues { $0.value }
+            if dict["type"] == nil {
+                dict["type"] = "Column"
+            }
+            let base = try BaseCardElement.deserialize(from: dict)
+            guard let col = base as? Column else {
+                throw AdaptiveCardParseError.invalidType
+            }
+            builtColumns.append(col)
+        }
+        self.columns = builtColumns
+        
+        // Finally call super
         try super.init(from: decoder)
     }
     
@@ -58,11 +75,11 @@ class ColumnSet: StyledCollectionElement {
     
     // MARK: - Deserialization of Children
     /// Parses the children elements (columns) from the provided JSON.
-    func deserializeChildren(context: inout ParseContext, json: [String: Any]) throws {
+    func deserializeChildren(context: ParseContext, json: [String: Any]) throws {
         // Use ParseUtil to get an array of BaseCardElement.
         let elements = try ParseUtil.getElementCollection(
             isTopToBottomContainer: false,
-            context: &context,
+            context: context,
             json: json,
             key: "columns",
             required: false
@@ -93,7 +110,7 @@ class ColumnSet: StyledCollectionElement {
 
 /// Parses ColumnSet elements in an Adaptive Card.
 struct ColumnSetParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         try ParseUtil.expectTypeString(value, expected: .columnSet)
         let columnSet = try BaseCardElement.deserialize(from: value) as! ColumnSet
         
@@ -115,8 +132,8 @@ struct ColumnSetParser: BaseCardElementParser {
         return columnSet
     }
 
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

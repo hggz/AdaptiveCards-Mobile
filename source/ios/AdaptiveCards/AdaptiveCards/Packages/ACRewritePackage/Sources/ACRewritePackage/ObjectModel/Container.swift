@@ -69,7 +69,7 @@ class Container: BaseCardElement {
 
 /// Parses a Container element from JSON.
 struct ContainerParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Use the BaseCardElement deserialization extension and then cast.
         guard let container = try BaseCardElement.deserialize(from: value) as? Container else {
             throw AdaptiveCardParseError.invalidType
@@ -77,8 +77,8 @@ struct ContainerParser: BaseCardElementParser {
         return container
     }
 
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

@@ -28,25 +28,25 @@ class ParserRegistrationTests: XCTestCase {
     
     // Define a custom element parser.
     class TestCustomElementParser: BaseCardElementParser {
-        func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
             return TestCustomElement(json: value)
         }
         
-        func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+        func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
             let jsonValue = ParseUtil.getJsonValue(from: value)
-            return try deserialize(context: &context, value: jsonValue)
+            return try deserialize(context: context, value: jsonValue)
         }
     }
     
     // Define a custom action parser.
     class TestCustomActionParser: ActionElementParser {
-        func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+        func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
             return TestCustomElement(json: json)
         }
         
-        func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+        func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
             let jsonValue = ParseUtil.getJsonValue(from: jsonString)
-            return try deserialize(context: &context, from: jsonValue)
+            return try deserialize(context: context, from: jsonValue)
         }
     }
     

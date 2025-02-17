@@ -30,7 +30,7 @@ class ObjectModelTest: XCTestCase {
         let emptyJson: [String: Any] = [:]
 
         // Swift function is throwing; catch or use try?
-        let selectAction = try ParseUtil.getAction(from: emptyJson, key: "selectAction", context: &context)
+        let selectAction = try ParseUtil.getAction(from: emptyJson, key: "selectAction", context: context)
         XCTAssertNil(selectAction)
     }
 
@@ -59,7 +59,7 @@ class ObjectModelTest: XCTestCase {
         let json = try ParseUtil.getJsonValueFromString(cardStr)
         var context = ParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: &context)
+        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNil(selectAction)
     }
 
@@ -79,7 +79,7 @@ class ObjectModelTest: XCTestCase {
         let json = try ParseUtil.getJsonValueFromString(str)
         var context = ParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: &context)
+        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
 
         // According to the original C++ test, it expects an UnknownAction. In your Swift code,
         // it might end up returning a BaseActionElement with .type = .unknown, or it might throw.
@@ -119,7 +119,7 @@ class ObjectModelTest: XCTestCase {
         let json = try ParseUtil.getJsonValueFromString(str)
         var context = ParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: &context)
+        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
         // If your Swift OpenUrlAction has .type = .openUrl, or something similar, test that:
         XCTAssertEqual(selectAction?.actionType, .openUrl)
@@ -142,7 +142,7 @@ class ObjectModelTest: XCTestCase {
         let json = try ParseUtil.getJsonValueFromString(str)
         var context = ParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: &context)
+        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
         XCTAssertEqual(selectAction?.actionType, .submit)
         XCTAssertEqual(selectAction?.title, "Submit")
@@ -695,7 +695,7 @@ class ObjectModelTest: XCTestCase {
             XCTFail("Second body element is not TextInput.")
             return
         }
-        XCTAssertEqual(passwordInput.style.rawValue.lowercased(), "password")
+        XCTAssertEqual(passwordInput.style?.rawValue.lowercased(), "password")
     }
 
     func testPasswordWithMultilineParseTest() throws {

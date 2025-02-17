@@ -176,7 +176,7 @@ struct TableColumnDefinition: Codable {
         case width = "width"
     }
     
-    static func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> TableColumnDefinition {
+    static func deserialize(context: ParseContext, from json: [String: Any]) throws -> TableColumnDefinition {
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
         return try TableColumnDefinition.deserialize(from: data)
     }

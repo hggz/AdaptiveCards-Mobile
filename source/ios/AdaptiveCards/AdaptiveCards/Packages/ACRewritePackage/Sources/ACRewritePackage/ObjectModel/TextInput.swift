@@ -15,7 +15,7 @@ class TextInput: BaseInputElement {
     var maxLength: UInt
     
     /// Style of the text input.
-    var style: TextInputStyle
+    var style: TextInputStyle?
     
     /// Optional inline action associated with the input.
     var inlineAction: BaseActionElement?
@@ -47,7 +47,7 @@ class TextInput: BaseInputElement {
         self.value = try container.decodeIfPresent(String.self, forKey: .value)
         self.isMultiline = try container.decodeIfPresent(Bool.self, forKey: .isMultiline) ?? false
         self.maxLength = try container.decodeIfPresent(UInt.self, forKey: .maxLength) ?? 0
-        self.style = try container.decodeIfPresent(TextInputStyle.self, forKey: .style) ?? .text
+        self.style = try container.decodeIfPresent(TextInputStyle.self, forKey: .style)
         self.inlineAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .inlineAction)
         self.regex = try container.decodeIfPresent(String.self, forKey: .regex)
         // Call the superclass decoder initializer.
@@ -74,7 +74,7 @@ class TextInput: BaseInputElement {
 
 /// Parses TextInput elements in an Adaptive Card.
 struct TextInputParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Create a new TextInput using its default initializer.
         let textInput = TextInput()
         
@@ -84,7 +84,7 @@ struct TextInputParser: BaseCardElementParser {
         textInput.isMultiline = try ParseUtil.getBool(from: value, key: "isMultiline", defaultValue: false, required: false)
         textInput.maxLength = try ParseUtil.getUInt(from: value, key: "maxLength", defaultValue: 0, required: false)
         textInput.style = try ParseUtil.getEnumValue(from: value, key: "style", defaultValue: .text, converter: TextInputStyle.fromString)
-        textInput.inlineAction = try ParseUtil.getAction(from: value, key: "inlineAction", context: &context)
+        textInput.inlineAction = try ParseUtil.getAction(from: value, key: "inlineAction", context: context)
         textInput.regex = try ParseUtil.getString(from: value, key: "regex")
         
         // Validate style and multiline settings.
@@ -100,8 +100,8 @@ struct TextInputParser: BaseCardElementParser {
         return textInput
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

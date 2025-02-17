@@ -94,7 +94,7 @@ class Table: BaseCardElement, CollectionCoreElement {
 
 /// Parses Table elements in an Adaptive Card.
 struct TableParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Verify that the type is correct.
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.table.rawValue else {
@@ -107,8 +107,8 @@ struct TableParser: BaseCardElementParser {
         return table
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

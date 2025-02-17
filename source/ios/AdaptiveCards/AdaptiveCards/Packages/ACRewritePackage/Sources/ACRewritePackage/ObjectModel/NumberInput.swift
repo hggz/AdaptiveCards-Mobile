@@ -128,11 +128,11 @@ class NumberInput: BaseCardElement {
 
 /// Parses NumberInput elements in an Adaptive Card.
 class NumberInputParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         return try NumberInput.createFromJSON(value)
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         return try NumberInput.createFromJSONString(value)
     }
 }

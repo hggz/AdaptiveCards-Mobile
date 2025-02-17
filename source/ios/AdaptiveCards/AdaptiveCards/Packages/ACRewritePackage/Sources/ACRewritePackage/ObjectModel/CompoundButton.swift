@@ -58,7 +58,7 @@ class CompoundButton: BaseCardElement {
 
 /// Parses CompoundButton elements in an Adaptive Card.
 struct CompoundButtonParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Verify that the type in the JSON matches CompoundButton.
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.compoundButton.rawValue else {
@@ -71,8 +71,8 @@ struct CompoundButtonParser: BaseCardElementParser {
         return compoundButton
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

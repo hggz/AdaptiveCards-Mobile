@@ -16,7 +16,7 @@ class TableCell: Container {
     }
     
     /// Deserializes a `TableCell` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> TableCell {
+    static func deserialize(from json: [String: Any], context: ParseContext) throws -> TableCell {
         // Retrieve the id property using the expected key.
         let idProperty = json[AdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
         let internalId = InternalId.next()
@@ -73,12 +73,12 @@ class TableCell: Container {
     }
     
     /// Deserializes a `TableCell` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> TableCell {
+    static func deserialize(from jsonString: String, context: ParseContext) throws -> TableCell {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
-        return try deserialize(from: jsonDict, context: &context)
+        return try deserialize(from: jsonDict, context: context)
     }
 }

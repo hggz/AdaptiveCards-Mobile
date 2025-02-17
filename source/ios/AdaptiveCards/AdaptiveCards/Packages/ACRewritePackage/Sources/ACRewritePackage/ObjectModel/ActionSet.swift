@@ -42,7 +42,7 @@ class ActionSet: BaseCardElement {
 struct ActionSetParser: BaseCardElementParser {
     
     /// Parses an `ActionSet` from a JSON dictionary.
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.actionSet.rawValue else {
             throw AdaptiveCardParseError.invalidType
@@ -53,8 +53,8 @@ struct ActionSetParser: BaseCardElementParser {
     }
     
     /// Parses an `ActionSet` from a JSON string.
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

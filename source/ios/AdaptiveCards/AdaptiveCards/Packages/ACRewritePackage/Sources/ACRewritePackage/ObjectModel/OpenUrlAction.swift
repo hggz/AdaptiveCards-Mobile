@@ -74,13 +74,42 @@ class OpenUrlAction: BaseActionElement {
 
 /// Parses `OpenUrlAction` elements from JSON.
 struct OpenUrlActionParser: ActionElementParser {
-    func deserialize(context: inout ParseContext, from json: [String : Any]) throws -> BaseActionElement {
-        // Use the correct parameter name and return type.
-        return try OpenUrlAction.deserializeAction(from: json)
+    func deserialize(context: ParseContext, from json: [String : Any]) throws -> BaseActionElement {
+        return try OpenUrlAction.make(from: json)
     }
     
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
-        // Use the correct parameter name.
-        return try OpenUrlAction.deserializeAction(from: jsonString)
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+        let dict = try ParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(context: context, from: dict)
+    }
+}
+
+extension OpenUrlAction {
+    static func make(from json: [String: Any]) throws -> OpenUrlAction {
+        // parse "url"
+        guard let url = json["url"] as? String else {
+            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "url")
+        }
+        let title = json["title"] as? String
+        let iconUrl = json["iconUrl"] as? String
+        let style = json["style"] as? String ?? "default"
+        let tooltip = json["tooltip"] as? String
+        let mode = (json["mode"] as? String).flatMap { Mode(rawValue: $0) } ?? .primary
+        let isEnabled = json["isEnabled"] as? Bool ?? true
+
+        // "actionRole" can also be read if present
+        let roleString = json["actionRole"] as? String
+        let role: ActionRole = roleString.flatMap { ActionRole(rawValue: $0) } ?? .link
+        let id = json["id"] as? String
+
+        return OpenUrlAction(url: url,
+                             title: title,
+                             iconUrl: iconUrl,
+                             tooltip: tooltip,
+                             style: style,
+                             mode: mode,
+                             isEnabled: isEnabled,
+                             role: role,
+                             id: id)
     }
 }

@@ -128,16 +128,16 @@ class SubmitAction: BaseActionElement {
 
 /// Parses a SubmitAction from JSON.
 class SubmitActionParser: ActionElementParser {
-    func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
         return try SubmitAction.make(from: json)
     }
     
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
-        return try deserialize(context: &context, from: jsonDict)
+        return try deserialize(context: context, from: jsonDict)
     }
 }

@@ -122,11 +122,11 @@ class UnknownElement: BaseCardElement {
 
 /// Parses UnknownElement elements in an Adaptive Card.
 class UnknownElementParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         return try UnknownElement.createFromJSON(value)
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         return try UnknownElement.createFromJSONString(value)
     }
 }

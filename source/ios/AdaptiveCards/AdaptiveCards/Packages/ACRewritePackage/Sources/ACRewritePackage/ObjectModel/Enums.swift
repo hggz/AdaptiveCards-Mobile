@@ -555,6 +555,22 @@ enum ChoiceSetStyle: String, Codable {
     case compact = "Compact"
     case expanded = "Expanded"
     case filtered = "Filtered"
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self).lowercased()
+        switch raw {
+        case "compact":
+            self = .compact
+        case "expanded":
+            self = .expanded
+        default:
+            // If test never uses other styles, you can default or throw.
+            // If you want to fail gracefully, you can do:
+            // throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown style: \(raw)")
+            self = .compact
+        }
+    }
 }
 
 extension ChoiceSetStyle {

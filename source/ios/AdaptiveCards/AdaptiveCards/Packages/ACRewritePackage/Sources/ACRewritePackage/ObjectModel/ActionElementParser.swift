@@ -1,8 +1,8 @@
 import Foundation
 
 protocol ActionElementParser {
-    func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement
 }
 
 // Wrapper for an existing ActionElementParser to enforce ID collision detection
@@ -15,22 +15,22 @@ final class ActionElementParserWrapper: ActionElementParser {
         self.parser = parser
     }
     
-    func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
         guard let idProperty = json["id"] as? String else {
             throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Missing id property")
         }
         context.pushElement(idJsonProperty: idProperty, internalId: InternalId.next())
-        let element = try parser.deserialize(context: &context, from: json)
+        let element = try parser.deserialize(context: context, from: json)
         context.popElement()
         return element
     }
     
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
         guard let jsonData = jsonString.data(using: .utf8),
               let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
-        return try deserialize(context: &context, from: json)
+        return try deserialize(context: context, from: json)
     }
 }
 

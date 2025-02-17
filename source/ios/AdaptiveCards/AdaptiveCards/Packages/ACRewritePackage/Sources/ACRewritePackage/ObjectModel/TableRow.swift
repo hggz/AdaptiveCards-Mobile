@@ -49,7 +49,7 @@ class TableRow: BaseCardElement {
     }
 
     /// Deserializes a `TableRow` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> TableRow {
+    static func deserialize(from json: [String: Any], context: ParseContext) throws -> TableRow {
         // Retrieve the id property using the expected key from AdaptiveCardSchemaKey.
         let idProperty = json[AdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
         let internalId = InternalId.next()
@@ -77,10 +77,10 @@ class TableRow: BaseCardElement {
         tableRow.cells = try ParseUtil.getElementCollectionOfSingleType(
             from: json,
             key: CodingKeys.cells.rawValue,
-            context: &context,
+            context: context,
             defaultValue: [],
-            converter: { (context: inout ParseContext, json: [String: Any]) throws -> TableCell in
-                return try TableCell.deserialize(from: json, context: &context)
+            converter: { (context: ParseContext, json: [String: Any]) throws -> TableCell in
+                return try TableCell.deserialize(from: json, context: context)
             }
         )
         context.popElement()
@@ -89,13 +89,13 @@ class TableRow: BaseCardElement {
     }
 
     /// Deserializes a `TableRow` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> TableRow {
+    static func deserialize(from jsonString: String, context: ParseContext) throws -> TableRow {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
-        return try deserialize(from: jsonDict, context: &context)
+        return try deserialize(from: jsonDict, context: context)
     }
 
     private enum CodingKeys: String, CodingKey {

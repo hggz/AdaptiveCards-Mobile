@@ -7,36 +7,45 @@ final class UnknownAction: BaseActionElement {
         super.init(type: .unknownAction)
     }
     
-    /// Required initializer for decoding.
+    
     required init(from decoder: Decoder) throws {
+        // This decodes "type", "title", "iconUrl", etc., from the base:
         try super.init(from: decoder)
     }
     
-    /// Serializes the unknown action into a JSON dictionary.
-    /// Returns additionalProperties if set, or an empty dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
-        return additionalProperties ?? [:]
+        // Return any stored additionalProperties or base fields
+        var result = try super.serializeToJsonValue()
+        // If you want the original unknown type in the output:
+        // result["type"] = self.typeString  // or whatever
+        return result
     }
 }
 
 /// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
-    /// Deserializes an `UnknownAction` from a JSON dictionary.
-    func deserialize(context: inout ParseContext, from json: [String: Any]) throws -> BaseActionElement {
-        let actualType = try ParseUtil.getTypeAsString(from: json)
-        // Use the BaseActionElement deserialization method for actions.
-        let base = try BaseActionElement.deserializeAction(from: json)
-        guard let unknownAction = base as? UnknownAction else {
-            throw AdaptiveCardParseError.invalidType
-        }
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+        // If you want to decode any base properties (title, iconUrl, etc.)
+        // you can do manual decoding or use a JSONDecoder.
+        // For example, using JSONDecoder:
+
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        let unknownAction = try JSONDecoder().decode(UnknownAction.self, from: data)
+        
+        // Now store original JSON as additionalProperties,
+        // so you preserve all fields.
         unknownAction.setAdditionalProperties(json)
-        unknownAction.setElementTypeString(actualType)
+        
+        // If you'd like to record the original "type" the JSON had, do:
+        if let typeStr = json["type"] as? String {
+            unknownAction.setElementTypeString(typeStr)
+        }
+        
         return unknownAction
     }
     
-    /// Deserializes an `UnknownAction` from a JSON string.
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
         let json = try ParseUtil.getJsonDictionary(from: jsonString)
-        return try deserialize(context: &context, from: json)
+        return try deserialize(context: context, from: json)
     }
 }

@@ -55,7 +55,7 @@ class TimeInput: BaseInputElement {
 
 /// Parses TimeInput elements in an Adaptive Card.
 struct TimeInputParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         // Verify the type.
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.timeInput.rawValue else {
@@ -68,8 +68,8 @@ struct TimeInputParser: BaseCardElementParser {
         return timeInput
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

@@ -76,14 +76,14 @@ class DateInput: BaseInputElement {
 
 /// Parses DateInput elements in an Adaptive Card.
 class DateInputParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String : Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String : Any]) throws -> BaseCardElement {
         guard let dateInput = DateInput.fromJSON(value) else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid DateInput JSON")
         }
         return dateInput
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         guard let dateInput = DateInput.fromJSONString(value) else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid DateInput JSON string")
         }

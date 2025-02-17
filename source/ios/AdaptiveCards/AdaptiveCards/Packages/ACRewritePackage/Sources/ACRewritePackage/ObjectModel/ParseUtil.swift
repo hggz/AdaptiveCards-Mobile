@@ -207,7 +207,7 @@ struct ParseUtil {
         return try array.map { try BaseActionElement.deserializeAction(from: $0) }
     }
     
-    static func getAction(from json: [String: Any], key: String, context: inout ParseContext) throws -> BaseActionElement? {
+    static func getAction(from json: [String: Any], key: String, context: ParseContext) throws -> BaseActionElement? {
         guard let actionJson = json[key] as? [String: Any] else {
             return nil
         }
@@ -217,23 +217,23 @@ struct ParseUtil {
     static func getElementCollectionOfSingleType<T>(
         from json: [String: Any],
         key: String,
-        context: inout ParseContext,
+        context: ParseContext,
         defaultValue: [T] = [],
-        converter: (inout ParseContext, [String: Any]) throws -> T
+        converter: (ParseContext, [String: Any]) throws -> T
     ) throws -> [T] {
         guard let array = json[key] as? [[String: Any]] else {
             return defaultValue
         }
         var results: [T] = []
         for item in array {
-            let parsedItem = try converter(&context, item)
+            let parsedItem = try converter(context, item)
             results.append(parsedItem)
         }
         return results
     }
     
     static func getElementCollection(isTopToBottomContainer: Bool,
-                                     context: inout ParseContext,
+                                     context: ParseContext,
                                      json: [String: Any],
                                      key: String,
                                      required: Bool) throws -> [BaseCardElement] {

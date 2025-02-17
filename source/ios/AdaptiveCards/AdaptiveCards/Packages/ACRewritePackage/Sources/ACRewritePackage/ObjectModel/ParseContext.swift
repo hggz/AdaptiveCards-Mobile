@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents the context during parsing of an Adaptive Card, tracking hierarchy and element state.
-struct ParseContext {
+class ParseContext {
     var elementParserRegistration: ElementParserRegistration?
     var actionParserRegistration: ActionParserRegistration?
     var warnings: [AdaptiveCardParseWarning] = []
@@ -39,12 +39,12 @@ struct ParseContext {
     // MARK: - Hierarchy Management
     
     /// Push an element onto the parsing stack.
-    mutating func pushElement(idJsonProperty: String, internalId: InternalId, isFallback: Bool = false) {
+    func pushElement(idJsonProperty: String, internalId: InternalId, isFallback: Bool = false) {
         idStack.append((id: idJsonProperty, internalId: internalId, isFallback: isFallback))
     }
     
     /// Pop the last element off the parsing stack.
-    mutating func popElement() {
+    func popElement() {
         _ = idStack.popLast()
     }
     
@@ -55,7 +55,7 @@ struct ParseContext {
     
     // MARK: - Style and Context Management
     
-    mutating func setLanguage(_ value: String) {
+    func setLanguage(_ value: String) {
         language = value
     }
     
@@ -63,7 +63,7 @@ struct ParseContext {
         return language
     }
     
-    mutating func setParentalContainerStyle(_ style: ContainerStyle) {
+    func setParentalContainerStyle(_ style: ContainerStyle) {
         parentalContainerStyles.append(style)
     }
     
@@ -75,19 +75,19 @@ struct ParseContext {
         return parentalPadding.last
     }
     
-    mutating func saveContextForStyledCollectionElement(_ current: StyledCollectionElement) {
+    func saveContextForStyledCollectionElement(_ current: StyledCollectionElement) {
         parentalPadding.append(InternalId.next())
     }
     
-    mutating func restoreContextForStyledCollectionElement(_ current: StyledCollectionElement) {
+    func restoreContextForStyledCollectionElement(_ current: StyledCollectionElement) {
         _ = parentalPadding.popLast()
     }
     
-    mutating func pushBleedDirection(_ direction: ContainerBleedDirection) {
+    func pushBleedDirection(_ direction: ContainerBleedDirection) {
         parentalBleedDirection.append(direction)
     }
     
-    mutating func popBleedDirection() {
+    func popBleedDirection() {
         _ = parentalBleedDirection.popLast()
     }
     

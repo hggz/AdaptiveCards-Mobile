@@ -28,8 +28,22 @@ class ImageSet: BaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.images = try container.decodeIfPresent([Image].self, forKey: .images) ?? []
-        self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
+        let rawImgs = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .images) ?? []
+        var result = [Image]()
+        for raw in rawImgs {
+            var dict = raw.mapValues { $0.value }
+            // Only set "Image" if it's missing:
+            if dict["type"] == nil {
+                dict["type"] = "Image"
+            }
+            let base = try BaseCardElement.deserialize(from: dict)
+            guard let img = base as? Image else {
+                // If it says "Elephant" => decode -> invalidType => or we can throw ourselves
+                throw AdaptiveCardParseError.invalidType
+            }
+            result.append(img)
+        }
+        self.images = result
         try super.init(from: decoder)
     }
     
@@ -69,7 +83,7 @@ class ImageSet: BaseCardElement {
 
 /// Parses ImageSet elements in an Adaptive Card.
 struct ImageSetParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         try ParseUtil.expectTypeString(value, expected: .imageSet) // Already present
         let imageSet = try BaseCardElement.deserialize(from: value) as! ImageSet
         
@@ -94,8 +108,8 @@ struct ImageSetParser: BaseCardElementParser {
         return imageSet
     }
 
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

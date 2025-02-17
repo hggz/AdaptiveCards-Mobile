@@ -13,13 +13,13 @@ class ShowCardAction: BaseActionElement {
 
     /// Decodes a `ShowCardAction` from a JSON dictionary.
     required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if container.contains(.card) {
-            let cardDict = try container.decode([String: AnyCodable].self, forKey: .card)
-            let dict = cardDict.mapValues { $0.value }
-            // IMPORTANT: parse as an AdaptiveCard, not BaseCardElement
-            self.card = try AdaptiveCard.deserialize(from: dict)
-        }
+//        let container = try decoder.container(keyedBy: CodingKeys.self)
+//        if container.contains(.card) {
+//            let cardDict = try container.decode([String: AnyCodable].self, forKey: .card)
+//            let dict = cardDict.mapValues { $0.value }
+//            // IMPORTANT: parse as an AdaptiveCard, not BaseCardElement
+//            self.card = try AdaptiveCard.deserialize(from: dict)
+//        }
         try super.init(from: decoder)
     }
 

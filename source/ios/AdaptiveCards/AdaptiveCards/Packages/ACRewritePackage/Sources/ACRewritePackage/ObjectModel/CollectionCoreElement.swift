@@ -4,11 +4,11 @@ protocol CollectionCoreElement: BaseCardElement {
     // Remove 'mutating' since BaseCardElement is a class.
     func deserializeChildren(from json: [String: Any]) throws
     
-    static func deserialize<T: CollectionCoreElement>(from json: [String: Any], context: inout ParseContext) throws -> T
+    static func deserialize<T: CollectionCoreElement>(from json: [String: Any], context: ParseContext) throws -> T
 }
 
 extension CollectionCoreElement {
-    static func deserialize<T: CollectionCoreElement>(from json: [String: Any], context: inout ParseContext) throws -> T {
+    static func deserialize<T: CollectionCoreElement>(from json: [String: Any], context: ParseContext) throws -> T {
         // Call the BaseCardElement deserializer without a context parameter.
         let collection = try BaseCardElement.deserialize(from: json) as! T
         

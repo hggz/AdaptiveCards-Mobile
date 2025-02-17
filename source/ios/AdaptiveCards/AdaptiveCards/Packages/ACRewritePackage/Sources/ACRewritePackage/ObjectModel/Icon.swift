@@ -114,11 +114,11 @@ enum IconStyle: String, Codable {
 
 /// Parses Icon elements in an Adaptive Card.
 class IconParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String : Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String : Any]) throws -> BaseCardElement {
         return Icon.iconFromJSON(value)
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         guard let icon = Icon.iconFromJSONString(value) else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid Icon JSON string")
         }

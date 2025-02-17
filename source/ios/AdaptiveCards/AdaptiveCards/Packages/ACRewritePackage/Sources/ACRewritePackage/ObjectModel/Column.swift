@@ -163,10 +163,10 @@ class Column: StyledCollectionElement {
         }
     }
     
-    func deserializeChildren(context: inout ParseContext, json: [String: Any]) throws {
+    func deserializeChildren(context: ParseContext, json: [String: Any]) throws {
         let cardElements = try ParseUtil.getElementCollection(
             isTopToBottomContainer: true,
-            context: &context,
+            context: context,
             json: json,
             key: "items",
             required: false
@@ -186,7 +186,7 @@ class Column: StyledCollectionElement {
 
 /// Parses Column elements in an Adaptive Card.
 struct ColumnParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.column.rawValue else {
             throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Invalid type for Column")
@@ -236,8 +236,8 @@ struct ColumnParser: BaseCardElementParser {
         return column
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: &context, value: jsonDict)
+        return try deserialize(context: context, value: jsonDict)
     }
 }

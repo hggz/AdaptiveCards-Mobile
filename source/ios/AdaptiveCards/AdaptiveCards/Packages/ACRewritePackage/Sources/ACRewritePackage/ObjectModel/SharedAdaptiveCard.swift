@@ -154,7 +154,7 @@ public class AdaptiveCard: Codable {
         if let selectActionJson = json[AdaptiveCardSchemaKey.selectAction.rawValue] as? [String: Any] {
             selectAction = try BaseActionElement.deserializeAction(from: selectActionJson)
         }
-        return AdaptiveCard(
+        let card = AdaptiveCard(
             version: version,
             fallbackText: fallbackText,
             backgroundImage: backgroundImage,
@@ -175,7 +175,67 @@ public class AdaptiveCard: Codable {
             fallbackContent: nil,
             fallbackType: .none
         )
+        try checkDuplicateIds(in: card)
+        return card
     }
+    
+    private static func checkDuplicateIds(in card: AdaptiveCard) throws {
+        var seen = Set<String>()
+        // Check body
+        for element in card.body {
+            try gatherIds(element, &seen)
+        }
+        // Check actions
+        for action in card.actions {
+            try gatherIds(action, &seen)
+        }
+        // If you have to check deeper sub-elements, you can do that inside `gatherIds`.
+    }
+
+    private static func gatherIds(_ element: Any, _ seen: inout Set<String>) throws {
+        switch element {
+        case let base as BaseCardElement:
+            if let theId = base.id, !theId.isEmpty {
+                if seen.contains(theId) {
+                    throw AdaptiveCardParseError.idCollision
+                }
+                seen.insert(theId)
+            }
+            // Recurse if the element is a container or column set, etc.
+            if let container = base as? Container {
+                for item in container.items { try gatherIds(item, &seen) }
+            }
+            if let colSet = base as? ColumnSet {
+                for col in colSet.columns {
+                    try gatherIds(col, &seen)
+                }
+            }
+            if let col = base as? Column {
+                for item in col.items {
+                    try gatherIds(item, &seen)
+                }
+            }
+            // etc. for other composite elements
+
+        case let action as BaseActionElement:
+            if let theId = action.id, !theId.isEmpty {
+                if seen.contains(theId) {
+                    throw AdaptiveCardParseError.idCollision
+                }
+                seen.insert(theId)
+            }
+            // If it's a ShowCardAction with an embedded sub-card, gather IDs there:
+            if let showCard = action as? ShowCardAction, let subCard = showCard.card {
+                // gather IDs from subCard.body and subCard.actions...
+                for item in subCard.body { try gatherIds(item, &seen) }
+                for subAction in subCard.actions { try gatherIds(subAction, &seen) }
+            }
+
+        default:
+            break
+        }
+    }
+
 
     /// Deserializes an AdaptiveCard from a JSON string.
     static func deserialize(from jsonString: String) throws -> AdaptiveCard {

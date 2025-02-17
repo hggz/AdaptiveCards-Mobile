@@ -29,7 +29,7 @@ class ToggleVisibilityAction: BaseActionElement {
     }
 
     /// Deserializes a `ToggleVisibilityAction` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: inout ParseContext) throws -> ToggleVisibilityAction {
+    static func deserialize(from json: [String: Any], context: ParseContext) throws -> ToggleVisibilityAction {
         let toggleVisibilityAction = ToggleVisibilityAction()
         if let targetsArray = json["targetElements"] as? [[String: Any]] {
             toggleVisibilityAction.targetElements = try targetsArray.map {
@@ -43,13 +43,13 @@ class ToggleVisibilityAction: BaseActionElement {
     }
 
     /// Deserializes a `ToggleVisibilityAction` from a JSON string.
-    static func deserialize(from jsonString: String, context: inout ParseContext) throws -> ToggleVisibilityAction {
+    static func deserialize(from jsonString: String, context: ParseContext) throws -> ToggleVisibilityAction {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {
             throw AdaptiveCardParseError.invalidJson
         }
-        return try deserialize(from: jsonDict, context: &context)
+        return try deserialize(from: jsonDict, context: context)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -59,11 +59,11 @@ class ToggleVisibilityAction: BaseActionElement {
 
 /// Parses a `ToggleVisibilityAction` from JSON.
 class ToggleVisibilityActionParser: ActionElementParser {
-    func deserialize(context: inout ParseContext, from json: [String : Any]) throws -> BaseActionElement {
-        return try ToggleVisibilityAction.deserialize(from: json, context: &context)
+    func deserialize(context: ParseContext, from json: [String : Any]) throws -> BaseActionElement {
+        return try ToggleVisibilityAction.deserialize(from: json, context: context)
     }
     
-    func deserialize(fromString jsonString: String, context: inout ParseContext) throws -> BaseActionElement {
-        return try ToggleVisibilityAction.deserialize(from: jsonString, context: &context)
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+        return try ToggleVisibilityAction.deserialize(from: jsonString, context: context)
     }
 }

@@ -30,7 +30,7 @@ final class FontTypeTests: XCTestCase {
         // Create a ParseContext and parse the JSON back into a TextBlock.
         var context = ParseContext()
         let parser = TextBlockParser()
-        let parsedObject = try parser.deserialize(fromString: &context, value: jsonString)
+        let parsedObject = try parser.deserialize(fromString: context, value: jsonString)
         
         guard let parsedTextBlock = parsedObject as? TextBlock else {
             XCTFail("Parsed object is not a TextBlock")

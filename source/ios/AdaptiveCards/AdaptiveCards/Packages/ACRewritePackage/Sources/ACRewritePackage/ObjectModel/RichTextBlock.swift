@@ -133,11 +133,11 @@ class RichTextBlock: BaseCardElement {
 
 /// Parses RichTextBlock elements in an Adaptive Card.
 class RichTextBlockParser: BaseCardElementParser {
-    func deserialize(context: inout ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
         return try RichTextBlock.createFromJSON(value)
     }
     
-    func deserialize(fromString context: inout ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
         return try RichTextBlock.createFromJSONString(value)
     }
 }
