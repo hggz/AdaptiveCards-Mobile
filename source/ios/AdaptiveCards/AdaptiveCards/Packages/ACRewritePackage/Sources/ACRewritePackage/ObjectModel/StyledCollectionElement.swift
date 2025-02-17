@@ -1,10 +1,5 @@
 import Foundation
 
-/// Enumeration for bleed directions.
-enum ContainerBleedDirection: String, Codable {
-    case bleedAll, bleedRestricted
-}
-
 /// The styled collection element base class (made inheritable).
 class StyledCollectionElement: BaseCardElement {
     var style: ContainerStyle

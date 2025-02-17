@@ -35,68 +35,11 @@ enum CardElementType: String, Codable {
 /// The test expects `.adaptiveCard` → "AdaptiveCard", etc.
 extension CardElementType {
     static func toString(_ value: CardElementType) -> String {
-        switch value {
-        case .actionSet: return "ActionSet"
-        case .adaptiveCard: return "AdaptiveCard"
-        case .choiceSetInput: return "choiceSetInput"
-        case .column: return "column"
-        case .columnSet: return "columnSet"
-        case .container: return "container"
-        case .custom: return "custom"
-        case .dateInput: return "dateInput"
-        case .fact: return "fact"
-        case .factSet: return "factSet"
-        case .image: return "image"
-        case .icon: return "icon"
-        case .imageSet: return "imageSet"
-        case .media: return "media"
-        case .numberInput: return "numberInput"
-        case .ratingInput: return "ratingInput"
-        case .ratingLabel: return "ratingLabel"
-        case .richTextBlock: return "richTextBlock"
-        case .table: return "table"
-        case .tableCell: return "tableCell"
-        case .tableRow: return "tableRow"
-        case .textBlock: return "textBlock"
-        case .textInput: return "textInput"
-        case .timeInput: return "timeInput"
-        case .toggleInput: return "toggleInput"
-        case .compoundButton: return "compoundButton"
-        case .unknown: return "unknown"
-        }
+        return value.rawValue
     }
     
     static func fromString(_ str: String) -> CardElementType? {
-        switch str {
-        case "ActionSet": return .actionSet
-        case "AdaptiveCard": return .adaptiveCard
-        case "choiceSetInput": return .choiceSetInput
-        case "column": return .column
-        case "columnSet": return .columnSet
-        case "container": return .container
-        case "custom": return .custom
-        case "dateInput": return .dateInput
-        case "fact": return .fact
-        case "factSet": return .factSet
-        case "image": return .image
-        case "icon": return .icon
-        case "imageSet": return .imageSet
-        case "media": return .media
-        case "numberInput": return .numberInput
-        case "ratingInput": return .ratingInput
-        case "ratingLabel": return .ratingLabel
-        case "richTextBlock": return .richTextBlock
-        case "table": return .table
-        case "tableCell": return .tableCell
-        case "tableRow": return .tableRow
-        case "textBlock": return .textBlock
-        case "textInput": return .textInput
-        case "timeInput": return .timeInput
-        case "toggleInput": return .toggleInput
-        case "compoundButton": return .compoundButton
-        case "unknown": return .unknown
-        default: return nil
-        }
+        return CardElementType(rawValue: str)
     }
 }
 
@@ -129,7 +72,7 @@ enum HostWidth: String, Codable {
 }
 
 enum TargetWidthType: String, Codable {
-    case `default`, veryNarrow, narrow, standard, wide
+    case `default` = "Default", veryNarrow, narrow, standard, wide
     case atMostVeryNarrow, atMostNarrow, atMostStandard, atMostWide
     case atLeastVeryNarrow, atLeastNarrow, atLeastStandard, atLeastWide
 }
@@ -150,14 +93,7 @@ enum TextSize: String, Codable {
 
 extension TextSize {
     static func toString(_ value: TextSize) -> String {
-        // "Default" → "Normal", others are the same as rawValue
-        switch value {
-        case .defaultSize: return "Normal"
-        case .small: return "Small"
-        case .medium: return "Medium"
-        case .large: return "Large"
-        case .extraLarge: return "ExtraLarge"
-        }
+        return value.rawValue
     }
     
     static func fromString(_ s: String) -> TextSize? {
@@ -269,9 +205,10 @@ extension ForegroundColor {
 // MARK: - HorizontalAlignment
 
 enum HorizontalAlignment: String, Codable {
-    case left = "Left"
+    case left = "left"
     case center = "center"
-    case right = "Right"
+    case right = "right"
+    
     init(from rawValue: String) {
         self = HorizontalAlignment(rawValue: rawValue) ?? .left
     }
@@ -279,13 +216,14 @@ enum HorizontalAlignment: String, Codable {
 
 extension HorizontalAlignment {
     static func toString(_ value: HorizontalAlignment) -> String {
-        return value.rawValue // e.g. "Center"
+        return value.rawValue
     }
+    
     static func fromString(_ s: String) -> HorizontalAlignment? {
         switch s {
-        case "Left": return .left
+        case "left": return .left
         case "center": return .center
-        case "Right": return .right
+        case "right": return .right
         default: return nil
         }
     }
@@ -294,9 +232,10 @@ extension HorizontalAlignment {
 // MARK: - VerticalAlignment
 
 enum VerticalAlignment: String, Codable {
-    case top, center, bottom
+    case top = "top"
+    case center = "center"
+    case bottom = "bottom"
 }
-
 // Your test references a “VerticalContentAlignment” with `.center`.
 // If you really need that exact enum, define it:
 enum VerticalContentAlignment: String, Codable {
@@ -322,17 +261,22 @@ extension VerticalContentAlignment {
 // MARK: - ImageSize
 
 enum ImageSize: String, Codable {
-    case none, auto, stretch, small, medium, large
+    case none = "None"
+    case auto = "Auto"
+    case large = "Large"
+    case medium = "Medium"
+    case small = "Small"
+    case stretch = "Stretch"
 }
 
 extension ImageSize {
     static func toString(_ value: ImageSize) -> String {
         switch value {
-        case .none: return "none"
-        case .auto: return "auto"
-        case .stretch: return "stretch"
-        case .small: return "small"
-        case .medium: return "medium"
+        case .none: return "None"
+        case .auto: return "Auto"
+        case .stretch: return "Stretch"
+        case .small: return "Small"
+        case .medium: return "Medium"
         case .large: return "Large" // if your test wants capital "Large"
         }
     }
@@ -352,8 +296,9 @@ extension ImageSize {
 // MARK: - ImageStyle
 
 enum ImageStyle: String, Codable {
-    case defaultImageStyle, person, roundedCorners
-    
+    case defaultImageStyle = "default"
+    case person = "person"
+    case roundedCorners = "roundedCorners"
 }
 
 extension ImageStyle {
@@ -377,7 +322,11 @@ extension ImageStyle {
 // MARK: - TextInputStyle
 
 enum TextInputStyle: String, Codable {
-    case text, tel, url, email, password
+    case text = "Text"
+    case tel = "Tel"
+    case url = "Url"
+    case email = "Email"
+    case password = "Password"
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -399,21 +348,16 @@ enum TextInputStyle: String, Codable {
 
 extension TextInputStyle {
     static func toString(_ value: TextInputStyle) -> String {
-        switch value {
-        case .text: return "text"
-        case .tel: return "tel"
-        case .url: return "url"
-        case .email: return "email"
-        case .password: return "Password" // test wants capital "Password"
-        }
+        return value.rawValue // Now we can just use rawValue since it matches C++
     }
+    
     static func fromString(_ s: String) -> TextInputStyle? {
-        switch s.lowercased() {
-        case "text": return .text
-        case "tel": return .tel
-        case "url": return .url
-        case "email": return .email
-        case "password": return .password
+        switch s {
+        case "Text": return .text
+        case "Tel": return .tel
+        case "Url": return .url
+        case "Email": return .email
+        case "Password": return .password
         default: return nil
         }
     }
@@ -422,29 +366,29 @@ extension TextInputStyle {
 // MARK: - ActionType
 
 enum ActionType: String, Codable {
-    case unsupported
-    case execute
-    case openUrl
-    case showCard
-    case submit
-    case toggleVisibility
-    case custom
-    case unknownAction
-    case overflow
+    case unsupported = "Unsupported"
+    case execute = "Action.Execute"
+    case openUrl = "Action.OpenUrl"
+    case showCard = "Action.ShowCard"
+    case submit = "Action.Submit"
+    case toggleVisibility = "Action.ToggleVisibility"
+    case custom = "Custom"
+    case unknownAction = "UnknownAction"
+    case overflow = "Overflow"
     
     // Mirror the C++ approach, but local to this enum.
     static func toString(_ value: ActionType) -> String {
         // If missing, fallback to rawValue
         switch value {
-        case .unsupported: return "unsupported"
+        case .unsupported: return "Unsupported"
         case .execute: return "Action.Execute"
         case .openUrl: return "Action.OpenUrl"  // special
         case .showCard: return "Action.ShowCard"
         case .submit: return "Action.Submit"
         case .toggleVisibility: return "Action.ToggleVisibility"
-        case .custom: return "custom"
-        case .unknownAction: return "unknownAction"
-        case .overflow: return "overflow"
+        case .custom: return "Custom"
+        case .unknownAction: return "UnknownAction"
+        case .overflow: return "Overflow"
         }
     }
 
@@ -694,7 +638,6 @@ extension HeightType {
 enum IconPlacement: String, Codable {
     case leftOfTitle = "LeftOfTitle"
     case aboveTitle = "AboveTitle"
-    case noTitle = "NoTitle"
 }
 
 extension IconPlacement {
@@ -702,14 +645,12 @@ extension IconPlacement {
         switch value {
         case .leftOfTitle: return "LeftOfTitle"
         case .aboveTitle: return "AboveTitle"
-        case .noTitle: return "NoTitle"
         }
     }
     static func fromString(_ s: String) -> IconPlacement? {
         switch s {
         case "LeftOfTitle": return .leftOfTitle
         case "AboveTitle": return .aboveTitle
-        case "NoTitle": return .noTitle
         default: return nil
         }
     }
@@ -798,7 +739,7 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
     case iconPlacement, iconSize, iconUrl, id, image, imageBaseUrl, imageSet, imageSize, imageSizes
     case images, inlineAction, inlineTopMargin, inlines, inputSpacing, inputs, isEnabled, isMultiSelect
     case isMultiline, showBorder, roundedCorners, isRequired, isSelected, isSubtle, isVisible, italic
-    case items, label, language, large, left, light, lighter, lineColor, lineThickness, max, maxActions
+    case items, label, language, attention, large, left, light, lighter, lineColor, lineThickness, max, maxActions
     case maxImageHeight, maxLength, maxLines, maxWidth, media, medium, metaData, method, mimeType, min
     case minHeight, mode, monospace, narrow, numberInput, ratingInput, ratingLabel, padding, placeholder
     case playButton, poster, providerId, refresh, regex, repeatHorizontally, repeatVertically
@@ -922,7 +863,25 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
         (AdaptiveCardSchemaKey.optionalInputs, "optionalInputs"),
         (AdaptiveCardSchemaKey.schema, "$schema"),
         (AdaptiveCardSchemaKey.spacingDefinition, "spacingDefinition"),
-        (AdaptiveCardSchemaKey.tokenExchangeResource, "tokenExchangeResource")
+        (AdaptiveCardSchemaKey.tokenExchangeResource, "tokenExchangeResource"),
+        (AdaptiveCardSchemaKey.language, "lang"), // Currently maps to "language"
+        (AdaptiveCardSchemaKey.attention, "attention"),
+        (AdaptiveCardSchemaKey.iconUrl, "iconUrl"),
+        (AdaptiveCardSchemaKey.value, "value"),
+        (AdaptiveCardSchemaKey.valueChangedAction, "valueChangedAction"),
+        (AdaptiveCardSchemaKey.valueChangedActionType, "valueChangedActionType"),
+        (AdaptiveCardSchemaKey.valueOff, "valueOff"),
+        (AdaptiveCardSchemaKey.valueOn, "valueOn"),
+        (AdaptiveCardSchemaKey.verb, "verb"),
+        (AdaptiveCardSchemaKey.version, "version"),
+        (AdaptiveCardSchemaKey.webUrl, "webUrl"),
+        (AdaptiveCardSchemaKey.width, "width"),
+        (AdaptiveCardSchemaKey.wrap, "wrap"),
+        (AdaptiveCardSchemaKey.tooltip, "tooltip"),
+        (AdaptiveCardSchemaKey.method, "method"),
+        (AdaptiveCardSchemaKey.text, "text"),
+        (AdaptiveCardSchemaKey.standard, "standard"),
+        (AdaptiveCardSchemaKey.compoundButton, "compoundButton"),
     ])
 }
 
@@ -982,7 +941,7 @@ enum LayoutContainerType: String, Codable {
 
 /// Minimal stubs for text-related enums.
 enum TextStyle: String, Codable {
-    case defaultStyle = "default"
+    case defaultStyle = "default"  // Can simplify since raw value matches toString
     case heading = "heading"
     
     init(from rawValue: String) {
@@ -1006,7 +965,7 @@ enum TextStyle: String, Codable {
 }
 
 enum ValueChangedActionType: String, Codable {
-    case resetInputs = "Action.ResetInputs"
+    case resetInputs = "ResetInputs"
 }
 
 enum InlineElementType: String, Codable {
@@ -1031,4 +990,35 @@ enum RatingStyle: String, Codable {
 enum ItemFit: String, Codable {
     case fit = "Fit"
     case fill = "Fill"
+}
+
+struct ContainerBleedDirection: OptionSet, Codable {
+    let rawValue: Int
+
+    static let bleedRestricted    = ContainerBleedDirection(rawValue: 0x0000)
+    static let bleedLeft          = ContainerBleedDirection(rawValue: 0x0001)
+    static let bleedRight         = ContainerBleedDirection(rawValue: 0x0010)
+    static let bleedLeftRight     = ContainerBleedDirection(rawValue: 0x0011)
+    static let bleedUp            = ContainerBleedDirection(rawValue: 0x0100)
+    static let bleedLeftUp        = ContainerBleedDirection(rawValue: 0x0101)
+    static let bleedRightUp       = ContainerBleedDirection(rawValue: 0x0110)
+    static let bleedLeftRightUp   = ContainerBleedDirection(rawValue: 0x0111)
+    static let bleedDown          = ContainerBleedDirection(rawValue: 0x1000)
+    static let bleedLeftDown      = ContainerBleedDirection(rawValue: 0x1001)
+    static let bleedRightDown     = ContainerBleedDirection(rawValue: 0x1010)
+    static let bleedLeftRightDown = ContainerBleedDirection(rawValue: 0x1011)
+    static let bleedUpDown        = ContainerBleedDirection(rawValue: 0x1100)
+    static let bleedLeftUpDown    = ContainerBleedDirection(rawValue: 0x1101)
+    static let bleedRightUpDown   = ContainerBleedDirection(rawValue: 0x1110)
+    static let bleedAll           = ContainerBleedDirection(rawValue: 0x1111)
+}
+
+extension RawRepresentable where Self: Codable, RawValue == String {
+    static func toString(_ value: Self) -> String {
+        return value.rawValue
+    }
+    
+    static func fromString(_ s: String) -> Self? {
+        return Self(rawValue: s) ?? Self(rawValue: s.capitalized) ?? Self(rawValue: s.lowercased())
+    }
 }
