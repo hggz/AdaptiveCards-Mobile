@@ -2,31 +2,6 @@ import Foundation
 
 // MARK: - Stubbed Types and Keys
 
-/// Minimal stubs for text-related enums.
-enum TextStyle: String, Codable {
-    case defaultStyle = "Default"
-    case heading = "Heading"
-    
-    init(from rawValue: String) {
-        self = TextStyle(rawValue: rawValue) ?? .defaultStyle
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let raw = try container.decode(String.self)
-        
-        switch raw.lowercased() {
-        case "default":
-            self = .defaultStyle
-        case "heading":
-            self = .heading
-        default:
-            // If unknown, fall back to .defaultStyle:
-            self = .defaultStyle
-        }
-    }
-}
-
 // MARK: - TextBlock Implementation
 
 /// Represents a TextBlock element in an Adaptive Card.

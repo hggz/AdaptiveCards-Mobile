@@ -40,8 +40,3 @@ struct ChoicesData: Codable {
         return choicesDataType != "Data.Query" && !dataset.isEmpty
     }
 }
-
-enum AssociatedInputs: String, Codable {
-    case auto = "Auto"
-    case none = "None"
-}

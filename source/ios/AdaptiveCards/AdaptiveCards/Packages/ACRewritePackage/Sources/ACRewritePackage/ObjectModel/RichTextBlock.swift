@@ -155,8 +155,6 @@ func deserializeInline(from json: [String: Any]) throws -> Inline {
             throw ParsingError.invalidType(expected: "TextRun", found: "Invalid data")
         }
         return inline
-    case .unknown:
-        throw ParsingError.invalidType(expected: "Inline", found: "Unknown inline type")
     }
 }
 

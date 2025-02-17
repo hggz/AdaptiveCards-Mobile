@@ -1,10 +1,5 @@
 import Foundation
 
-enum ValueChangedActionType: String, Codable {
-    case resetInputs = "ResetInputs"
-    // Add other action types if necessary
-}
-
 struct ValueChangedAction: Codable {
     var targetInputIds: [String]
     var valueChangedActionType: ValueChangedActionType

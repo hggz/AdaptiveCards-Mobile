@@ -97,19 +97,6 @@ class Icon: BaseCardElement {
     }
 }
 
-enum IconSize: String, Codable {
-    case standard = "standard"
-    case small = "small"
-    case medium = "medium"
-    case large = "large"
-}
-
-enum IconStyle: String, Codable {
-    case regular = "regular"
-    case outlined = "outlined"
-    case filled = "filled"
-}
-
 // MARK: - Icon Parser
 
 /// Parses Icon elements in an Adaptive Card.

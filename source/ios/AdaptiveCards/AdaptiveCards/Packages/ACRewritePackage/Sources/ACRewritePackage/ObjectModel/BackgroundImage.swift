@@ -1,9 +1,5 @@
 import Foundation
 
-enum ImageFillMode: String, Codable {
-    case cover
-}
-
 struct BackgroundImage: Codable {
     var url: String
     var fillMode: ImageFillMode

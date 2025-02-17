@@ -1,10 +1,5 @@
 import Foundation
 
-/// The role of an action – originally defined in C++.
-enum ActionRole: String, Codable {
-    case button, link, tab, menu, menuItem
-}
-
 /// Represents a base action element in an Adaptive Card.
 /// (Note: BaseActionElement subclasses BaseCardElement.)
 class BaseActionElement: BaseCardElement {

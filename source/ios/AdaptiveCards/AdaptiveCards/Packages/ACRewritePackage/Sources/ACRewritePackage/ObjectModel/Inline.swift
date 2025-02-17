@@ -1,10 +1,5 @@
 import Foundation
 
-enum InlineElementType: String, Codable {
-    case textRun = "TextRun"
-    case unknown = "Unknown"
-}
-
 protocol Inline: Codable {
     var inlineType: InlineElementType { get }
     var additionalProperties: [String: AnyCodable] { get set }
@@ -29,8 +24,6 @@ extension Inline {
         switch type {
         case .textRun:
             return try? TextRun.deserialize(from: json)
-        case .unknown:
-            return nil
         }
     }
 }

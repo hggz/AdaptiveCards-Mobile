@@ -1,9 +1,5 @@
 import Foundation
 
-enum LayoutContainerType: String, Codable {
-    case none, stack, flow, areaGrid
-}
-
 class Layout: Codable {
     var layoutContainerType: LayoutContainerType = .none
     var targetWidth: TargetWidthType = .default

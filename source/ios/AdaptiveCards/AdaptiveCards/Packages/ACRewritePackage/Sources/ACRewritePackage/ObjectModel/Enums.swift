@@ -34,41 +34,6 @@ enum CardElementType: String, Codable {
     case unknown = "Unknown"
 }
 
-enum Mode: String, Codable {
-    case primary, secondary
-}
-
-enum ErrorStatusCode: String, Codable {
-    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType, serializationFailed
-}
-
-enum WarningStatusCode: String, Codable {
-    case unknownElementType, unknownActionElementType, unknownPropertyOnElement, unknownEnumValue, noRendererForType
-    case interactivityNotSupported, maxActionsExceeded, assetLoadFailed, unsupportedSchemaVersion, unsupportedMediaType
-    case invalidMediaMix, invalidColorFormat, invalidDimensionSpecified, invalidLanguage, invalidValue, customWarning
-    case emptyLabelInRequiredInput, requiredPropertyMissing
-}
-
-enum HostWidth: String, Codable {
-    case `default`, veryNarrow, narrow, standard, wide
-    static func < (lhs: HostWidth, rhs: HostWidth) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-    static func <= (lhs: HostWidth, rhs: HostWidth) -> Bool {
-        return lhs.rawValue <= rhs.rawValue
-    }
-    static func >= (lhs: HostWidth, rhs: HostWidth) -> Bool {
-        return lhs.rawValue >= rhs.rawValue
-    }
-}
-
-enum TargetWidthType: String, Codable {
-    case `default`, veryNarrow, narrow, standard, wide
-    case atMostVeryNarrow, atMostNarrow, atMostStandard, atMostWide
-    case atLeastVeryNarrow, atLeastNarrow, atLeastStandard, atLeastWide
-}
-
-
 // MARK: - CardElementType
 
 /// The test expects `.adaptiveCard` → "AdaptiveCard", etc.
@@ -142,6 +107,40 @@ extension CardElementType {
         default: return nil
         }
     }
+}
+
+enum Mode: String, Codable {
+    case primary, secondary
+}
+
+enum ErrorStatusCode: String, Codable {
+    case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType, serializationFailed
+}
+
+enum WarningStatusCode: String, Codable {
+    case unknownElementType, unknownActionElementType, unknownPropertyOnElement, unknownEnumValue, noRendererForType
+    case interactivityNotSupported, maxActionsExceeded, assetLoadFailed, unsupportedSchemaVersion, unsupportedMediaType
+    case invalidMediaMix, invalidColorFormat, invalidDimensionSpecified, invalidLanguage, invalidValue, customWarning
+    case emptyLabelInRequiredInput, requiredPropertyMissing
+}
+
+enum HostWidth: String, Codable {
+    case `default`, veryNarrow, narrow, standard, wide
+    static func < (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+    static func <= (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue <= rhs.rawValue
+    }
+    static func >= (lhs: HostWidth, rhs: HostWidth) -> Bool {
+        return lhs.rawValue >= rhs.rawValue
+    }
+}
+
+enum TargetWidthType: String, Codable {
+    case `default`, veryNarrow, narrow, standard, wide
+    case atMostVeryNarrow, atMostNarrow, atMostStandard, atMostWide
+    case atLeastVeryNarrow, atLeastNarrow, atLeastStandard, atLeastWide
 }
 
 // MARK: - TextSize
@@ -369,14 +368,14 @@ enum ImageStyle: String, Codable {
 extension ImageStyle {
     static func toString(_ value: ImageStyle) -> String {
         switch value {
-        case .defaultImageStyle: return "defaultImageStyle"
+        case .defaultImageStyle: return "default"
         case .person: return "person"
         case .roundedCorners: return "roundedCorners"
         }
     }
     static func fromString(_ s: String) -> ImageStyle? {
         switch s.lowercased() {
-        case "defaultimagestyle": return .defaultImageStyle
+        case "default": return .defaultImageStyle
         case "person": return .person
         case "roundedcorners": return .roundedCorners
         default: return nil
@@ -447,11 +446,11 @@ enum ActionType: String, Codable {
         // If missing, fallback to rawValue
         switch value {
         case .unsupported: return "unsupported"
-        case .execute: return "execute"
+        case .execute: return "Action.Execute"
         case .openUrl: return "Action.OpenUrl"  // special
         case .showCard: return "Action.ShowCard"
         case .submit: return "Action.Submit"
-        case .toggleVisibility: return "toggleVisibility"
+        case .toggleVisibility: return "Action.ToggleVisibility"
         case .custom: return "custom"
         case .unknownAction: return "unknownAction"
         case .overflow: return "overflow"
@@ -463,11 +462,11 @@ enum ActionType: String, Codable {
         let lowered = s.lowercased()
         switch lowered {
         case "unsupported": return .unsupported
-        case "execute": return .execute
+        case "action.execute": return .execute
         case "action.openurl": return .openUrl
         case "action.showcard": return .showCard
         case "action.submit": return .submit
-        case "togglevisibility": return .toggleVisibility
+        case "action.togglevisibility": return .toggleVisibility
         case "custom": return .custom
         case "unknownaction": return .unknownAction
         case "overflow": return .overflow
@@ -723,4 +722,272 @@ extension IconPlacement {
         default: return nil
         }
     }
+}
+
+// Case-insensitive string equality comparator
+struct CaseInsensitiveEqualTo {
+    func isEqual<T: StringProtocol>(_ lhs: T, _ rhs: T) -> Bool {
+        return lhs.caseInsensitiveCompare(rhs) == .orderedSame
+    }
+}
+
+// Case-insensitive hash generator
+struct CaseInsensitiveHash {
+    func hash<T: StringProtocol>(_ keyval: T) -> Int {
+        return keyval.lowercased().hashValue
+    }
+}
+
+// Hash function for enums
+struct EnumHash<T: Hashable> {
+    func hash(_ value: T) -> Int {
+        return value.hashValue
+    }
+}
+
+// Enum mapping class for bidirectional enum <-> string conversion
+struct EnumMapping<T: Hashable & Codable>: Codable {
+    private let enumToString: [T: String]
+    private let stringToEnum: [String: T]
+
+    init(_ mappings: [(T, String)]) {
+        var eToS = [T: String]()
+        var sToE = [String: T]()
+        for (enumValue, stringValue) in mappings {
+            eToS[enumValue] = stringValue
+            sToE[stringValue.lowercased()] = enumValue
+        }
+        self.enumToString = eToS
+        self.stringToEnum = sToE
+    }
+
+    func toString(_ value: T) -> String {
+        return enumToString[value] ?? "unknown"
+    }
+
+    func fromString(_ value: String) throws -> T {
+        guard let enumValue = stringToEnum[value.lowercased()] else {
+            throw EnumMappingError.invalidValue(value)
+        }
+        return enumValue
+    }
+}
+
+// Error handling for invalid enum values
+enum EnumMappingError: Error {
+    case invalidValue(String)
+}
+
+// Protocol to allow enums to use the mapping
+protocol AdaptiveCardEnum: Codable, Hashable {
+    static var mappings: EnumMapping<Self> { get }
+}
+
+extension AdaptiveCardEnum {
+    func toString() -> String {
+        return Self.mappings.toString(self)
+    }
+    static func fromString(_ value: String) throws -> Self {
+        return try Self.mappings.fromString(value)
+    }
+}
+
+// Define `AdaptiveCardSchemaKey` using EnumMapping
+enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
+    case accent, action, actionAlignment, actionMode, actionRole, actionSet, actionSetConfig
+    case actions, actionsOrientation, adaptiveCard, allowCustomStyle, allowInlinePlayback
+    case backgroundColor, backgroundImage, backgroundImageUrl, baseCardElement, baseContainerStyle
+    case bleed, body, bolder, borderColor, bottom, badge, buttonSpacing, buttons, captionSources
+    case card, cellSpacing, cells, center, choiceSet, choices, choicesData, choicesDataType, color
+    case colorConfig, column, columnHeader, columnSet, columns, container, containerStyles, dark, data
+    case dataQuery, dataset, dateInput, defaultCase, defaultPoster, description, elementId, emphasis
+    case errorMessage, extraLarge, factSet, facts, fallback, fallbackText, fontFamily, fontSizes, fontType
+    case fontWeights, foregroundColor, foregroundColors, good, gridStyle, heading, headingLevel
+    case height, highlight, highlightColor, highlightColors, horizontalAlignment, hostWidthBreakpoints
+    case iconPlacement, iconSize, iconUrl, id, image, imageBaseUrl, imageSet, imageSize, imageSizes
+    case images, inlineAction, inlineTopMargin, inlines, inputSpacing, inputs, isEnabled, isMultiSelect
+    case isMultiline, showBorder, roundedCorners, isRequired, isSelected, isSubtle, isVisible, italic
+    case items, label, language, large, left, light, lighter, lineColor, lineThickness, max, maxActions
+    case maxImageHeight, maxLength, maxLines, maxWidth, media, medium, metaData, method, mimeType, min
+    case minHeight, mode, monospace, narrow, numberInput, ratingInput, ratingLabel, padding, placeholder
+    case playButton, poster, providerId, refresh, regex, repeatHorizontally, repeatVertically
+    case requiredInputs, requires, richTextBlock, right, rows, rtl, schema, selectAction, separator
+    case showActionMode, showCard, showCardActionConfig, showGridLines, size, small, sources, spacing
+    case speak, standard, stretch, strikethrough, style, subtle, suffix, supportsInteractivity
+    case table, tableCell, tableRow, targetElements, layout, itemFit, rowSpacing, columnSpacing
+    case itemWidth, minItemWidth, maxItemWidth, horizontalItemsAlignment, row, rowSpan, columnSpan
+    case areaGridName, areas, layouts, targetInputIds, targetWidth, text, textBlock, textConfig
+    case textInput, textStyles, marigoldColor, neutralColor, filledStar, emptyStar, ratingTextColor
+    case countTextColor, textWeight, thickness, timeInput, title, toggleInput, tooltip, top, type
+    case underline, uri, url, userIds, value, valueChangedAction, valueChangedActionType, valueOff
+    case valueOn, verb, veryNarrow, version, verticalAlignment, verticalCellContentAlignment
+    case verticalContentAlignment, warning, webUrl, weight, width, wrap, compoundButton, authentication
+    case associatedInputs
+    case conditionallyEnabled
+
+    static let mappings = EnumMapping([
+        (AdaptiveCardSchemaKey.accent, "accent"),
+        (AdaptiveCardSchemaKey.action, "action"),
+        (AdaptiveCardSchemaKey.actionAlignment, "actionAlignment"),
+        (AdaptiveCardSchemaKey.actionMode, "actionMode"),
+        (AdaptiveCardSchemaKey.actionRole, "role"),
+        (AdaptiveCardSchemaKey.actionSet, "ActionSet"),
+        (AdaptiveCardSchemaKey.actionSetConfig, "actionSetConfig"),
+        (AdaptiveCardSchemaKey.actions, "actions"),
+        (AdaptiveCardSchemaKey.actionsOrientation, "actionsOrientation"),
+        (AdaptiveCardSchemaKey.adaptiveCard, "adaptiveCard"),
+        (AdaptiveCardSchemaKey.allowCustomStyle, "allowCustomStyle"),
+        (AdaptiveCardSchemaKey.allowInlinePlayback, "allowInlinePlayback"),
+        (AdaptiveCardSchemaKey.backgroundColor, "backgroundColor"),
+        (AdaptiveCardSchemaKey.backgroundImage, "backgroundImage"),
+        (AdaptiveCardSchemaKey.backgroundImageUrl, "backgroundImageUrl"),
+        (AdaptiveCardSchemaKey.baseCardElement, "baseCardElement"),
+        (AdaptiveCardSchemaKey.baseContainerStyle, "baseContainerStyle"),
+        (AdaptiveCardSchemaKey.badge, "badge"),
+        (AdaptiveCardSchemaKey.bleed, "bleed"),
+        (AdaptiveCardSchemaKey.body, "body"),
+        (AdaptiveCardSchemaKey.bolder, "bolder"),
+        (AdaptiveCardSchemaKey.borderColor, "borderColor"),
+        (AdaptiveCardSchemaKey.bottom, "bottom"),
+        (AdaptiveCardSchemaKey.buttonSpacing, "buttonSpacing"),
+        (AdaptiveCardSchemaKey.buttons, "buttons"),
+        (AdaptiveCardSchemaKey.captionSources, "captionSources"),
+        (AdaptiveCardSchemaKey.card, "card"),
+        (AdaptiveCardSchemaKey.cellSpacing, "cellSpacing"),
+        (AdaptiveCardSchemaKey.cells, "cells"),
+        (AdaptiveCardSchemaKey.center, "center"),
+        (AdaptiveCardSchemaKey.choiceSet, "choiceSet"),
+        (AdaptiveCardSchemaKey.choices, "choices"),
+        (AdaptiveCardSchemaKey.choicesData, "choices.data"),
+        (AdaptiveCardSchemaKey.choicesDataType, "type"),
+        (AdaptiveCardSchemaKey.color, "color"),
+        (AdaptiveCardSchemaKey.colorConfig, "colorConfig"),
+        (AdaptiveCardSchemaKey.column, "column"),
+        (AdaptiveCardSchemaKey.columnHeader, "columnHeader"),
+        (AdaptiveCardSchemaKey.columnSet, "columnSet"),
+        (AdaptiveCardSchemaKey.columns, "columns"),
+        (AdaptiveCardSchemaKey.container, "container"),
+        (AdaptiveCardSchemaKey.containerStyles, "containerStyles"),
+        (AdaptiveCardSchemaKey.dark, "dark"),
+        (AdaptiveCardSchemaKey.data, "data"),
+        (AdaptiveCardSchemaKey.dataQuery, "Data.Query"),
+        (AdaptiveCardSchemaKey.dataset, "dataset"),
+        (AdaptiveCardSchemaKey.dateInput, "dateInput"),
+        (AdaptiveCardSchemaKey.defaultCase, "default"),
+        (AdaptiveCardSchemaKey.defaultPoster, "defaultPoster"),
+        (AdaptiveCardSchemaKey.description, "description"),
+        (AdaptiveCardSchemaKey.elementId, "elementId"),
+        (AdaptiveCardSchemaKey.emphasis, "emphasis"),
+        (AdaptiveCardSchemaKey.errorMessage, "errorMessage"),
+        (AdaptiveCardSchemaKey.extraLarge, "extraLarge"),
+        (AdaptiveCardSchemaKey.factSet, "factSet"),
+        (AdaptiveCardSchemaKey.facts, "facts"),
+        (AdaptiveCardSchemaKey.fallback, "fallback"),
+        (AdaptiveCardSchemaKey.fallbackText, "fallbackText"),
+        (AdaptiveCardSchemaKey.fontFamily, "fontFamily"),
+        (AdaptiveCardSchemaKey.fontSizes, "fontSizes"),
+        (AdaptiveCardSchemaKey.fontType, "fontType"),
+        (AdaptiveCardSchemaKey.fontWeights, "fontWeights"),
+        (AdaptiveCardSchemaKey.foregroundColor, "foregroundColor"),
+        (AdaptiveCardSchemaKey.foregroundColors, "foregroundColors"),
+        (AdaptiveCardSchemaKey.good, "good"),
+        (AdaptiveCardSchemaKey.gridStyle, "gridStyle"),
+        (AdaptiveCardSchemaKey.heading, "heading"),
+        (AdaptiveCardSchemaKey.headingLevel, "headingLevel"),
+        (AdaptiveCardSchemaKey.height, "height"),
+        (AdaptiveCardSchemaKey.highlight, "highlight"),
+        (AdaptiveCardSchemaKey.highlightColor, "highlightColor"),
+        (AdaptiveCardSchemaKey.highlightColors, "highlightColors"),
+        (AdaptiveCardSchemaKey.horizontalAlignment, "horizontalAlignment"),
+        (AdaptiveCardSchemaKey.hostWidthBreakpoints, "hostWidthBreakpoints"),
+        (AdaptiveCardSchemaKey.associatedInputs, "associatedInputs"),
+        (AdaptiveCardSchemaKey.conditionallyEnabled, "conditionallyEnabled"),
+    ])
+}
+
+extension AdaptiveCardSchemaKey {
+    static func fromString(_ s: String) -> AdaptiveCardSchemaKey? {
+        return try? mappings.fromString(s)
+    }
+
+    static func toString(_ value: AdaptiveCardSchemaKey) -> String {
+        return mappings.toString(value)
+    }
+}
+
+/// The role of an action – originally defined in C++.
+enum ActionRole: String, Codable {
+    case button = "Button"
+    case link = "Link"
+    case tab = "Tab"
+    case menu = "Menu"
+    case menuItem = "MenuItem"
+}
+
+enum AssociatedInputs: String, Codable {
+    case auto = "Auto"
+    case none = "None"
+}
+
+enum ImageFillMode: String, Codable {
+    case cover = "cover"
+    case repeatHorizontally = "repeatHorizontally"
+    case repeatVertically = "repeatVertically"
+    case `repeat` = "repeat"
+}
+
+enum IconSize: String, Codable {
+    case xxSmall = "xxSmall"
+    case xSmall = "xSmall"
+    case small = "Small"
+    case standard = "Standard"
+    case medium = "Medium"
+    case large = "Large"
+    case xLarge = "xLarge"
+    case xxLarge = "xxLarge"
+}
+
+enum IconStyle: String, Codable {
+    case regular = "Regular"
+    case filled = "Filled"
+}
+
+enum LayoutContainerType: String, Codable {
+    case none = "Layout.None"
+    case stack = "Layout.Stack"
+    case flow = "Layout.Flow"
+    case areaGrid = "Layout.AreaGrid"
+}
+
+/// Minimal stubs for text-related enums.
+enum TextStyle: String, Codable {
+    case defaultStyle = "default"
+    case heading = "heading"
+    
+    init(from rawValue: String) {
+        self = TextStyle(rawValue: rawValue) ?? .defaultStyle
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        
+        switch raw.lowercased() {
+        case "default":
+            self = .defaultStyle
+        case "heading":
+            self = .heading
+        default:
+            // If unknown, fall back to .defaultStyle:
+            self = .defaultStyle
+        }
+    }
+}
+
+enum ValueChangedActionType: String, Codable {
+    case resetInputs = "Action.ResetInputs"
+}
+
+enum InlineElementType: String, Codable {
+    case textRun = "TextRun"
 }
