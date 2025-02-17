@@ -203,62 +203,53 @@ public class AdaptiveCard: Codable {
     }
 
     private static func gatherIds(_ element: Any, _ seen: inout Set<String>) throws {
-        print("Gathering IDs for element type: \(type(of: element))")  // Debug print
-        
         switch element {
-        case let base as BaseCardElement:
-            if let theId = base.id {
-                print("Found BaseCardElement ID: \(theId)")  // Debug print
-                if !theId.isEmpty {
-                    if seen.contains(theId) {
-                        print("!!! Duplicate ID found: \(theId)")  // Debug print
-                        throw AdaptiveCardParseError.idCollision
-                    }
-                    seen.insert(theId)
+        case let action as BaseActionElement:
+            // First, check the action’s own id.
+            if let theId = action.id, !theId.isEmpty {
+                if seen.contains(theId) {
+                    throw AdaptiveCardParseError.idCollision
+                }
+                seen.insert(theId)
+            }
+            // Then, if it is a ShowCardAction, recurse into its nested card.
+            if let showCard = action as? ShowCardAction, let nestedCard = showCard.card {
+                for item in nestedCard.body { try gatherIds(item, &seen) }
+                for nestedAction in nestedCard.actions { try gatherIds(nestedAction, &seen) }
+                if let selectAction = nestedCard.selectAction {
+                    try gatherIds(selectAction, &seen)
                 }
             }
             
-            if let container = base as? Container {
-                for item in container.items {
-                    try gatherIds(item, &seen)
+        case let base as BaseCardElement:
+            // Now handle any BaseCardElement that isn’t an action.
+            if let theId = base.id, !theId.isEmpty {
+                if seen.contains(theId) {
+                    throw AdaptiveCardParseError.idCollision
                 }
+                seen.insert(theId)
+            }
+            // Recurse into composite elements.
+            if let container = base as? Container {
+                for item in container.items { try gatherIds(item, &seen) }
             }
             if let colSet = base as? ColumnSet {
-                for col in colSet.columns {
-                    try gatherIds(col, &seen)
-                }
+                for col in colSet.columns { try gatherIds(col, &seen) }
             }
             if let col = base as? Column {
-                for item in col.items {
-                    try gatherIds(item, &seen)
-                }
-            }
-
-        case let action as BaseActionElement:
-            if let theId = action.id {
-                print("Found BaseActionElement ID: \(theId)")  // Debug print
-                if !theId.isEmpty {
-                    if seen.contains(theId) {
-                        print("!!! Duplicate ID found: \(theId)")  // Debug print
-                        throw AdaptiveCardParseError.idCollision
-                    }
-                    seen.insert(theId)
-                }
+                for item in col.items { try gatherIds(item, &seen) }
             }
             
-            if let showCard = action as? ShowCardAction,
-               let subCard = showCard.card {
-                print("Checking ShowCard nested card...")  // Debug print
-                for item in subCard.body {
-                    try gatherIds(item, &seen)
-                }
-                for subAction in subCard.actions {
-                    try gatherIds(subAction, &seen)
-                }
+        case let card as AdaptiveCard:
+            // Also check the AdaptiveCard itself.
+            for item in card.body { try gatherIds(item, &seen) }
+            for action in card.actions { try gatherIds(action, &seen) }
+            if let selectAction = card.selectAction {
+                try gatherIds(selectAction, &seen)
             }
-
+            
         default:
-            print("Unhandled element type: \(type(of: element))")  // Debug print
+            break
         }
     }
 
