@@ -153,6 +153,7 @@ class TextBlock: BaseCardElement {
         return json
     }
     
+    /// Converts this TextBlock into a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
         // Start with base properties
         var json = try super.serializeToJsonValue()
@@ -162,7 +163,10 @@ class TextBlock: BaseCardElement {
         
         // Add TextBlock-specific properties
         json["text"] = text
-        json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
+        // Only add textStyle if it's not the default
+        if textStyle != .defaultStyle {
+            json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
+        }
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
         if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
@@ -177,10 +181,10 @@ class TextBlock: BaseCardElement {
         
         return json
     }
-    
+
     /// Converts this TextBlock into a JSON string.
     func serialize() throws -> String {
-        let data = try JSONSerialization.data(withJSONObject: serializeToJsonVal(), options: [.sortedKeys])
+        let data = try JSONSerialization.data(withJSONObject: serializeToJsonValue(), options: [.sortedKeys])
         guard let jsonString = String(data: data, encoding: .utf8) else {
             throw AdaptiveCardParseError.serializationFailed
         }
