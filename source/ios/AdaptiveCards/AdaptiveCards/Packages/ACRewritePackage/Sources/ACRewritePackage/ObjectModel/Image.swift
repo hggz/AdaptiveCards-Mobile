@@ -48,8 +48,17 @@ class Image: BaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
         self.url = try container.decode(String.self, forKey: .url)
-        self.backgroundColor = try container.decodeIfPresent(String.self, forKey: .backgroundColor) ?? ""
+        
+        // Decode the raw color from JSON (which might be #00A1F1 or @ABF65314, etc.)
+        let rawColor = try container.decodeIfPresent(String.self, forKey: .backgroundColor) ?? ""
+        
+        // Pass into validateColor so it becomes "#FF00A1F1" for #00A1F1, or "#00000000" for invalid, etc.
+        var dummyWarnings = [AdaptiveCardParseWarning]()
+        self.backgroundColor = validateColor(rawColor, warnings: &dummyWarnings)
+        
+        // Continue decoding other properties as before
         self.imageStyle = try container.decodeIfPresent(ImageStyle.self, forKey: .imageStyle) ?? .defaultImageStyle
         self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
         self.pixelWidth = try container.decodeIfPresent(UInt.self, forKey: .pixelWidth) ?? 0
@@ -57,9 +66,11 @@ class Image: BaseCardElement {
         self.altText = try container.decodeIfPresent(String.self, forKey: .altText) ?? ""
         self.hAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .hAlignment)
         self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
+        
+        // Finish up
         try super.init(from: decoder)
     }
-    
+
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(url, forKey: .url)

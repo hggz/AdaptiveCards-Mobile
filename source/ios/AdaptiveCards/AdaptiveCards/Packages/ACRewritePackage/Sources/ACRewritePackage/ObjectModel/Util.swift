@@ -2,21 +2,51 @@ import Foundation
 
 /// Validates a given hex color string and ensures it is in the correct format.
 func validateColor(_ backgroundColor: String, warnings: inout [AdaptiveCardParseWarning]) -> String {
-    guard !backgroundColor.isEmpty else { return backgroundColor }
-    
-    let backgroundColorLength = backgroundColor.count
-    let isValidColor = backgroundColor.first == "#" && (backgroundColorLength == 7 || backgroundColorLength == 9) &&
-                       backgroundColor.dropFirst().allSatisfy { $0.isHexDigit }
-    
-    if !isValidColor {
-        warnings.append(AdaptiveCardParseWarning(
-            statusCode: .invalidColorFormat,
-            message: "Image background color specified, but doesn't follow #AARRGGBB or #RRGGBB format"
-        ))
+    // 1. Empty string => no color
+    guard !backgroundColor.isEmpty else {
+        return backgroundColor  // e.g. "", no changes needed
+    }
+
+    // 2. Must start with '#' + either 6 or 8 hex digits
+    let length = backgroundColor.count
+    let validLengths = [7, 9] // #XXXXXX (7 total) or #XXXXXXXX (9 total)
+    guard backgroundColor.first == "#",
+          validLengths.contains(length)
+    else {
+        warnings.append(
+            AdaptiveCardParseWarning(
+                statusCode: .invalidColorFormat,
+                message: "Image background color specified, but doesn't follow #AARRGGBB or #RRGGBB format"
+            )
+        )
         return "#00000000"
     }
-    
-    return backgroundColorLength == 7 ? "#FF\(backgroundColor.dropFirst())" : backgroundColor
+
+    // 3. Check that all trailing characters are valid hex
+    //    (Swift's .isHexDigit can accept some unexpected Unicode characters, so let's be extra explicit.)
+    let hexPart = backgroundColor.dropFirst() // the string after '#'
+    let validHexChars = CharacterSet(charactersIn: "0123456789ABCDEFabcdef")
+    let allAreValidHex = hexPart.unicodeScalars.allSatisfy { validHexChars.contains($0) }
+
+    if !allAreValidHex {
+        warnings.append(
+            AdaptiveCardParseWarning(
+                statusCode: .invalidColorFormat,
+                message: "Image background color specified, but contains invalid hex characters"
+            )
+        )
+        return "#00000000"
+    }
+
+    // 4. If exactly 7 total chars => #RRGGBB => prepend 'FF'
+    //    If 9 => #AARRGGBB => keep as is
+    if length == 7 {
+        // #RRGGBB -> #FF + RRGGBB
+        return "#FF\(hexPart)"
+    } else {
+        // length == 9 => #AARRGGBB => keep original
+        return backgroundColor
+    }
 }
 
 

@@ -1,6 +1,6 @@
 import Foundation
 
-struct AdaptiveCardParseWarning: Codable {
+public struct AdaptiveCardParseWarning: Codable {
     let statusCode: WarningStatusCode
     let message: String
 

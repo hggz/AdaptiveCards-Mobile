@@ -12,7 +12,7 @@ enum FallbackType: String, Codable {
 // MARK: - AdaptiveCard Model
 
 /// Represents an Adaptive Card that contains UI elements and actions.
-class AdaptiveCard: Codable {
+public class AdaptiveCard: Codable {
     var version: String
     var fallbackText: String?
     var backgroundImage: BackgroundImage?         // Defined in BackgroundImage.swift
@@ -211,7 +211,7 @@ class AdaptiveCard: Codable {
         case fallbackType
     }
 
-    required convenience init(from decoder: Decoder) throws {
+    required convenience public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         // Strings
@@ -294,4 +294,25 @@ class AdaptiveCard: Codable {
         )
     }
 
+    /// Mimics the C++ signature: AdaptiveCard::DeserializeFromString(jsonString, rendererVersion)
+    /// Returns a ParseResult that contains an AdaptiveCard.
+    public static func deserializeFromString(_ jsonString: String,
+                                             version: String) throws -> ParseResult {
+        // The "version" parameter in C++ is used to do "enforceVersion" checks,
+        // warnings, etc. For now, we simply parse the card and ignore "version"
+        // or you can wire it up if you want to replicate the behavior more closely.
+        do {
+            // Reuse your existing Swift logic:
+            let card = try AdaptiveCard.deserialize(from: jsonString)
+            
+            // If you'd like to replicate warnings from the C++ code,
+            // you'd collect them here. For now, we return an empty array.
+            return ParseResult(adaptiveCard: card, warnings: [])
+        } catch {
+            // The C++ code throws AdaptiveCardParseException on failure.
+            // In Swift, you can throw an error or
+            // translate it to a fatalError or custom exception type:
+            throw error
+        }
+    }
 }
