@@ -1,12 +1,10 @@
 import Foundation
 
 protocol ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> AdaptiveCardElementProtocol
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> AdaptiveCardElementProtocol
 }
 
-// Wrapper for an existing ActionElementParser to enforce ID collision detection
-// ActionElementParser.swift
 final class ActionElementParserWrapper: ActionElementParser {
     private let parser: ActionElementParser
     var actualParser: ActionElementParser { return parser }
@@ -15,9 +13,11 @@ final class ActionElementParserWrapper: ActionElementParser {
         self.parser = parser
     }
     
-    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> AdaptiveCardElementProtocol {
         guard let idProperty = json["id"] as? String else {
-            throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Missing id property")
+            throw AdaptiveCardParseException(
+                statusCode: .requiredPropertyMissing,
+                message: "Missing id property")
         }
         context.pushElement(idJsonProperty: idProperty, internalId: InternalId.next())
         let element = try parser.deserialize(context: context, from: json)
@@ -25,10 +25,12 @@ final class ActionElementParserWrapper: ActionElementParser {
         return element
     }
     
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> AdaptiveCardElementProtocol {
         guard let jsonData = jsonString.data(using: .utf8),
               let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
-            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+            throw AdaptiveCardParseException(
+                statusCode: .invalidJson,
+                message: "Invalid JSON string")
         }
         return try deserialize(context: context, from: json)
     }

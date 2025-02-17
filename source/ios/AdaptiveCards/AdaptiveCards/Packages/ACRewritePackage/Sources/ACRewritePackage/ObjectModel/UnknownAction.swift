@@ -1,26 +1,26 @@
+/// Represents an unknown action in Adaptive Cards.
 import Foundation
 
 /// Represents an unknown action in Adaptive Cards.
 final class UnknownAction: BaseActionElement {
     /// Initializes an unknown action.
     init() {
-        // Force the type to be .unknown
+        // Force the type to be .unknownAction.
         super.init(type: .unknownAction)
     }
     
+    /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
-        // Use the custom initializer to ensure type remains unknown.
+        // Decode normally
         try super.init(from: decoder)
-        // Ensure that after decoding, the type is set to unknown.
-        self.type = .unknown
-        self.typeString = CardElementType.unknown.rawValue
+        // Force the typeString to the unknown action value.
+        self.typeString = ActionType.unknownAction.rawValue
     }
     
     /// Override setElementTypeString to force the type to unknown.
-    override func setElementTypeString(_ type: String) {
+    func setElementTypeString(_ type: String) {
         // Ignore the passed value and force the unknown type.
-        self.typeString = CardElementType.unknown.rawValue
-        self.type = .unknown
+        self.typeString = ActionType.unknownAction.rawValue
     }
     
     override func serializeToJsonValue() throws -> [String: Any] {
@@ -31,16 +31,15 @@ final class UnknownAction: BaseActionElement {
 
 /// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
-        // Instead of decoding with JSONDecoder, create an UnknownAction instance directly.
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> any AdaptiveCardElementProtocol {
+        // Create an UnknownAction instance directly.
         let unknownAction = UnknownAction()
-        unknownAction.setAdditionalProperties(json)
-        // Force the type to unknown.
+        // Force the type to unknown regardless of the JSON.
         unknownAction.setElementTypeString(try ParseUtil.getTypeAsString(from: json))
         return unknownAction
     }
     
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
         let json = try ParseUtil.getJsonDictionary(from: jsonString)
         return try deserialize(context: context, from: json)
     }

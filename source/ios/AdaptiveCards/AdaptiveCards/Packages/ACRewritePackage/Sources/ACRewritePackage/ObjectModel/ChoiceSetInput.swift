@@ -76,12 +76,12 @@ class ChoiceSetInput: BaseCardElement {
 
 /// Parses a ChoiceSetInput element from JSON.
 struct ChoiceSetInputParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         // Use the new class-based deserialization.
         return try ChoiceSetInput.deserialize(from: value)
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

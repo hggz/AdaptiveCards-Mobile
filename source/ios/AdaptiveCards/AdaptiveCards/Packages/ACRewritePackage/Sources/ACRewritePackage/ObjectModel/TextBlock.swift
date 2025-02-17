@@ -228,7 +228,7 @@ extension TextBlock {
 
 /// Parses TextBlock elements in an Adaptive Card.
 struct TextBlockParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         // Verify the type.
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.textBlock.rawValue else {
@@ -244,7 +244,7 @@ struct TextBlockParser: BaseCardElementParser {
         return textBlock
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

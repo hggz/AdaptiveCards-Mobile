@@ -59,11 +59,11 @@ class ToggleVisibilityAction: BaseActionElement {
 
 /// Parses a `ToggleVisibilityAction` from JSON.
 class ToggleVisibilityActionParser: ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String : Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String : Any]) throws -> any AdaptiveCardElementProtocol {
         return try ToggleVisibilityAction.deserialize(from: json, context: context)
     }
     
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
         return try ToggleVisibilityAction.deserialize(from: jsonString, context: context)
     }
 }

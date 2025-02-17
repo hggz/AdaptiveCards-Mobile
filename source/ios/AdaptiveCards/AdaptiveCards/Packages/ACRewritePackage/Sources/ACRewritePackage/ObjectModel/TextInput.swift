@@ -104,7 +104,7 @@ class TextInput: BaseInputElement {
 
 /// Parses TextInput elements in an Adaptive Card.
 struct TextInputParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         // Create a new TextInput using its default initializer.
         let textInput = TextInput()
         
@@ -130,7 +130,7 @@ struct TextInputParser: BaseCardElementParser {
         return textInput
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

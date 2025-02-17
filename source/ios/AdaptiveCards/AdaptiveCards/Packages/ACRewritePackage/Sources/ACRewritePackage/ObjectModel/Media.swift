@@ -109,11 +109,11 @@ class Media: BaseCardElement {
 
 /// Parses Media elements in an Adaptive Card.
 class MediaParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         return try Media.createFromJSON(value)
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         return try Media.createFromJSONString(value)
     }
 }

@@ -2,12 +2,11 @@ import Foundation
 
 /// Protocol for parsing Adaptive Card elements.
 protocol BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> AdaptiveCardElementProtocol
+    func deserialize(fromString context: ParseContext, value: String) throws -> AdaptiveCardElementProtocol
 }
 
-/// Wrapper for a `BaseCardElementParser` to handle ID collision detection in `ParseContext`.
-// BaseCardElementParser.swift
+/// Wrapper for a BaseCardElementParser.
 struct BaseCardElementParserWrapper: BaseCardElementParser {
     private let parser: BaseCardElementParser
     var actualParser: BaseCardElementParser { return parser }
@@ -16,7 +15,7 @@ struct BaseCardElementParserWrapper: BaseCardElementParser {
         self.parser = parser
     }
     
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> AdaptiveCardElementProtocol {
         let idProperty = value["id"] as? String ?? ""
         let internalId = InternalId.next()
         context.pushElement(idJsonProperty: idProperty, internalId: internalId)
@@ -25,7 +24,7 @@ struct BaseCardElementParserWrapper: BaseCardElementParser {
         return element
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> AdaptiveCardElementProtocol {
         guard let jsonData = value.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {

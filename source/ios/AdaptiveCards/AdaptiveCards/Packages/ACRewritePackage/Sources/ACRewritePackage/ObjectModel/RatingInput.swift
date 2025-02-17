@@ -120,11 +120,11 @@ class RatingInput: BaseCardElement {
 
 /// Parses RatingInput elements in an Adaptive Card.
 class RatingInputParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         return try RatingInput.createFromJSON(value)
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         return try RatingInput.createFromJSONString(value)
     }
 }

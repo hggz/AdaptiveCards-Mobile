@@ -75,6 +75,15 @@ class BaseElement: Codable {
         try container.encodeIfPresent(canFallbackToAncestor, forKey: .canFallbackToAncestor)
     }
     
+    // MARK: - Overridable Serialization Method
+    /// Serializes the BaseCardElement into a JSON dictionary.
+    func serializeToJsonValue() throws -> [String: Any] {
+        let json = self.toJSON()
+        // Validate that the dictionary can be serialized.
+        _ = try JSONSerialization.data(withJSONObject: json, options: [])
+        return json
+    }
+    
     public enum CodingKeys: String, CodingKey {
         case typeString = "type"
         case id

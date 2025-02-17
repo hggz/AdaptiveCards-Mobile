@@ -79,7 +79,7 @@ final class ExecuteAction: BaseActionElement {
 
 /// Parses JSON dictionaries into ExecuteAction elements.
 final class ExecuteActionParser: ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         let executeAction = ExecuteAction()
         
         if let data = json["data"] as? [String: Any] {
@@ -96,7 +96,7 @@ final class ExecuteActionParser: ActionElementParser {
         return executeAction
     }
 
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
         guard let jsonData = jsonString.data(using: .utf8),
               let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")

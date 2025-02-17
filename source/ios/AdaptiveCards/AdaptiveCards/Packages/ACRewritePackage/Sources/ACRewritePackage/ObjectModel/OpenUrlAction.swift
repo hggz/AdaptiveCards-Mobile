@@ -20,13 +20,6 @@ class OpenUrlAction: BaseActionElement {
         // Call the BaseActionElement initializer with the action type .openUrl.
         super.init(
             type: .openUrl,
-            title: title,
-            iconUrl: iconUrl,
-            style: style,
-            tooltip: tooltip,
-            mode: mode,
-            isEnabled: isEnabled,
-            role: role,
             id: id
         )
     }
@@ -62,11 +55,9 @@ class OpenUrlAction: BaseActionElement {
         // You can optionally merge in BaseActionElement’s JSON, if needed.
         var dict: [String: Any] = [
             "url": url,
-            "type": type.rawValue // for example, include the action type
+            "type": typeString // for example, include the action type
         ]
-        if let title = title {
-            dict["title"] = title
-        }
+        dict["title"] = title
         // Add additional base properties as needed.
         return dict
     }
@@ -74,11 +65,11 @@ class OpenUrlAction: BaseActionElement {
 
 /// Parses `OpenUrlAction` elements from JSON.
 struct OpenUrlActionParser: ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String : Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String : Any]) throws -> any AdaptiveCardElementProtocol {
         return try OpenUrlAction.make(from: json)
     }
     
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
         let dict = try ParseUtil.getJsonDictionary(from: jsonString)
         return try deserialize(context: context, from: dict)
     }

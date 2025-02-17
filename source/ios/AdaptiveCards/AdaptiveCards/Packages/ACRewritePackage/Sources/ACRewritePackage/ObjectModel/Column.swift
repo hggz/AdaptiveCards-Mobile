@@ -186,7 +186,7 @@ class Column: StyledCollectionElement {
 
 /// Parses Column elements in an Adaptive Card.
 struct ColumnParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.column.rawValue else {
             throw AdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Invalid type for Column")
@@ -236,7 +236,7 @@ struct ColumnParser: BaseCardElementParser {
         return column
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

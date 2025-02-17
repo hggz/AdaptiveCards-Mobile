@@ -226,7 +226,7 @@ class Image: BaseCardElement {
 
 /// Parses Image elements in an Adaptive Card.
 struct ImageParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         // Ensure the type is Image.
         try ParseUtil.expectTypeString(value, expected: CardElementType.image)
         
@@ -234,7 +234,7 @@ struct ImageParser: BaseCardElementParser {
         return try deserializeWithoutCheckingType(context: context, value: value)
     }
     
-    func deserializeWithoutCheckingType(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserializeWithoutCheckingType(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         // Use the generic deserialization helper to get an Image instance.
         let image: Image = try BaseCardElement.deserialize(from: value) as! Image
         
@@ -261,7 +261,7 @@ struct ImageParser: BaseCardElementParser {
         return image
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

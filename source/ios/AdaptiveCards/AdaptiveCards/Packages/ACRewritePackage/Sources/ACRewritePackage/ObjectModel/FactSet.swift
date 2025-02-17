@@ -37,7 +37,7 @@ class FactSet: BaseCardElement {
 
 /// Parses FactSet elements in an Adaptive Card.
 struct FactSetParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         guard let typeString = value["type"] as? String,
               typeString == CardElementType.factSet.rawValue else {
             throw AdaptiveCardParseError.invalidType
@@ -49,7 +49,7 @@ struct FactSetParser: BaseCardElementParser {
         return factSet
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

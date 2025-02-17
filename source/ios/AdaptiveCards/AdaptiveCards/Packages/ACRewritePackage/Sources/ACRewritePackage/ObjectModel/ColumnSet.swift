@@ -110,7 +110,7 @@ class ColumnSet: StyledCollectionElement {
 
 /// Parses ColumnSet elements in an Adaptive Card.
 struct ColumnSetParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         try ParseUtil.expectTypeString(value, expected: .columnSet)
         let columnSet = try BaseCardElement.deserialize(from: value) as! ColumnSet
         
@@ -132,7 +132,7 @@ struct ColumnSetParser: BaseCardElementParser {
         return columnSet
     }
 
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }

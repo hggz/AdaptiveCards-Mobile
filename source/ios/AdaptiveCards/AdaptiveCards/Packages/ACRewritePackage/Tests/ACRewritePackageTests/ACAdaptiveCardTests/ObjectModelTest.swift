@@ -88,7 +88,7 @@ class ObjectModelTest: XCTestCase {
         XCTAssertNotNil(selectAction)
         // If your action has something akin to `action.type == .unknown`,
         // or if your code simply can't parse and returns a fallback:
-        XCTAssertEqual(selectAction?.type, .unknown)
+        XCTAssertEqual(selectAction?.typeString, ActionType.unknownAction.rawValue)
     }
 
     func testSelectActionOpenUrlTest() throws {
@@ -122,7 +122,7 @@ class ObjectModelTest: XCTestCase {
         let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
         // If your Swift OpenUrlAction has .type = .openUrl, or something similar, test that:
-        XCTAssertEqual(selectAction?.actionType, .openUrl)
+        XCTAssertEqual(selectAction?.typeString, ActionType.openUrl.rawValue)
         XCTAssertEqual(selectAction?.title, "View")
     }
 
@@ -144,7 +144,7 @@ class ObjectModelTest: XCTestCase {
 
         let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
-        XCTAssertEqual(selectAction?.actionType, .submit)
+        XCTAssertEqual(selectAction?.typeString, ActionType.submit.rawValue)
         XCTAssertEqual(selectAction?.title, "Submit")
     }
 

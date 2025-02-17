@@ -101,11 +101,11 @@ class Icon: BaseCardElement {
 
 /// Parses Icon elements in an Adaptive Card.
 class IconParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String : Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String : Any]) throws -> any AdaptiveCardElementProtocol {
         return Icon.iconFromJSON(value)
     }
     
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         guard let icon = Icon.iconFromJSONString(value) else {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid Icon JSON string")
         }

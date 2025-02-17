@@ -1,7 +1,15 @@
 import Foundation
 
+/// A protocol that represents an adaptive card element.
+/// Both card and action elements must provide these basic properties.
+protocol AdaptiveCardElementProtocol: Codable {
+    var typeString: String { get set }
+    var id: String? { get set }
+}
+
+
 /// Represents a base element in an Adaptive Card.
-class BaseCardElement: BaseElement {
+class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
     var type: CardElementType
     var spacing: Spacing?
     var height: HeightType?
@@ -9,6 +17,11 @@ class BaseCardElement: BaseElement {
     var separator: Bool?
     var isVisible: Bool = true
     var areaGridName: String?
+    
+    override var typeString: String {
+        get { return type.rawValue }
+        set { /* Optionally update type if needed */ }
+    }
 
     // MARK: - Initializers
     init(
@@ -142,15 +155,6 @@ class BaseCardElement: BaseElement {
     
     static func fromJSON(_ json: [String: Any]) -> BaseCardElement? {
         return try? self.deserialize(from: json)
-    }
-    
-    // MARK: - Overridable Serialization Method
-    /// Serializes the BaseCardElement into a JSON dictionary.
-    func serializeToJsonValue() throws -> [String: Any] {
-        let json = self.toJSON()
-        // Validate that the dictionary can be serialized.
-        _ = try JSONSerialization.data(withJSONObject: json, options: [])
-        return json
     }
     
     override func toJSON() -> [String: Any] {

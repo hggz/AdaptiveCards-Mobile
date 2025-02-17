@@ -4,7 +4,7 @@ import XCTest
 class ParserRegistrationTests: XCTestCase {
     
     // A custom type that implements both element and action behavior.
-    // It now subclasses BaseActionElement (which in turn is a BaseCardElement).
+    // Now it subclasses BaseActionElement—which conforms to AdaptiveCardElementProtocol.
     class TestCustomElement: BaseActionElement {
         var customImage: String
         
@@ -28,11 +28,11 @@ class ParserRegistrationTests: XCTestCase {
     
     // Define a custom element parser.
     class TestCustomElementParser: BaseCardElementParser {
-        func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+        func deserialize(context: ParseContext, value: [String: Any]) throws -> AdaptiveCardElementProtocol {
             return TestCustomElement(json: value)
         }
         
-        func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+        func deserialize(fromString context: ParseContext, value: String) throws -> AdaptiveCardElementProtocol {
             let jsonValue = ParseUtil.getJsonValue(from: value)
             return try deserialize(context: context, value: jsonValue)
         }
@@ -40,11 +40,11 @@ class ParserRegistrationTests: XCTestCase {
     
     // Define a custom action parser.
     class TestCustomActionParser: ActionElementParser {
-        func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+        func deserialize(context: ParseContext, from json: [String: Any]) throws -> AdaptiveCardElementProtocol {
             return TestCustomElement(json: json)
         }
         
-        func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+        func deserialize(fromString jsonString: String, context: ParseContext) throws -> AdaptiveCardElementProtocol {
             let jsonValue = ParseUtil.getJsonValue(from: jsonString)
             return try deserialize(context: context, from: jsonValue)
         }

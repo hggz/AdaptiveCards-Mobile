@@ -24,7 +24,7 @@ class SubmitAction: BaseActionElement {
         self.associatedInputs = associatedInputs
         self.conditionallyEnabled = conditionallyEnabled
         // Call the designated initializer of BaseActionElement.
-        super.init(type: .submit, title: title, iconUrl: iconUrl, style: style, tooltip: tooltip, mode: mode, isEnabled: isEnabled, role: role, id: id)
+        super.init(type: .submit, id: id)
     }
     
     /// Required initializer for Codable.
@@ -84,9 +84,7 @@ class SubmitAction: BaseActionElement {
         json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
         
         // Make sure title is included (this is from BaseActionElement)
-        if let title = title {
-            json["title"] = title
-        }
+        json["title"] = title
         
         return json
     }
@@ -146,11 +144,11 @@ class SubmitAction: BaseActionElement {
 
 /// Parses a SubmitAction from JSON.
 class SubmitActionParser: ActionElementParser {
-    func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
+    func deserialize(context: ParseContext, from json: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         return try SubmitAction.make(from: json)
     }
     
-    func deserialize(fromString jsonString: String, context: ParseContext) throws -> BaseActionElement {
+    func deserialize(fromString jsonString: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
               let jsonDict = jsonObject as? [String: Any] else {

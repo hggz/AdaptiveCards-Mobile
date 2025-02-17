@@ -91,7 +91,7 @@ class ImageSet: BaseCardElement {
 
 /// Parses ImageSet elements in an Adaptive Card.
 struct ImageSetParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String: Any]) throws -> BaseCardElement {
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         try ParseUtil.expectTypeString(value, expected: .imageSet) // Already present
         let imageSet = try BaseCardElement.deserialize(from: value) as! ImageSet
         
@@ -116,7 +116,7 @@ struct ImageSetParser: BaseCardElementParser {
         return imageSet
     }
 
-    func deserialize(fromString context: ParseContext, value: String) throws -> BaseCardElement {
+    func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
     }
