@@ -1,11 +1,7 @@
 import Foundation
 
-enum ItemFit: String, Codable {
-    case Fit, Fill
-}
-
 class FlowLayout: Layout {
-    var itemFit: ItemFit = .Fit
+    var itemFit: ItemFit = .fit
     var itemWidth: String?
     var minItemWidth: String?
     var maxItemWidth: String?
@@ -24,7 +20,7 @@ class FlowLayout: Layout {
     required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.itemFit = try container.decodeIfPresent(ItemFit.self, forKey: .itemFit) ?? .Fit
+        self.itemFit = try container.decodeIfPresent(ItemFit.self, forKey: .itemFit) ?? .fit
         self.itemWidth = try container.decodeIfPresent(String.self, forKey: .itemWidth)
         self.minItemWidth = try container.decodeIfPresent(String.self, forKey: .minItemWidth)
         self.maxItemWidth = try container.decodeIfPresent(String.self, forKey: .maxItemWidth)
@@ -39,7 +35,7 @@ class FlowLayout: Layout {
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
-        if itemFit != .Fit {
+        if itemFit != .fit {
             try container.encode(itemFit, forKey: .itemFit)
         }
         try container.encodeIfPresent(itemWidth, forKey: .itemWidth)

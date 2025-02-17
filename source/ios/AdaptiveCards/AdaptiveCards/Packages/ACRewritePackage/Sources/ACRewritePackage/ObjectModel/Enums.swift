@@ -3,34 +3,30 @@ import Foundation
 enum CardElementType: String, Codable {
     case actionSet = "ActionSet"
     case adaptiveCard = "AdaptiveCard"
-    case choiceInput = "ChoiceInput"
-    case choiceSetInput = "ChoiceSetInput"
+    case choiceSetInput = "Input.ChoiceSet"
     case column = "Column"
     case columnSet = "ColumnSet"
     case container = "Container"
     case custom = "Custom"
-    case dateInput = "DateInput"
+    case dateInput = "Input.Date"
     case fact = "Fact"
     case factSet = "FactSet"
     case image = "Image"
     case icon = "Icon"
     case imageSet = "ImageSet"
     case media = "Media"
-    case numberInput = "NumberInput"
-    case ratingInput = "RatingInput"
-    case ratingLabel = "RatingLabel"
+    case numberInput = "Input.Number"
+    case ratingInput = "Input.Rating"
+    case ratingLabel = "Rating"
     case richTextBlock = "RichTextBlock"
     case table = "Table"
     case tableCell = "TableCell"
     case tableRow = "TableRow"
     case textBlock = "TextBlock"
-    case textInput = "TextInput"
-    case timeInput = "TimeInput"
-    case toggleInput = "ToggleInput"
+    case textInput = "Input.Text"
+    case timeInput = "Input.Time"
+    case toggleInput = "Input.Toggle"
     case compoundButton = "CompoundButton"
-    case inputText = "Input.Text"
-    case inputChoiceSet = "Input.ChoiceSet"
-    case inputToggle = "Input.Toggle"
     case unknown = "Unknown"
 }
 
@@ -42,7 +38,6 @@ extension CardElementType {
         switch value {
         case .actionSet: return "ActionSet"
         case .adaptiveCard: return "AdaptiveCard"
-        case .choiceInput: return "choiceInput"
         case .choiceSetInput: return "choiceSetInput"
         case .column: return "column"
         case .columnSet: return "columnSet"
@@ -68,9 +63,6 @@ extension CardElementType {
         case .toggleInput: return "toggleInput"
         case .compoundButton: return "compoundButton"
         case .unknown: return "unknown"
-        case .inputText: return "inputText"
-        case .inputChoiceSet: return "inputChoiceSet"
-        case .inputToggle: return "inputToggle"
         }
     }
     
@@ -78,7 +70,6 @@ extension CardElementType {
         switch str {
         case "ActionSet": return .actionSet
         case "AdaptiveCard": return .adaptiveCard
-        case "choiceInput": return .choiceInput
         case "choiceSetInput": return .choiceSetInput
         case "column": return .column
         case "columnSet": return .columnSet
@@ -811,7 +802,7 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
     case maxImageHeight, maxLength, maxLines, maxWidth, media, medium, metaData, method, mimeType, min
     case minHeight, mode, monospace, narrow, numberInput, ratingInput, ratingLabel, padding, placeholder
     case playButton, poster, providerId, refresh, regex, repeatHorizontally, repeatVertically
-    case requiredInputs, requires, richTextBlock, right, rows, rtl, schema, selectAction, separator
+    case requiredInputs, requires, richTextBlock, right, rows, rtl, selectAction, separator
     case showActionMode, showCard, showCardActionConfig, showGridLines, size, small, sources, spacing
     case speak, standard, stretch, strikethrough, style, subtle, suffix, supportsInteractivity
     case table, tableCell, tableRow, targetElements, layout, itemFit, rowSpacing, columnSpacing
@@ -824,6 +815,21 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
     case verticalContentAlignment, warning, webUrl, weight, width, wrap, compoundButton, authentication
     case associatedInputs
     case conditionallyEnabled
+    case altText
+    case name
+    case borderWidth
+    case cornerRadius
+    case connectionName
+    case count
+    case fillMode
+    case firstRowAsHeaders
+    case fontTypes
+    case horizontalCellContentAlignment
+    case icon
+    case optionalInputs
+    case schema = "$schema"
+    case spacingDefinition
+    case tokenExchangeResource
 
     static let mappings = EnumMapping([
         (AdaptiveCardSchemaKey.accent, "accent"),
@@ -902,6 +908,21 @@ enum AdaptiveCardSchemaKey: String, AdaptiveCardEnum {
         (AdaptiveCardSchemaKey.hostWidthBreakpoints, "hostWidthBreakpoints"),
         (AdaptiveCardSchemaKey.associatedInputs, "associatedInputs"),
         (AdaptiveCardSchemaKey.conditionallyEnabled, "conditionallyEnabled"),
+        (AdaptiveCardSchemaKey.altText, "altText"),
+        (AdaptiveCardSchemaKey.name, "name"),
+        (AdaptiveCardSchemaKey.borderWidth, "borderWidth"),
+        (AdaptiveCardSchemaKey.cornerRadius, "cornerRadius"),
+        (AdaptiveCardSchemaKey.connectionName, "connectionName"),
+        (AdaptiveCardSchemaKey.count, "count"),
+        (AdaptiveCardSchemaKey.fillMode, "fillMode"),
+        (AdaptiveCardSchemaKey.firstRowAsHeaders, "firstRowAsHeaders"),
+        (AdaptiveCardSchemaKey.fontTypes, "fontTypes"),
+        (AdaptiveCardSchemaKey.horizontalCellContentAlignment, "horizontalCellContentAlignment"),
+        (AdaptiveCardSchemaKey.icon, "icon"),
+        (AdaptiveCardSchemaKey.optionalInputs, "optionalInputs"),
+        (AdaptiveCardSchemaKey.schema, "$schema"),
+        (AdaptiveCardSchemaKey.spacingDefinition, "spacingDefinition"),
+        (AdaptiveCardSchemaKey.tokenExchangeResource, "tokenExchangeResource")
     ])
 }
 
@@ -990,4 +1011,24 @@ enum ValueChangedActionType: String, Codable {
 
 enum InlineElementType: String, Codable {
     case textRun = "TextRun"
+}
+
+enum RatingSize: String, Codable {
+    case medium = "medium"
+    case large = "large"
+}
+
+enum RatingColor: String, Codable {
+    case neutral = "neutral"
+    case marigold = "marigold"
+}
+
+enum RatingStyle: String, Codable {
+    case `default` = "default"
+    case compact = "compact"
+}
+
+enum ItemFit: String, Codable {
+    case fit = "Fit"
+    case fill = "Fill"
 }

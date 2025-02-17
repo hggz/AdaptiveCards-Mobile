@@ -150,24 +150,3 @@ class RatingLabelParser: BaseCardElementParser {
         return try RatingLabel.createFromJSONString(value)
     }
 }
-
-/// Enumeration representing rating sizes.
-enum RatingSize: String, Codable {
-    case small
-    case medium
-    case large
-}
-
-/// Enumeration representing rating colors.
-enum RatingColor: String, Codable {
-    case neutral
-    case positive
-    case negative
-}
-
-/// Enumeration representing rating styles.
-enum RatingStyle: String, Codable {
-    case `default`
-    case outlined
-    case filled
-}

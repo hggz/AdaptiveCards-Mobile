@@ -115,11 +115,11 @@ class BaseCardElement: BaseElement {
             return try decoder.decode(Image.self, from: data)
         case CardElementType.imageSet.rawValue:    // <<== Add this!
             return try decoder.decode(ImageSet.self, from: data)
-        case CardElementType.inputText.rawValue:
+        case CardElementType.textInput.rawValue:
             return try decoder.decode(TextInput.self, from: data)
-        case CardElementType.inputChoiceSet.rawValue:
+        case CardElementType.choiceSetInput.rawValue:
             return try decoder.decode(ChoiceSetInput.self, from: data)
-        case CardElementType.inputToggle.rawValue:
+        case CardElementType.toggleInput.rawValue:
             return try decoder.decode(ToggleInput.self, from: data)
         case CardElementType.media.rawValue:
             return try decoder.decode(Media.self, from: data)
