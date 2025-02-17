@@ -4,36 +4,39 @@ import Foundation
 final class UnknownAction: BaseActionElement {
     /// Initializes an unknown action.
     init() {
+        // Force the type to be .unknown
         super.init(type: .unknownAction)
     }
     
-    
     required init(from decoder: Decoder) throws {
-        // This decodes "type", "title", "iconUrl", etc., from the base:
+        // Use the custom initializer to ensure type remains unknown.
         try super.init(from: decoder)
+        // Ensure that after decoding, the type is set to unknown.
+        self.type = .unknown
+        self.typeString = CardElementType.unknown.rawValue
+    }
+    
+    /// Override setElementTypeString to force the type to unknown.
+    override func setElementTypeString(_ type: String) {
+        // Ignore the passed value and force the unknown type.
+        self.typeString = CardElementType.unknown.rawValue
+        self.type = .unknown
     }
     
     override func serializeToJsonValue() throws -> [String: Any] {
-        // Return any stored additionalProperties or base fields
-        var result = try super.serializeToJsonValue()
-        // If you want the original unknown type in the output:
-        // result["type"] = self.typeString  // or whatever
-        return result
+        // Return additionalProperties if set, or the base fields.
+        return additionalProperties ?? [:]
     }
 }
 
 /// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
     func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
-        let actualType = try ParseUtil.getTypeAsString(from: json)
-        // do not call BaseActionElement.deserializeAction(...) or you loop
-        // Instead, decode an UnknownAction directly:
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        let unknownAction = try JSONDecoder().decode(UnknownAction.self, from: data)
-        
-        // No more guard that throws invalidType. Instead:
+        // Instead of decoding with JSONDecoder, create an UnknownAction instance directly.
+        let unknownAction = UnknownAction()
         unknownAction.setAdditionalProperties(json)
-        unknownAction.setElementTypeString(actualType)
+        // Force the type to unknown.
+        unknownAction.setElementTypeString(try ParseUtil.getTypeAsString(from: json))
         return unknownAction
     }
     
