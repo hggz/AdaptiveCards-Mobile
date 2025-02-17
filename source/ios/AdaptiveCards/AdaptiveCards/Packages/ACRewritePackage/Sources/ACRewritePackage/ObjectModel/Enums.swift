@@ -441,18 +441,16 @@ enum ActionType: String, Codable {
     case custom
     case unknownAction
     case overflow
-}
-
-// Mirror the C++ approach, but local to this enum.
-extension ActionType {
+    
+    // Mirror the C++ approach, but local to this enum.
     static func toString(_ value: ActionType) -> String {
         // If missing, fallback to rawValue
         switch value {
         case .unsupported: return "unsupported"
         case .execute: return "execute"
         case .openUrl: return "Action.OpenUrl"  // special
-        case .showCard: return "showCard"
-        case .submit: return "submit"
+        case .showCard: return "Action.ShowCard"
+        case .submit: return "Action.Submit"
         case .toggleVisibility: return "toggleVisibility"
         case .custom: return "custom"
         case .unknownAction: return "unknownAction"
@@ -467,8 +465,8 @@ extension ActionType {
         case "unsupported": return .unsupported
         case "execute": return .execute
         case "action.openurl": return .openUrl
-        case "showcard": return .showCard
-        case "submit": return .submit
+        case "action.showcard": return .showCard
+        case "action.submit": return .submit
         case "togglevisibility": return .toggleVisibility
         case "custom": return .custom
         case "unknownaction": return .unknownAction

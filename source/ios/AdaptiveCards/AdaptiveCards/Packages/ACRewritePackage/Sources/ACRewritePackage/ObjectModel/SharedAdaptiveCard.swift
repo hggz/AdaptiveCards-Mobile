@@ -77,8 +77,10 @@ public class AdaptiveCard: Codable {
     }
     
     /// Serializes the card into a JSON dictionary.
-    func serializeToJsonValue()  -> [String: Any] {
+    func serializeToJsonValue() throws -> [String: Any] {
         var json: [String: Any] = [:]
+        // Add the type field so that later deserialization recognizes this as an AdaptiveCard.
+        json["type"] = "AdaptiveCard"
         json[AdaptiveCardSchemaKey.version.rawValue] = version
         if let fallbackText = fallbackText {
             json[AdaptiveCardSchemaKey.fallbackText.rawValue] = fallbackText
@@ -105,15 +107,15 @@ public class AdaptiveCard: Codable {
         if let rtl = rtl {
             json[AdaptiveCardSchemaKey.rtl.rawValue] = rtl
         }
-        json[AdaptiveCardSchemaKey.body.rawValue] = body.map { $0.toJSON() }
-        json[AdaptiveCardSchemaKey.actions.rawValue] = actions.map { $0.toJSON() }
+        json[AdaptiveCardSchemaKey.body.rawValue] = try body.map { try $0.serializeToJsonValue() }
+        json[AdaptiveCardSchemaKey.actions.rawValue] = try actions.map { try $0.serializeToJsonValue() }
         json[AdaptiveCardSchemaKey.layouts.rawValue] = layouts.map { $0.serializeToJsonValue() }
         if let selectAction = selectAction {
             json[AdaptiveCardSchemaKey.selectAction.rawValue] = selectAction.toJSON()
         }
         return json
     }
-    
+
     /// Converts the card into a JSON string.
     func serialize() throws -> String {
         return try ParseUtil.jsonToString(serializeToJsonValue())
@@ -175,35 +177,51 @@ public class AdaptiveCard: Codable {
             fallbackContent: nil,
             fallbackType: .none
         )
+        print("Checking for duplicate IDs...")  // Debug print
         try checkDuplicateIds(in: card)
+        print("Deserialization complete.")  // Debug print        
         return card
     }
     
     private static func checkDuplicateIds(in card: AdaptiveCard) throws {
+        print("Starting duplicate ID check")  // Debug print
         var seen = Set<String>()
+        
         // Check body
+        print("Checking body elements...")  // Debug print
         for element in card.body {
             try gatherIds(element, &seen)
         }
+        
         // Check actions
+        print("Checking actions...")  // Debug print
         for action in card.actions {
             try gatherIds(action, &seen)
         }
-        // If you have to check deeper sub-elements, you can do that inside `gatherIds`.
+        
+        print("Found IDs: \(seen)")  // Debug print
     }
 
     private static func gatherIds(_ element: Any, _ seen: inout Set<String>) throws {
+        print("Gathering IDs for element type: \(type(of: element))")  // Debug print
+        
         switch element {
         case let base as BaseCardElement:
-            if let theId = base.id, !theId.isEmpty {
-                if seen.contains(theId) {
-                    throw AdaptiveCardParseError.idCollision
+            if let theId = base.id {
+                print("Found BaseCardElement ID: \(theId)")  // Debug print
+                if !theId.isEmpty {
+                    if seen.contains(theId) {
+                        print("!!! Duplicate ID found: \(theId)")  // Debug print
+                        throw AdaptiveCardParseError.idCollision
+                    }
+                    seen.insert(theId)
                 }
-                seen.insert(theId)
             }
-            // Recurse if the element is a container or column set, etc.
+            
             if let container = base as? Container {
-                for item in container.items { try gatherIds(item, &seen) }
+                for item in container.items {
+                    try gatherIds(item, &seen)
+                }
             }
             if let colSet = base as? ColumnSet {
                 for col in colSet.columns {
@@ -215,27 +233,34 @@ public class AdaptiveCard: Codable {
                     try gatherIds(item, &seen)
                 }
             }
-            // etc. for other composite elements
 
         case let action as BaseActionElement:
-            if let theId = action.id, !theId.isEmpty {
-                if seen.contains(theId) {
-                    throw AdaptiveCardParseError.idCollision
+            if let theId = action.id {
+                print("Found BaseActionElement ID: \(theId)")  // Debug print
+                if !theId.isEmpty {
+                    if seen.contains(theId) {
+                        print("!!! Duplicate ID found: \(theId)")  // Debug print
+                        throw AdaptiveCardParseError.idCollision
+                    }
+                    seen.insert(theId)
                 }
-                seen.insert(theId)
             }
-            // If it's a ShowCardAction with an embedded sub-card, gather IDs there:
-            if let showCard = action as? ShowCardAction, let subCard = showCard.card {
-                // gather IDs from subCard.body and subCard.actions...
-                for item in subCard.body { try gatherIds(item, &seen) }
-                for subAction in subCard.actions { try gatherIds(subAction, &seen) }
+            
+            if let showCard = action as? ShowCardAction,
+               let subCard = showCard.card {
+                print("Checking ShowCard nested card...")  // Debug print
+                for item in subCard.body {
+                    try gatherIds(item, &seen)
+                }
+                for subAction in subCard.actions {
+                    try gatherIds(subAction, &seen)
+                }
             }
 
         default:
-            break
+            print("Unhandled element type: \(type(of: element))")  // Debug print
         }
     }
-
 
     /// Deserializes an AdaptiveCard from a JSON string.
     static func deserialize(from jsonString: String) throws -> AdaptiveCard {
@@ -305,7 +330,11 @@ public class AdaptiveCard: Codable {
         }
 
         // Actions
-        let actions = try container.decodeIfPresent([BaseActionElement].self, forKey: .actions) ?? []
+        let rawActions = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .actions) ?? []
+        let actions = try rawActions.map { rawAction -> BaseActionElement in
+            let dict = rawAction.mapValues { $0.value }
+            return try BaseActionElement.deserializeAction(from: dict)
+        }
 
         // Layouts
         let layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []

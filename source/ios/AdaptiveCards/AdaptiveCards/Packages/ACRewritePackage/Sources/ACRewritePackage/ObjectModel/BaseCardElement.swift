@@ -61,7 +61,13 @@ class BaseCardElement: BaseElement {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         // Decode the local properties.
         let typeRaw = try container.decode(String.self, forKey: .type)
-        guard let decodedType = CardElementType(rawValue: typeRaw) else {
+        let decodedType: CardElementType
+        if typeRaw.hasPrefix("Action.") {
+            // For actions, map to a generic type (e.g. .custom)
+            decodedType = .custom
+        } else if let validType = CardElementType(rawValue: typeRaw) {
+            decodedType = validType
+        } else {
             throw AdaptiveCardParseError.invalidType
         }
         self.type = decodedType
@@ -144,6 +150,32 @@ class BaseCardElement: BaseElement {
         let json = self.toJSON()
         // Validate that the dictionary can be serialized.
         _ = try JSONSerialization.data(withJSONObject: json, options: [])
+        return json
+    }
+    
+    override func toJSON() -> [String: Any] {
+        var json = super.toJSON()
+        json["type"] = typeString  // Use typeString instead of type.rawValue
+        
+        if let spacing = spacing {
+            json["spacing"] = spacing.rawValue
+        }
+        if let height = height {
+            json["height"] = height.rawValue
+        }
+        if let targetWidth = targetWidth {
+            json["targetWidth"] = targetWidth.rawValue
+        }
+        if let separator = separator {
+            json["separator"] = separator
+        }
+        if !isVisible {
+            json["isVisible"] = isVisible
+        }
+        if let areaGridName = areaGridName {
+            json["areaGridName"] = areaGridName
+        }
+        
         return json
     }
 

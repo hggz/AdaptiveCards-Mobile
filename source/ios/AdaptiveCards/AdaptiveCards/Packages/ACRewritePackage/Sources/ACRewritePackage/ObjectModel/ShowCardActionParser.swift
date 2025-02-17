@@ -10,15 +10,19 @@ class ShowCardActionParser: ActionElementParser {
         // parse title, iconUrl, etc. from the dictionary
         
         // OR decode it with JSONDecoder:
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        let showCardAction = try JSONDecoder().decode(ShowCardAction.self, from: data)
-        
-        // Now parse the sub-card if present
-        if let cardObj = json[AdaptiveCardSchemaKey.card.rawValue] as? [String: Any] {
-            let subCard = try AdaptiveCard.deserialize(from: cardObj)
-            showCardAction.card = subCard
+        do {
+            let data = try JSONSerialization.data(withJSONObject: json, options: [])
+            let showCardAction = try JSONDecoder().decode(ShowCardAction.self, from: data)
+            
+            // Now parse the sub-card if present
+            if let cardObj = json[AdaptiveCardSchemaKey.card.rawValue] as? [String: Any] {
+                let subCard = try AdaptiveCard.deserialize(from: cardObj)
+                showCardAction.card = subCard
+            }
+            return showCardAction
+        } catch {
+            throw error
         }
-        return showCardAction
     }
 
     /// Deserializes a `ShowCardAction` from a JSON string.

@@ -65,29 +65,47 @@ class SubmitAction: BaseActionElement {
     }
     
     /// Serializes the action into a JSON dictionary.
+    override func serializeToJsonValue() throws -> [String: Any] {
+        // Get base properties
+        var json = try super.serializeToJsonValue()
+        
+        // Ensure we use the correct type
+        json["type"] = "Action.Submit"
+        
+        // Add SubmitAction-specific properties
+        if let dataJson = self.dataJson {
+            json[AdaptiveCardSchemaKey.data.rawValue] = dataJson
+        }
+        
+        if associatedInputs != .auto {
+            json[AdaptiveCardSchemaKey.associatedInputs.rawValue] = associatedInputs.rawValue
+        }
+        
+        json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
+        
+        // Make sure title is included (this is from BaseActionElement)
+        if let title = title {
+            json["title"] = title
+        }
+        
+        return json
+    }
+
+    // Remove or deprecate the old serializeToJson() method since we're using serializeToJsonValue now
+    @available(*, deprecated, message: "Use serializeToJsonValue() instead")
     func serializeToJson() -> [String: Any] {
         do {
-            var json = try super.serializeToJsonValue()
-            
-            if let dataJson = self.dataJson {
-                json[AdaptiveCardSchemaKey.data.rawValue] = dataJson
-            }
-            
-            if associatedInputs != .auto {
-                json[AdaptiveCardSchemaKey.associatedInputs.rawValue] = associatedInputs.rawValue
-            }
-            
-            json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
-            return json
+            return try serializeToJsonValue()
         } catch {
             debugPrint("submit action error serializing to json")
             return [:]
         }
     }
-    
-    /// Converts the action into a JSON string.
+
+    // Update serialize() to use serializeToJsonValue
     func serialize() throws -> String {
-        let jsonData = try JSONSerialization.data(withJSONObject: serializeToJsonValue(), options: .prettyPrinted)
+        let json = try serializeToJsonValue()
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
         return String(data: jsonData, encoding: .utf8) ?? "{}"
     }
     

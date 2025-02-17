@@ -13,13 +13,8 @@ class ShowCardAction: BaseActionElement {
 
     /// Decodes a `ShowCardAction` from a JSON dictionary.
     required init(from decoder: Decoder) throws {
-//        let container = try decoder.container(keyedBy: CodingKeys.self)
-//        if container.contains(.card) {
-//            let cardDict = try container.decode([String: AnyCodable].self, forKey: .card)
-//            let dict = cardDict.mapValues { $0.value }
-//            // IMPORTANT: parse as an AdaptiveCard, not BaseCardElement
-//            self.card = try AdaptiveCard.deserialize(from: dict)
-//        }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.card = try container.decodeIfPresent(AdaptiveCard.self, forKey: .card)
         try super.init(from: decoder)
     }
 
@@ -55,10 +50,16 @@ class ShowCardAction: BaseActionElement {
     }
 
     /// Encodes `ShowCardAction` to a JSON dictionary.
-    override func serializeToJsonValue() -> [String: Any] {
+    override func serializeToJsonValue() throws -> [String: Any] {
         var json = [String: Any]()
         if let card = card {
-            json[AdaptiveCardSchemaKey.card.rawValue] = card.serializeToJsonValue()
+            // Note: 'serializeToJsonValue()' is a throwing method so we use 'try'
+            var cardJson = try card.serializeToJsonValue()
+            // Ensure the sub-card JSON contains a type
+            if cardJson["type"] == nil {
+                cardJson["type"] = "AdaptiveCard"
+            }
+            json[AdaptiveCardSchemaKey.card.rawValue] = cardJson
         }
         return json
     }

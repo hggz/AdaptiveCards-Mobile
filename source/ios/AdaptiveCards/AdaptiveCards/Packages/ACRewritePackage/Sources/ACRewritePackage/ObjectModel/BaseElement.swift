@@ -75,7 +75,7 @@ class BaseElement: Codable {
         try container.encodeIfPresent(canFallbackToAncestor, forKey: .canFallbackToAncestor)
     }
     
-    private enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case typeString = "type"
         case id
         case internalId

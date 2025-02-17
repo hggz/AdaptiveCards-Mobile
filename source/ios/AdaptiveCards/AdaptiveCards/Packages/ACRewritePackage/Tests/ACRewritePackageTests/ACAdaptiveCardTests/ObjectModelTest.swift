@@ -463,7 +463,7 @@ class ObjectModelTest: XCTestCase {
         XCTAssertTrue(choiceSet.choices.isEmpty)
 
         // Check the serialized output
-        let serializedCardDict = card.serializeToJsonValue()
+        let serializedCardDict = try card.serializeToJsonValue()
         // Then confirm shape:
         // e.g. confirm there's "body" with count 1, etc.
         guard let bodyArray = serializedCardDict["body"] as? [[String: Any]],
@@ -745,7 +745,7 @@ class ObjectModelTest: XCTestCase {
         XCTAssertTrue(theInput.isMultiline == true)
 
         // Now check the final JSON
-        let serializedCard = card.serializeToJsonValue()
+        let serializedCard = try card.serializeToJsonValue()
         guard let bodyArr = serializedCard["body"] as? [[String: Any]],
               let bodyDict = bodyArr.first else {
             XCTFail("Serialized card missing body array")

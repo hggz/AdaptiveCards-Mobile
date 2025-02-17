@@ -46,7 +46,8 @@ class BaseActionElement: BaseCardElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let typeRaw = try container.decode(String.self, forKey: .type)
-        guard let decodedActionType = ActionType(rawValue: typeRaw) else {
+        // Use fromString to perform a case-insensitive conversion.
+        guard let decodedActionType = ActionType.fromString(typeRaw) else {
             throw AdaptiveCardParseError.invalidType
         }
         self.actionType = decodedActionType
@@ -62,7 +63,8 @@ class BaseActionElement: BaseCardElement {
     
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(actionType.rawValue, forKey: .type)
+        // Use toString so that a .showCard action is encoded as "Action.ShowCard"
+        try container.encode(ActionType.toString(actionType), forKey: .type)
         try container.encodeIfPresent(title, forKey: .title)
         try container.encodeIfPresent(iconUrl, forKey: .iconUrl)
         if style != "default" { try container.encode(style, forKey: .style) }
