@@ -5,8 +5,8 @@ struct ChoiceInput: Codable {
     var value: String
 
     private enum CodingKeys: String, CodingKey {
-        case title = "Title"
-        case value = "Value"
+        case title = "title"
+        case value = "value"
     }
 
     func serializeToJson() -> String? {

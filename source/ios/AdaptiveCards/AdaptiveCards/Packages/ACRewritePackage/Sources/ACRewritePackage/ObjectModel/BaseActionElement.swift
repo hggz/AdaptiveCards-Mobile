@@ -83,12 +83,7 @@ class BaseActionElement: BaseCardElement {
     // add new methods that return BaseActionElement.
     
     static func deserializeAction(from json: [String: Any]) throws -> BaseActionElement {
-        guard let typeStr = json["type"] as? String, !typeStr.isEmpty else {
-            // Possibly the test wants nil or to throw. If the test never sees "type" missing, we can throw:
-            throw AdaptiveCardParseError.invalidType
-        }
-        
-        let lower = typeStr.lowercased()
+        let lower = (json["type"] as? String ?? "").lowercased()
         switch lower {
         case "action.openurl":
             return try OpenUrlActionParser().deserialize(context: globalContext, from: json)

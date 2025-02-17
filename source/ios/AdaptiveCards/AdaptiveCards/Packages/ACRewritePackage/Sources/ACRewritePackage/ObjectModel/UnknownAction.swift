@@ -25,22 +25,15 @@ final class UnknownAction: BaseActionElement {
 /// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
     func deserialize(context: ParseContext, from json: [String: Any]) throws -> BaseActionElement {
-        // If you want to decode any base properties (title, iconUrl, etc.)
-        // you can do manual decoding or use a JSONDecoder.
-        // For example, using JSONDecoder:
-
+        let actualType = try ParseUtil.getTypeAsString(from: json)
+        // do not call BaseActionElement.deserializeAction(...) or you loop
+        // Instead, decode an UnknownAction directly:
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
         let unknownAction = try JSONDecoder().decode(UnknownAction.self, from: data)
         
-        // Now store original JSON as additionalProperties,
-        // so you preserve all fields.
+        // No more guard that throws invalidType. Instead:
         unknownAction.setAdditionalProperties(json)
-        
-        // If you'd like to record the original "type" the JSON had, do:
-        if let typeStr = json["type"] as? String {
-            unknownAction.setElementTypeString(typeStr)
-        }
-        
+        unknownAction.setElementTypeString(actualType)
         return unknownAction
     }
     

@@ -28,22 +28,30 @@ class ImageSet: BaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let rawImgs = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .images) ?? []
-        var result = [Image]()
-        for raw in rawImgs {
-            var dict = raw.mapValues { $0.value }
-            // Only set "Image" if it's missing:
-            if dict["type"] == nil {
+        let rawImages = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .images) ?? []
+        var finalImages = [Image]()
+        for rawImg in rawImages {
+            var dict = rawImg.mapValues { $0.value }
+            if let existingType = dict["type"] as? String {
+                // If the type is NOT "Image", throw
+                if existingType.lowercased() != "image" {
+                    throw AdaptiveCardParseError.invalidType
+                }
+            } else {
+                // If missing, set "Image"
                 dict["type"] = "Image"
             }
+            
             let base = try BaseCardElement.deserialize(from: dict)
             guard let img = base as? Image else {
-                // If it says "Elephant" => decode -> invalidType => or we can throw ourselves
+                // If it still didn't parse as Image, throw
                 throw AdaptiveCardParseError.invalidType
             }
-            result.append(img)
+            finalImages.append(img)
         }
-        self.images = result
+        self.images = finalImages
+        
+        // Then call super
         try super.init(from: decoder)
     }
     
