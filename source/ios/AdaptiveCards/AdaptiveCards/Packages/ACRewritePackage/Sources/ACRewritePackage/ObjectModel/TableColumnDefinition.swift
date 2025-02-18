@@ -70,23 +70,19 @@ struct TableColumnDefinition: Codable {
         
         // Decode vertical alignment.
         if let verticalString = try container.decodeIfPresent(String.self, forKey: .verticalCellContentAlignment) {
-            if let verticalString = try container.decodeIfPresent(String.self, forKey: .verticalCellContentAlignment) {
-                self.verticalCellContentAlignment = VerticalContentAlignment(rawValue: verticalString) ?? .top
-            } else {
-                self.verticalCellContentAlignment = .top
-            }
+            self.verticalCellContentAlignment = VerticalContentAlignment(rawValue: verticalString.lowercased()) ?? .top
         } else {
             self.verticalCellContentAlignment = .top
         }
-        
+
         // Decode the "width" field.
         if container.contains(.width) {
-            // First, try decoding as an unsigned integer.
+            // First try decoding as an unsigned integer.
             if let intValue = try? container.decode(UInt.self, forKey: .width) {
                 self.width = intValue
                 self.pixelWidth = nil
             }
-            // Next, try decoding as a string (which should have a "px" suffix).
+            // Next try decoding as a string.
             else if let stringValue = try? container.decode(String.self, forKey: .width) {
                 if stringValue.hasSuffix("px") {
                     let numberPart = stringValue.dropLast(2)
@@ -94,17 +90,16 @@ struct TableColumnDefinition: Codable {
                         self.pixelWidth = pixelValue
                         self.width = nil
                     } else {
-                        throw DecodingError.dataCorruptedError(forKey: .width,
-                                                               in: container,
-                                                               debugDescription: "Invalid pixel width value: \(stringValue)")
+                        self.width = nil
+                        self.pixelWidth = nil
                     }
                 } else {
-                    throw DecodingError.dataCorruptedError(forKey: .width,
-                                                           in: container,
-                                                           debugDescription: "Expected a 'px' suffix in width string: \(stringValue)")
+                    // If no valid unit is provided, do not throw;
+                    // leave both values nil.
+                    self.width = nil
+                    self.pixelWidth = nil
                 }
-            }
-            else {
+            } else {
                 throw DecodingError.dataCorruptedError(forKey: .width,
                                                        in: container,
                                                        debugDescription: "Invalid type for width")
@@ -177,8 +172,11 @@ struct TableColumnDefinition: Codable {
     }
     
     static func deserialize(context: ParseContext, from json: [String: Any]) throws -> TableColumnDefinition {
+        if let widthValue = json["width"] as? String, !widthValue.hasSuffix("px") {
+            context.warnings.append(.init(statusCode: .noRendererForType, message: "Width string with no unit in TableColumnDefinition: \(widthValue)"))
+        }
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try TableColumnDefinition.deserialize(from: data)
+        return try JSONDecoder().decode(TableColumnDefinition.self, from: data)
     }
 }
 

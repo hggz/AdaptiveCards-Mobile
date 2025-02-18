@@ -83,6 +83,7 @@ class TableRow: BaseCardElement {
                 return try TableCell.deserialize(from: json, context: context)
             }
         )
+        tableRow.additionalProperties = nil
         context.popElement()
         
         return tableRow

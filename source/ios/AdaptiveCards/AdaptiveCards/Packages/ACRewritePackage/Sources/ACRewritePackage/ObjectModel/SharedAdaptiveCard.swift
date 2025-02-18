@@ -182,7 +182,34 @@ public class AdaptiveCard: Codable {
         }
         let rtl = json[AdaptiveCardSchemaKey.rtl.rawValue] as? Bool
         let bodyJson = json[AdaptiveCardSchemaKey.body.rawValue] as? [[String: Any]] ?? []
-        let body = try bodyJson.map { try BaseCardElement.deserialize(from: $0) }
+        // Adjust any Table element’s rows/cells to have an explicit type if missing:
+        let adjustedBodyJson = bodyJson.map { element -> [String: Any] in
+            var element = element
+            if let type = element["type"] as? String, type == "Table" {
+                if let rows = element["rows"] as? [[String: Any]] {
+                    let adjustedRows = rows.map { row -> [String: Any] in
+                        var row = row
+                        if row["type"] == nil {
+                            row["type"] = "TableRow"
+                        }
+                        if let cells = row["cells"] as? [[String: Any]] {
+                            let adjustedCells = cells.map { cell -> [String: Any] in
+                                var cell = cell
+                                if cell["type"] == nil {
+                                    cell["type"] = "TableCell"
+                                }
+                                return cell
+                            }
+                            row["cells"] = adjustedCells
+                        }
+                        return row
+                    }
+                    element["rows"] = adjustedRows
+                }
+            }
+            return element
+        }
+        let body = try adjustedBodyJson.map { try BaseCardElement.deserialize(from: $0) }
         let actionsJson = json[AdaptiveCardSchemaKey.actions.rawValue] as? [[String: Any]] ?? []
         let actions = try actionsJson.map { try BaseActionElement.deserializeAction(from: $0) }
         

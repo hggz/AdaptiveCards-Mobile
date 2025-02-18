@@ -575,17 +575,9 @@ extension ContainerStyle {
         case .accent: return "Accent"
         }
     }
-    static func fromString(_ s: String) -> ContainerStyle? {
-        switch s {
-        case "None": return .none
-        case "Default": return .default
-        case "Emphasis": return .emphasis
-        case "Good": return .good
-        case "Attention": return .attention
-        case "Warning": return .warning
-        case "Accent": return .accent
-        default: return nil
-        }
+    
+    static func fromString(_ value: String) -> ContainerStyle {
+        return ContainerStyle(rawValue: value.capitalized) ?? .none
     }
 }
 

@@ -27,8 +27,7 @@ class TableCell: Container {
         // Convert the JSON dictionary to Data.
         let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
         let cell = try JSONDecoder().decode(TableCell.self, from: jsonData)
-        
-        // Set RTL if provided.
+        // Set RTL if provided (as before) …
         if let rtl = json[AdaptiveCardSchemaKey.rtl.rawValue] as? Bool {
             cell.setRtl(rtl)
         }
@@ -68,6 +67,7 @@ class TableCell: Container {
             cell.setLayouts(layouts)
         }
         
+        cell.additionalProperties = nil
         context.popElement()
         return cell
     }

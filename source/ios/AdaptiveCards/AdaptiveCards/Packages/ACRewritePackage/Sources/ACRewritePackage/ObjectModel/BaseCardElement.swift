@@ -127,7 +127,8 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             CardElementType.textInput.rawValue,
             CardElementType.choiceSetInput.rawValue,
             CardElementType.toggleInput.rawValue,
-            CardElementType.media.rawValue
+            CardElementType.media.rawValue,
+            CardElementType.table.rawValue // <<-- Added so Table is recognized as known.
         ]
         if !knownTypes.contains(typeString) {
             // For unknown types, return an UnknownElement that just preserves the JSON.
