@@ -10,7 +10,6 @@ class StyledCollectionElement: BaseCardElement {
     var hasBleed: Bool
     var showBorder: Bool
     var roundedCorners: Bool
-    var parentalId: InternalId?
     var backgroundImage: BackgroundImage?
     var selectAction: BaseActionElement?
     
@@ -119,10 +118,9 @@ class StyledCollectionElement: BaseCardElement {
         self.hasBleed = hasBleed
         self.showBorder = showBorder
         self.roundedCorners = roundedCorners
-        self.parentalId = parentalId
         self.backgroundImage = backgroundImage
         self.selectAction = selectAction
-        super.init(type: type, id: id)
+        super.init(type: type, parentalId: parentalId, id: id)
     }
     
     
@@ -149,7 +147,6 @@ class StyledCollectionElement: BaseCardElement {
         self.showBorder = try container.decodeIfPresent(Bool.self, forKey: .showBorder) ?? false
         self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
         
-        self.parentalId = try container.decodeIfPresent(InternalId.self, forKey: .parentalId)
         self.backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
         self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
         try super.init(from: decoder)
@@ -165,7 +162,6 @@ class StyledCollectionElement: BaseCardElement {
         try container.encode(hasBleed, forKey: .hasBleed)
         try container.encode(showBorder, forKey: .showBorder)
         try container.encode(roundedCorners, forKey: .roundedCorners)
-        try container.encodeIfPresent(parentalId, forKey: .parentalId)
         try container.encodeIfPresent(backgroundImage, forKey: .backgroundImage)
         try container.encodeIfPresent(selectAction, forKey: .selectAction)
         try super.encode(to: encoder)
@@ -182,7 +178,6 @@ class StyledCollectionElement: BaseCardElement {
         case bleed    // <-- add this new key
         case showBorder
         case roundedCorners
-        case parentalId
         case backgroundImage
         case selectAction
     }

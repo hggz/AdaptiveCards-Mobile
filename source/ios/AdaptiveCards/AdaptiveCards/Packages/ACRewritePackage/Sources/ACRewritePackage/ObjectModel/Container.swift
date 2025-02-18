@@ -83,25 +83,30 @@ class Container: StyledCollectionElement {
         print("Container.configForContainerStyle - Starting")
         super.configPadding(context)
         
-        // Only set up bleed if we have both explicit bleed and padding
         if canBleed {
             print("Container can bleed, configuring direction")
-            // Find the nearest ancestor with a different style
             if let parentId = context.paddingParentInternalId() {
                 self.parentalId = parentId
                 
-                // Configure specific bleed direction based on parent type
-                if let parent = findParent() as? Column {
-                    // If parent is a Column, set specific direction
-                    if parent.isFirstColumn {
-                        self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
-                    } else if parent.isLastColumn {
-                        self.bleedDirection = [.bleedDown, .bleedRight, .bleedLeft]
+                // In nested case, find parent Column
+                if let parentColumn = findParentColumn() {
+                    if let columnSet = findParentColumnSet(of: parentColumn) {
+                        let columnIndex = columnSet.columns.firstIndex { $0.internalId == parentColumn.internalId } ?? 0
+                        let isFirst = columnIndex == 0
+                        let isLast = columnIndex == columnSet.columns.count - 1
+                        
+                        if isFirst {
+                            self.bleedDirection = [.bleedDown, .bleedLeft]
+                        } else if isLast {
+                            self.bleedDirection = [.bleedDown, .bleedRight]
+                        } else {
+                            self.bleedDirection = [.bleedDown]
+                        }
                     } else {
+                        // Default container bleed
                         self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
                     }
                 } else {
-                    // Default container bleed direction
                     self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
                 }
             } else {
@@ -116,9 +121,25 @@ class Container: StyledCollectionElement {
         print("Container.configForContainerStyle - Complete, direction: \(bleedDirection)")
     }
     
-    private func findParent() -> BaseCardElement? {
-        // This would need to be implemented to find the parent element
-        // For now, we'll return nil
+    private func findParentColumn() -> Column? {
+        var current: BaseCardElement? = self
+        while let parent = current?.parentalId {
+            if let foundColumn = findElement(withId: parent) as? Column {
+                return foundColumn
+            }
+            current = findElement(withId: parent)
+        }
+        return nil
+    }
+    
+    private func findParentColumnSet(of column: Column) -> ColumnSet? {
+        var current: BaseCardElement? = column
+        while let parent = current?.parentalId {
+            if let foundColumnSet = findElement(withId: parent) as? ColumnSet {
+                return foundColumnSet
+            }
+            current = findElement(withId: parent)
+        }
         return nil
     }
 

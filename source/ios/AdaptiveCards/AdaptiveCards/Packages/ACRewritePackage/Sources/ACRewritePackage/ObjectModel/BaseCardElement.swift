@@ -17,6 +17,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
     var separator: Bool?
     var isVisible: Bool = true
     var areaGridName: String?
+    var parentalId: InternalId?  // Added parentalId property
     
     override var typeString: String {
         get { return type.rawValue }
@@ -25,14 +26,15 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
 
     // MARK: - Initializers
     init(
-        type: CardElementType,
-        spacing: Spacing? = nil,
-        height: HeightType? = nil,
-        targetWidth: TargetWidthType? = nil,
-        separator: Bool? = nil,
-        isVisible: Bool = true,
-        areaGridName: String? = nil,
-        id: String? = nil
+            type: CardElementType,
+            spacing: Spacing? = nil,
+            height: HeightType? = nil,
+            targetWidth: TargetWidthType? = nil,
+            separator: Bool? = nil,
+            isVisible: Bool = true,
+            areaGridName: String? = nil,
+            parentalId: InternalId? = nil,  // Added parameter
+            id: String? = nil
     ) {
         self.type = type
         self.spacing = spacing
@@ -41,7 +43,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         self.separator = separator
         self.isVisible = isVisible
         self.areaGridName = areaGridName
-        // Call the BaseElement initializer with the raw value of the CardElementType.
+        self.parentalId = parentalId
         super.init(typeString: type.rawValue, id: id)
     }
 
@@ -54,6 +56,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         case separator
         case isVisible
         case areaGridName
+        case parentalId
     }
 
     /// Serializes the BaseCardElement into JSON.
@@ -66,6 +69,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         try container.encodeIfPresent(separator, forKey: .separator)
         try container.encode(isVisible, forKey: .isVisible)
         try container.encodeIfPresent(areaGridName, forKey: .areaGridName)
+        try container.encodeIfPresent(parentalId, forKey: .parentalId)  // Added encoding
         try super.encode(to: encoder)
     }
 
@@ -96,6 +100,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         self.separator = try container.decodeIfPresent(Bool.self, forKey: .separator)
         self.isVisible = try container.decodeIfPresent(Bool.self, forKey: .isVisible) ?? true
         self.areaGridName = try container.decodeIfPresent(String.self, forKey: .areaGridName)
+        self.parentalId = try container.decodeIfPresent(InternalId.self, forKey: .parentalId)  // Added decoding
         // Decode the BaseElement properties.
         try super.init(from: decoder)
     }
@@ -214,5 +219,18 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
 
     func setElementTypeString(_ type: String) {
         self.typeString = type
+    }
+    
+    // Helper method to find parent element
+    func findParent() -> BaseCardElement? {
+        guard let parentId = parentalId else { return nil }
+        return findElement(withId: parentId)
+    }
+    
+    // Helper method to find element by ID
+    func findElement(withId id: InternalId) -> BaseCardElement? {
+        // This needs to be implemented with access to the element registry
+        // For now, return nil to match current behavior
+        return nil
     }
 }

@@ -58,12 +58,6 @@ class Column: StyledCollectionElement {
         return columnSet.columns.last?.internalId == self.internalId
     }
     
-    private func findParent() -> BaseCardElement? {
-        // This would need to be implemented to find the parent element
-        // For now, we'll return nil
-        return nil
-    }
-    
     private var isUpdatingWidth = false
     private var isUpdatingPixelWidth = false
     
