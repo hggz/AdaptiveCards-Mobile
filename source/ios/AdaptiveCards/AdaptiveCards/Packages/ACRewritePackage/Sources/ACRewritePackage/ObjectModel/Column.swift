@@ -48,6 +48,22 @@ class Column: StyledCollectionElement {
         set { hasBleed = newValue }
     }
     
+    var isFirstColumn: Bool {
+        guard let columnSet = findParent() as? ColumnSet else { return false }
+        return columnSet.columns.first?.internalId == self.internalId
+    }
+    
+    var isLastColumn: Bool {
+        guard let columnSet = findParent() as? ColumnSet else { return false }
+        return columnSet.columns.last?.internalId == self.internalId
+    }
+    
+    private func findParent() -> BaseCardElement? {
+        // This would need to be implemented to find the parent element
+        // For now, we'll return nil
+        return nil
+    }
+    
     private var isUpdatingWidth = false
     private var isUpdatingPixelWidth = false
     
@@ -57,16 +73,18 @@ class Column: StyledCollectionElement {
     
     // MARK: - Initializer
     init(id: String? = nil) {
-        // Set initial values without triggering observers.
-        self.width = "Auto"
-        self.pixelWidth = 0
+        // Initialize arrays before super.init
         self.items = []
         self.layouts = []
+        self.width = "Auto"
+        self.pixelWidth = 0
+        
+        // Call super.init with bleedRestricted instead of bleedAll
         super.init(
             type: .column,
             style: .none,
             verticalContentAlignment: nil,
-            bleedDirection: .bleedAll,
+            bleedDirection: .bleedRestricted,  // Changed from .bleedAll
             minHeight: 0,
             hasPadding: false,
             hasBleed: false,
@@ -77,7 +95,6 @@ class Column: StyledCollectionElement {
             selectAction: nil,
             id: id
         )
-        self.populateKnownPropertiesSet()
     }
     
     // MARK: - Codable
@@ -86,52 +103,72 @@ class Column: StyledCollectionElement {
     }
     
     required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Initialize arrays before super.init
+        // Initialize properties
         self.items = []
         self.layouts = []
-        self.width = try container.decodeIfPresent(String.self, forKey: .width) ?? "Auto"
-        self.pixelWidth = try container.decodeIfPresent(Int.self, forKey: .pixelWidth) ?? 0
-        
-        // Call super.init to set up base properties
+        self.width = "Auto"
+        self.pixelWidth = 0
+            
+        // Decode container
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+        // Call super.init but start with restricted bleed
         try super.init(from: decoder)
-        
+        print("Column.init - Setting initial bleed to restricted")
+        self.bleedDirection = .bleedRestricted
         // Get the shared context
         let context = BaseElement.parseContext
         
-        // Configure our own style
-        self.configForContainerStyle(context)
+        // Configure our own style (but don't set bleed direction)
+        configPadding(context)
         
-        // Save our context for children
-        context.saveContextForStyledCollectionElement(self)
+        // Configure parental ID if needed
+        if canBleed {
+            if let parentId = context.paddingParentInternalId() {
+                parentalId = parentId
+            }
+        }
         
-        // Parse items
+        // Process items
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
+            context.saveContextForStyledCollectionElement(self)
+            
             for rawDict in rawItems {
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
                 guard let dict = unwrapped as? [String: Any] else {
                     throw AdaptiveCardParseError.invalidJson
                 }
-                
                 let element = try BaseCardElement.deserialize(from: dict)
                 
                 if let container = element as? Container {
-                    // Configure container style and set its parentalId to this column
                     container.configForContainerStyle(context)
                     container.parentalId = self.internalId
                 }
                 
                 self.items.append(element)
             }
+            
+            context.restoreContextForStyledCollectionElement(self)
         }
-        
-        // Restore previous context
-        context.restoreContextForStyledCollectionElement(self)
         
         // Handle additional properties
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
+    }
+    
+    override func configForContainerStyle(_ context: ParseContext) {
+        print("Column.configForContainerStyle - Before config, bleedDirection: \(bleedDirection)")
+        
+        // Configure padding and parental ID as before
+        configPadding(context)
+        if canBleed {
+            if let parentId = context.paddingParentInternalId() {
+                parentalId = parentId
+            }
+        }
+        
+        // Don't set bleed direction here - let ColumnSet handle it
+        print("Column.configForContainerStyle - After config, bleedDirection: \(bleedDirection)")
     }
 
     override func encode(to encoder: Encoder) throws {

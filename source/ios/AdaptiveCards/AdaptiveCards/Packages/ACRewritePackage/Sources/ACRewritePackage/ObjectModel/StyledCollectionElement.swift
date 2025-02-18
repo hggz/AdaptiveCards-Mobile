@@ -49,7 +49,15 @@ class StyledCollectionElement: BaseCardElement {
                 // Found an ancestor with different style - use its ID
                 print("configBleed - found parent with ID: \(parentId)")
                 parentalId = parentId
-                bleedDirection = .bleedAll
+                
+                // For ColumnSet children, don't set bleed direction here
+                // Let ColumnSet.configureColumnBleedDirections handle it
+                if let _ = self as? Column {
+                    // Don't set bleed direction for columns - will be set by ColumnSet
+                    print("configBleed - column detected, skipping bleed direction")
+                } else {
+                    bleedDirection = .bleedAll
+                }
             } else {
                 // No appropriate ancestor found
                 print("configBleed - no parent with different style found")

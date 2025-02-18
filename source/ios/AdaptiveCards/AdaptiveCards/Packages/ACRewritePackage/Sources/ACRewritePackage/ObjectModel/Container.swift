@@ -8,17 +8,18 @@ class Container: StyledCollectionElement {
 
     /// Designated initializer accepting a card element type.
     init(items: [BaseCardElement] = [],
-         layouts: [Layout] = [],
-         rtl: Bool? = nil,
+             layouts: [Layout] = [],
+             rtl: Bool? = nil,
          cardElementType: CardElementType = .container) {
         self.items = items
         self.layouts = layouts
         self.rtl = rtl
+        // Initialize with restricted bleed
         super.init(
             type: cardElementType,
             style: .none,
             verticalContentAlignment: nil,
-            bleedDirection: .bleedAll,
+            bleedDirection: .bleedRestricted,  // Change from .bleedAll
             minHeight: 0,
             hasPadding: false,
             hasBleed: false,
@@ -78,10 +79,47 @@ class Container: StyledCollectionElement {
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
     }
     
-    // Override configForContainerStyle to add debugging
     override func configForContainerStyle(_ context: ParseContext) {
-        print("configForContainerStyle called on Container")
-        super.configForContainerStyle(context)
+        print("Container.configForContainerStyle - Starting")
+        super.configPadding(context)
+        
+        // Only set up bleed if we have both explicit bleed and padding
+        if canBleed {
+            print("Container can bleed, configuring direction")
+            // Find the nearest ancestor with a different style
+            if let parentId = context.paddingParentInternalId() {
+                self.parentalId = parentId
+                
+                // Configure specific bleed direction based on parent type
+                if let parent = findParent() as? Column {
+                    // If parent is a Column, set specific direction
+                    if parent.isFirstColumn {
+                        self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
+                    } else if parent.isLastColumn {
+                        self.bleedDirection = [.bleedDown, .bleedRight, .bleedLeft]
+                    } else {
+                        self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
+                    }
+                } else {
+                    // Default container bleed direction
+                    self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
+                }
+            } else {
+                self.bleedDirection = .bleedRestricted
+                self.parentalId = nil
+            }
+        } else {
+            self.bleedDirection = .bleedRestricted
+            self.parentalId = nil
+        }
+        
+        print("Container.configForContainerStyle - Complete, direction: \(bleedDirection)")
+    }
+    
+    private func findParent() -> BaseCardElement? {
+        // This would need to be implemented to find the parent element
+        // For now, we'll return nil
+        return nil
     }
 
     override func encode(to encoder: Encoder) throws {
