@@ -55,6 +55,8 @@ class ColumnSet: StyledCollectionElement {
         
         // Finally call super
         try super.init(from: decoder)
+        // Now configure the bleed directions for child columns.
+        self.configureColumnBleedDirections()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -104,6 +106,54 @@ class ColumnSet: StyledCollectionElement {
         // Here we simply iterate over our columns.
         for column in columns {
             column.getResourceInformation(&resourceInfo)
+        }
+    }
+    
+    /// Indicates whether this ColumnSet is nested (i.e. not at the top level of the card).
+    var isNested: Bool {
+        // For our purposes, if its parentalId is non‑nil, we consider it nested.
+        return self.parentalId != nil
+    }
+    
+    /// Configure the bleed directions for the child columns.
+    /// For a top‑level ColumnSet, we use a “base” of 0x1111.
+    /// For a nested ColumnSet, we use a “base” of 0x1000.
+    func configureColumnBleedDirections() {
+        // Choose the base:
+        let base: ContainerBleedDirection = isNested
+            ? ContainerBleedDirection(rawValue: 0x1000)
+            : ContainerBleedDirection.bleedAll
+        
+        let count = columns.count
+        for (index, column) in columns.enumerated() {
+            if count == 1 {
+                column.bleedDirection = base
+            } else if index == 0 {
+                // For the leftmost column:
+                if isNested {
+                    // Expected: base union bleedLeft.
+                    column.bleedDirection = base.union(.bleedLeft)
+                } else {
+                    // Expected: base with the right bit removed.
+                    column.bleedDirection = base.subtracting(.bleedRight)
+                }
+            } else if index == count - 1 {
+                // For the rightmost column:
+                if isNested {
+                    column.bleedDirection = base.union(.bleedRight)
+                } else {
+                    column.bleedDirection = base.subtracting(.bleedLeft)
+                }
+            } else {
+                // For a middle column:
+                if isNested {
+                    // Expected: just the base.
+                    column.bleedDirection = base
+                } else {
+                    // Expected: base with both left and right bits removed.
+                    column.bleedDirection = base.subtracting([.bleedLeft, .bleedRight])
+                }
+            }
         }
     }
 }

@@ -551,6 +551,16 @@ extension ChoiceSetStyle {
 
 enum ContainerStyle: String, Codable {
     case none, `default`, emphasis, good, attention, warning, accent
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self).lowercased()
+        guard let value = ContainerStyle(rawValue: raw) else {
+            throw DecodingError.dataCorruptedError(in: container,
+                debugDescription: "Cannot initialize ContainerStyle from invalid String value \(raw)")
+        }
+        self = value
+    }
 }
 
 extension ContainerStyle {

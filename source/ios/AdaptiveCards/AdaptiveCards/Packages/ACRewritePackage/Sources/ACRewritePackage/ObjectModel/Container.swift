@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a Container element in an Adaptive Card.
-class Container: BaseCardElement {
+class Container: StyledCollectionElement {
     var items: [BaseCardElement]
     var layouts: [Layout]
     var rtl: Bool?

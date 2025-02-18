@@ -14,6 +14,22 @@ class StyledCollectionElement: BaseCardElement {
     var backgroundImage: BackgroundImage?
     var selectAction: BaseActionElement?
     
+    /// Exposes the padding flag under the name expected by the tests.
+    open var padding: Bool {
+        return hasPadding
+    }
+    
+    /// Exposes the bleed capability.
+    /// (In C++ this is defined as: GetCanBleed() { return (bleedDirection != BleedRestricted); })
+    open var canBleed: Bool {
+        return bleedDirection != ContainerBleedDirection.bleedRestricted
+    }
+    
+    /// Exposes the bleed flag.
+    open var bleed: Bool {
+        return hasBleed
+    }
+    
     init(type: CardElementType,
          style: ContainerStyle = .none,
          verticalContentAlignment: VerticalContentAlignment? = nil,
@@ -60,7 +76,8 @@ class StyledCollectionElement: BaseCardElement {
         
         // For these booleans, if missing, default to false
         self.hasPadding = try container.decodeIfPresent(Bool.self, forKey: .hasPadding) ?? false
-        self.hasBleed = try container.decodeIfPresent(Bool.self, forKey: .hasBleed) ?? false
+        self.hasBleed = try (try container.decodeIfPresent(Bool.self, forKey: .hasBleed)) ??
+                        (try container.decodeIfPresent(Bool.self, forKey: .bleed)) ?? false
         self.showBorder = try container.decodeIfPresent(Bool.self, forKey: .showBorder) ?? false
         self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
         
@@ -94,6 +111,7 @@ class StyledCollectionElement: BaseCardElement {
         case minHeight
         case hasPadding
         case hasBleed
+        case bleed    // <-- add this new key
         case showBorder
         case roundedCorners
         case parentalId
