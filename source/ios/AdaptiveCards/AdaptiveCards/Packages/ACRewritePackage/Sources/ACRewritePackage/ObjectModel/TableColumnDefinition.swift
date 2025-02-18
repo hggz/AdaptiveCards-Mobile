@@ -181,3 +181,10 @@ struct TableColumnDefinition: Codable {
         return try TableColumnDefinition.deserialize(from: data)
     }
 }
+
+extension TableColumnDefinition {
+    static func deserialize(context: ParseContext, from jsonString: String) throws -> TableColumnDefinition {
+        let dict = try ParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(context: context, from: dict)
+    }
+}

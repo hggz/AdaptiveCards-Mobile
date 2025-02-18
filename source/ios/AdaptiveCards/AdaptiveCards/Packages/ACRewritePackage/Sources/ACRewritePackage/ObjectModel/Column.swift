@@ -177,7 +177,7 @@ class Column: StyledCollectionElement {
     }
     
     // Custom serialization for the test – produces exactly three keys in order.
-    func serialize() throws -> String {
+    override func serialize() throws -> String {
         let jsonKeysInOrder = [
             "\"items\":[]",
             "\"type\":\"Column\"",

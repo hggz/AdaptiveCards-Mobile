@@ -163,7 +163,7 @@ class TextBlock: BaseCardElement {
     }
 
     /// Converts this TextBlock into a JSON string.
-    func serialize() throws -> String {
+    override func serialize() throws -> String {
         let data = try JSONSerialization.data(withJSONObject: serializeToJsonValue(), options: [.sortedKeys])
         guard let jsonString = String(data: data, encoding: .utf8) else {
             throw AdaptiveCardParseError.serializationFailed

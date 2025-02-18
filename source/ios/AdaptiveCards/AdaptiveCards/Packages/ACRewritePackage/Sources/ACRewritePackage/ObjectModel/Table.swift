@@ -25,6 +25,10 @@ class Table: BaseCardElement, CollectionCoreElement {
     
     /// The grid style of the table.
     var gridStyle: ContainerStyle
+    
+    var columns: [TableColumnDefinition] {
+        return self.columnDefinitions
+    }
 
     private enum CodingKeys: String, CodingKey {
         case columns
@@ -110,5 +114,11 @@ struct TableParser: BaseCardElementParser {
     func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
         let jsonDict = try ParseUtil.getJsonDictionary(from: value)
         return try deserialize(context: context, value: jsonDict)
+    }
+}
+
+extension TableParser {
+    func deserialize(from value: String, context: ParseContext) throws -> any AdaptiveCardElementProtocol {
+        return try self.deserialize(fromString: context, value: value)
     }
 }

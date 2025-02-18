@@ -233,4 +233,28 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         // For now, return nil to match current behavior
         return nil
     }
+    
+    /// Convenience serialize method that returns a JSON string.
+    public func serialize() throws -> String {
+        return try ParseUtil.jsonToString(self.serializeToJsonValue())
+    }
+    
+    /// Returns the element type as a CardElementType (or .unknown if it can’t be parsed)
+    var elementTypeVal: CardElementType {
+        return CardElementType.fromString(self.typeString) ?? .unknown
+    }
 }
+
+extension BaseCardElement {
+    /// Returns the type string (as originally decoded)
+    var elementTypeString: String {
+        return self.typeString
+    }
+    
+    /// A convenience “parse” method used in tests.
+    static func parse(json: [String: Any], context: ParseContext) -> BaseCardElement? {
+        // We simply attempt to deserialize and return nil if an error is thrown.
+        return try? BaseCardElement.deserialize(from: json)
+    }
+}
+

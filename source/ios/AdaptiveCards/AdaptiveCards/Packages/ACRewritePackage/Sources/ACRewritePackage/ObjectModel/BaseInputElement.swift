@@ -93,7 +93,7 @@ class BaseInputElement: BaseCardElement {
     /// Serializes the BaseInputElement to a JSON string.
     /// - Returns: A JSON string representation.
     /// - Throws: An error if the encoding fails.
-    func serialize() throws -> String {
+    override func serialize() throws -> String {
         let jsonData = try JSONEncoder().encode(self)
         guard let jsonString = String(data: jsonData, encoding: .utf8) else {
             throw SerializationError.invalidData
