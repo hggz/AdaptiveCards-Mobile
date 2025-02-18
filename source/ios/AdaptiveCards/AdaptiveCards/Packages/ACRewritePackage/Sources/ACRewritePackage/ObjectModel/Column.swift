@@ -39,7 +39,7 @@ class Column: StyledCollectionElement {
     }
     
     override var canBleed: Bool {
-        // Column can only bleed if it has padding and hasBleed is true
+        // Column can only bleed if it has padding AND hasBleed is true
         return hasPadding && hasBleed
     }
     
@@ -87,50 +87,49 @@ class Column: StyledCollectionElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
+        
+        // Initialize arrays before super.init
+        self.items = []
+        self.layouts = []
         self.width = try container.decodeIfPresent(String.self, forKey: .width) ?? "Auto"
         self.pixelWidth = try container.decodeIfPresent(Int.self, forKey: .pixelWidth) ?? 0
-
-        // Initialize items array before super.init
-        self.items = []
-        self.rtl = nil
-        self.layouts = []
         
-        // Call super.init to set up base properties including style
+        // Call super.init to set up base properties
         try super.init(from: decoder)
         
-        // Get the shared context and configure our own style
+        // Get the shared context
         let context = BaseElement.parseContext
+        
+        // Configure our own style
         self.configForContainerStyle(context)
         
-        print("Column init - style: \(self.style)")
-        
-        // Save our style as the parent style for children
+        // Save our context for children
         context.saveContextForStyledCollectionElement(self)
-        print("Column - Setting parent style to: \(self.style)")
         
-        // Then decode items with context and style configuration
+        // Parse items
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
-            self.items = try rawItems.map { rawDict in
+            for rawDict in rawItems {
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
                 guard let dict = unwrapped as? [String: Any] else {
                     throw AdaptiveCardParseError.invalidJson
                 }
+                
                 let element = try BaseCardElement.deserialize(from: dict)
                 
-                // Configure style for styled elements
-                if let styledElement = element as? StyledCollectionElement {
-                    print("Column - Configuring child element style with parent style: \(self.style)")
-                    styledElement.configForContainerStyle(context)
+                if let container = element as? Container {
+                    // Configure container style and set its parentalId to this column
+                    container.configForContainerStyle(context)
+                    container.parentalId = self.internalId
                 }
                 
-                return element
+                self.items.append(element)
             }
         }
         
-        // Restore the context
+        // Restore previous context
         context.restoreContextForStyledCollectionElement(self)
-
+        
+        // Handle additional properties
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
     }

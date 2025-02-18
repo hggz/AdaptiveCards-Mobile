@@ -37,25 +37,46 @@ class ColumnSet: StyledCollectionElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // We decode an array of raw dictionaries, then enforce "type = Column" if missing.
+        // Initialize columns before super.init
+        self.columns = []
+        
+        // Decode the raw columns
         let rawColumns = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .columns) ?? []
-        var builtColumns = [Column]()
+        
+        // Get the shared context
+        let context = BaseElement.parseContext
+        
+        // Call super.init to set up base properties
+        try super.init(from: decoder)
+        
+        // Configure our own style
+        self.configForContainerStyle(context)
+        
+        // Save our context for children
+        context.saveContextForStyledCollectionElement(self)
+        
+        // Process columns
         for raw in rawColumns {
             var dict = raw.mapValues { $0.value }
             if dict["type"] == nil {
                 dict["type"] = "Column"
             }
+            
             let base = try BaseCardElement.deserialize(from: dict)
             guard let col = base as? Column else {
                 throw AdaptiveCardParseError.invalidType
             }
-            builtColumns.append(col)
+            
+            // Configure the column's style
+            col.configForContainerStyle(context)
+            
+            self.columns.append(col)
         }
-        self.columns = builtColumns
         
-        // Finally call super
-        try super.init(from: decoder)
-        // Now configure the bleed directions for child columns.
+        // Restore previous context
+        context.restoreContextForStyledCollectionElement(self)
+        
+        // Configure bleed directions after all columns are processed
         self.configureColumnBleedDirections()
     }
     
@@ -129,32 +150,34 @@ class ColumnSet: StyledCollectionElement {
     ///   • Rightmost: bleedDirection = BleedDown ∪ BleedRight (4096+16 = 4112)
     func configureColumnBleedDirections() {
         let count = columns.count
+        
         for (index, column) in columns.enumerated() {
-            var direction: ContainerBleedDirection = .bleedDown
+            var direction: ContainerBleedDirection = []
             
-            if isNested {
-                // Nested ColumnSet
-                if index == 0 {
-                    direction = direction.union(.bleedLeft)
-                } else if index == count - 1 {
-                    direction = direction.union(.bleedRight)
-                }
-                column.parentalId = self.internalId
-            } else {
-                // Top-level ColumnSet
-                if count == 1 {
-                    direction = [.bleedDown, .bleedUp]
-                } else if index == 0 {
-                    direction = [.bleedDown, .bleedLeft, .bleedRight]
-                } else if index == count - 1 {
-                    direction = [.bleedDown, .bleedUp, .bleedRight]
-                } else {
+            // Handle single column case
+            if count == 1 {
+                direction = [.bleedDown, .bleedUp]
+            }
+            // Handle multi-column case
+            else {
+                if index == 0 {  // First column
+                    direction = [.bleedDown, .bleedLeft, .bleedUp]
+                } else if index == count - 1 {  // Last column
+                    direction = [.bleedDown, .bleedRight, .bleedUp]
+                } else {  // Middle columns
                     direction = [.bleedDown, .bleedUp]
                 }
-                column.parentalId = nil
             }
             
-            column.bleedDirection = direction
+            // Only set the direction if the column can bleed
+            if column.canBleed {
+                column.bleedDirection = direction
+            } else {
+                column.bleedDirection = .bleedRestricted
+            }
+            
+            // Clear parentalId for all columns in top-level ColumnSet
+            column.parentalId = nil
         }
     }
 }
