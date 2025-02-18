@@ -153,15 +153,16 @@ class Column: StyledCollectionElement {
     override func configForContainerStyle(_ context: ParseContext) {
         print("Column.configForContainerStyle - Before config, bleedDirection: \(bleedDirection)")
         
-        // Configure padding and parental ID as before
+        // Configure padding
         configPadding(context)
+        
+        // Configure parental ID if needed
         if canBleed {
             if let parentId = context.paddingParentInternalId() {
                 parentalId = parentId
             }
         }
         
-        // Don't set bleed direction here - let ColumnSet handle it
         print("Column.configForContainerStyle - After config, bleedDirection: \(bleedDirection)")
     }
 

@@ -88,22 +88,26 @@ class Container: StyledCollectionElement {
             if let parentId = context.paddingParentInternalId() {
                 self.parentalId = parentId
                 
-                // In nested case, find parent Column
+                // Find parent Column
                 if let parentColumn = findParentColumn() {
                     if let columnSet = findParentColumnSet(of: parentColumn) {
                         let columnIndex = columnSet.columns.firstIndex { $0.internalId == parentColumn.internalId } ?? 0
                         let isFirst = columnIndex == 0
                         let isLast = columnIndex == columnSet.columns.count - 1
                         
+                        var direction: ContainerBleedDirection = .bleedDown
+                        
+                        // Add left/right based on position
                         if isFirst {
-                            self.bleedDirection = [.bleedDown, .bleedLeft]
-                        } else if isLast {
-                            self.bleedDirection = [.bleedDown, .bleedRight]
-                        } else {
-                            self.bleedDirection = [.bleedDown]
+                            direction.insert(.bleedLeft)
                         }
+                        if isLast {
+                            direction.insert(.bleedRight)
+                        }
+                        
+                        self.bleedDirection = direction
                     } else {
-                        // Default container bleed
+                        // Default container bleed if not in a ColumnSet
                         self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
                     }
                 } else {

@@ -87,7 +87,7 @@ class ColumnSet: StyledCollectionElement {
         super.configForContainerStyle(context)
         print("ColumnSet.configForContainerStyle - Complete")
     }
-
+    
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(columns, forKey: .columns)
@@ -158,10 +158,11 @@ class ColumnSet: StyledCollectionElement {
     ///   • Rightmost: bleedDirection = BleedDown ∪ BleedRight (4096+16 = 4112)
     func configureColumnBleedDirections() {
         print("ColumnSet.configureColumnBleedDirections - Starting")
-        let count = columns.count
         
         for (index, column) in columns.enumerated() {
-            print("Configuring column \(index) of \(count - 1), canBleed: \(column.canBleed)")
+            guard let column = column as? Column else { continue }
+            
+            print("Configuring column \(index) of \(columns.count - 1), canBleed: \(column.canBleed)")
             
             if !column.canBleed {
                 print("Column \(index) cannot bleed, restricting")
@@ -169,42 +170,33 @@ class ColumnSet: StyledCollectionElement {
                 continue
             }
             
-            var direction: ContainerBleedDirection = [.bleedDown]
+            // Start with bleedDown
+            var direction: ContainerBleedDirection = .bleedDown
             print("Initial direction for column \(index): \(direction)")
             
-            if !isNested {
-                if count == 1 {
-                    // Single column gets up bleed
-                    direction.insert(.bleedUp)
-                } else {
-                    if index == 0 {
-                        // First column gets left and up
-                        direction.insert(.bleedLeft)
-                        direction.insert(.bleedUp)
-                    } else if index == count - 1 {
-                        // Last column gets right and up
-                        direction.insert(.bleedRight)
-                        direction.insert(.bleedUp)
-                    } else {
-                        // Middle columns get up
-                        direction.insert(.bleedUp)
-                    }
-                }
-            } else {
-                // Nested column handling
-                if index == 0 {
-                    direction.insert(.bleedLeft)
-                } else if index == count - 1 {
-                    direction.insert(.bleedRight)
-                }
+            // Add bleedUp if parent ColumnSet has bleed enabled
+            if self.hasBleed && self.canBleed {
+                direction.insert(.bleedUp)
             }
             
-            print("Setting final direction for column \(index) to: \(direction)")
-            column.bleedDirection = direction
+            // Add left/right based on position
+            if index == 0 {
+                direction.insert(.bleedLeft)
+            }
+            if index == columns.count - 1 {
+                direction.insert(.bleedRight)
+            }
             
-            // Handle parentalId
-            if !isNested {
-                column.parentalId = nil
+            column.bleedDirection = direction
+            print("Setting final direction for column \(index) to: \(direction)")
+            
+            // Set parental ID for bleeding columns
+            if column.canBleed {
+                if let parentalId = self.parentalId {
+                    column.parentalId = parentalId
+                } else if let contextParentId = column.parentalId {
+                    column.parentalId = contextParentId
+                }
             }
         }
     }
