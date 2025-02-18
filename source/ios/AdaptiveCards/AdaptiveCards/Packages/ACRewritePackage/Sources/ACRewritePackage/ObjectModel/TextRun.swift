@@ -16,6 +16,10 @@ struct TextRun: Inline, Codable {
     var underline: Bool
     var language: String?
     var selectAction: BaseActionElement?
+    
+    var unwrappedAdditionalProperties: [String: Any] {
+        return additionalProperties.mapValues { $0.value }
+    }
 
     enum CodingKeys: String, CodingKey {
         case inlineType = "type"

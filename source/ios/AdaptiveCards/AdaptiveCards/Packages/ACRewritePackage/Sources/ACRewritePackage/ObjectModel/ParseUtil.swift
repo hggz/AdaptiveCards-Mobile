@@ -5,10 +5,15 @@ struct ParseUtil {
     // MARK: – Core JSON Conversion
     
     static func jsonToString(_ json: [String: Any]) throws -> String {
-        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
-        return String(data: jsonData, encoding: .utf8) ?? "{}"
+        let unwrapped = unwrapAnyCodable(from: json)
+        let jsonData = try JSONSerialization.data(withJSONObject: unwrapped, options: [.sortedKeys])
+        return "\(String(data: jsonData, encoding: .utf8) ?? "{}")\n"
     }
-    
+
+    static func jsonToString(_ json: [String: AnyCodable]) throws -> String {
+        return try jsonToString(json.mapValues { $0.value })
+    }
+
     static func throwIfNotJsonObject(_ json: Any) throws {
         guard json is [String: Any] else {
             throw ParsingError.invalidType(expected: "JSON object", found: "\(type(of: json))")

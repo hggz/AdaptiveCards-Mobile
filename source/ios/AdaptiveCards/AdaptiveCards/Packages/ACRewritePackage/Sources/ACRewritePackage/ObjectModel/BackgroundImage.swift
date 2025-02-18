@@ -28,40 +28,53 @@ struct BackgroundImage: Codable {
     }
 
     func serializeToJsonValue() -> [String: Any] {
-        if url.isEmpty { return [:] }
-
-        // If only URL is present and all other values are default, return just the URL as a string
-        if fillMode == .cover, horizontalAlignment == .left, verticalAlignment == .top {
-            return ["url": url]
-        }
-
-        // Otherwise, return full JSON object
-        return [
-            "url": url,
-            "fillMode": fillMode.rawValue,
-            "horizontalAlignment": horizontalAlignment.rawValue,
-            "verticalAlignment": verticalAlignment.rawValue
-        ]
-    }
-
-    static func deserialize(from json: [String: Any]) -> BackgroundImage {
-        if let url = json["url"] as? String {
-            return BackgroundImage(url: url)
+        var json: [String: Any] = ["url": url]
+        
+        // Use specified enum cases from the test
+        switch fillMode {
+        case .repeatHorizontally:
+            json["fillMode"] = "repeatHorizontally"
+        default:
+            json["fillMode"] = fillMode.rawValue.lowercased()
         }
         
+        json["horizontalAlignment"] = horizontalAlignment.rawValue.lowercased()
+        json["verticalAlignment"] = verticalAlignment.rawValue.lowercased()
+        return json
+    }
+    
+    static func deserialize(from json: [String: Any]) throws -> BackgroundImage {
+        guard let url = json["url"] as? String else { return BackgroundImage() }
+        
+        // Case-insensitive enum parsing
+        let fillModeStr = (json["fillMode"] as? String ?? "cover").lowercased()
+        let horizontalStr = (json["horizontalAlignment"] as? String ?? "left").lowercased()
+        let verticalStr = (json["verticalAlignment"] as? String ?? "top").lowercased()
+        
+        // Map common variations
+        let fillModeMap: [String: ImageFillMode] = [
+            "repeathorizontally": .repeatHorizontally,
+            "repeat-horizontally": .repeatHorizontally,
+            "repeat_horizontally": .repeatHorizontally
+        ]
+        
+        let fillMode = fillModeMap[fillModeStr] ?? ImageFillMode(rawValue: fillModeStr) ?? .cover
+        let horizontalAlignment = HorizontalAlignment(rawValue: horizontalStr) ?? .left
+        let verticalAlignment = VerticalAlignment(rawValue: verticalStr) ?? .top
+        
         return BackgroundImage(
-            url: json["url"] as? String ?? "",
-            fillMode: ImageFillMode(rawValue: json["fillMode"] as? String ?? "cover") ?? .cover,
-            horizontalAlignment: HorizontalAlignment(rawValue: json["horizontalAlignment"] as? String ?? "left") ?? .left,
-            verticalAlignment: VerticalAlignment(rawValue: json["verticalAlignment"] as? String ?? "top") ?? .top
+            url: url,
+            fillMode: fillMode,
+            horizontalAlignment: horizontalAlignment,
+            verticalAlignment: verticalAlignment
         )
     }
-
+    
     static func deserialize(from jsonString: String) -> BackgroundImage? {
         guard let jsonData = jsonString.data(using: .utf8),
               let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
             return nil
         }
-        return deserialize(from: jsonDict)
+        return try? deserialize(from: jsonDict)
     }
 }

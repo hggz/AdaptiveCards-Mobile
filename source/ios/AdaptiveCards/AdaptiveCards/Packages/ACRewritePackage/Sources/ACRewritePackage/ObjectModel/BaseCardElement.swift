@@ -111,6 +111,23 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         guard let typeString = jsonDict["type"] as? String else {
             throw AdaptiveCardParseError.invalidType
         }
+        
+        let knownTypes = [
+            CardElementType.textBlock.rawValue,
+            CardElementType.columnSet.rawValue,
+            CardElementType.container.rawValue,
+            CardElementType.column.rawValue,
+            CardElementType.image.rawValue,
+            CardElementType.imageSet.rawValue,
+            CardElementType.textInput.rawValue,
+            CardElementType.choiceSetInput.rawValue,
+            CardElementType.toggleInput.rawValue,
+            CardElementType.media.rawValue
+        ]
+        if !knownTypes.contains(typeString) {
+            // For unknown types, return an UnknownElement that just preserves the JSON.
+            return try UnknownElement.createFromJSON(jsonDict)
+        }
 
         // 3) Convert to Data and decode
         let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])

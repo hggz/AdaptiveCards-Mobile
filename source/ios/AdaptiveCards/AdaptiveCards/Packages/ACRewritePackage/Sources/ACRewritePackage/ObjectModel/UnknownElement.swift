@@ -1,15 +1,9 @@
 import Foundation
 
-/// Represents an unknown element in Adaptive Cards.
 class UnknownElement: BaseCardElement {
-    /// The raw type string of the unknown element.
     var elementType: String
-
-    // Note: Do not redeclare additionalProperties.
-    // They are inherited from BaseElement as:
-    // var additionalProperties: [String: AnyCodable]?
+    var originalJSON: [String: Any] = [:]
     
-    // MARK: - Dynamic CodingKey Implementation
     struct DynamicCodingKey: CodingKey {
         var stringValue: String
         var intValue: Int? { return nil }
@@ -18,94 +12,92 @@ class UnknownElement: BaseCardElement {
         init?(intValue: Int) { return nil }
     }
     
-    // MARK: - Designated Initializer
     init(id: String? = nil,
          elementType: String,
-         additionalProperties: [String: AnyCodable] = [:],
-         spacing: Spacing? = nil,
-         height: HeightType? = nil,
-         targetWidth: TargetWidthType? = nil,
-         separator: Bool? = nil,
-         isVisible: Bool = true,
-         areaGridName: String? = nil) {
-        
+         additionalProperties: [String: AnyCodable] = [:]) {
         self.elementType = elementType
-        // Call the BaseCardElement initializer (which does not accept additionalProperties).
+        // Use the designated initializer of BaseCardElement.
         super.init(
             type: .unknown,
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName,
+            spacing: nil,
+            height: nil,
+            targetWidth: nil,
+            separator: nil,
+            isVisible: true,
+            areaGridName: nil,
             id: id
         )
-        // Then set the additionalProperties on the inherited property.
         self.additionalProperties = additionalProperties
     }
-
-    // MARK: - Codable Conformance
     
     required init(from decoder: Decoder) throws {
-        // Set default values for our own properties.
-        self.elementType = ""
-        // Do not reinitialize additionalProperties; it will be set later.
-        
-        // First, decode BaseCardElement properties.
-        try super.init(from: decoder)
-        
-        // Now use a dynamic container to capture all keys.
+        // Use a dynamic container to capture all keys.
         let container = try decoder.container(keyedBy: DynamicCodingKey.self)
-        // Decode the known "type" key.
-        let typeKey = DynamicCodingKey(stringValue: "type")!
-        self.elementType = try container.decode(String.self, forKey: typeKey)
-        
-        // Capture any additional keys (skip "type").
-        var additional = [String: AnyCodable]()
+        var dict = [String: AnyCodable]()
         for key in container.allKeys {
-            if key.stringValue == "type" { continue }
-            let value = try container.decode(AnyCodable.self, forKey: key)
-            additional[key.stringValue] = value
+            dict[key.stringValue] = try container.decode(AnyCodable.self, forKey: key)
         }
-        // Assign to the inherited additionalProperties (which is optional).
-        self.additionalProperties = additional
+        // Save the original JSON.
+        self.originalJSON = dict.mapValues { $0.value }
+        // Set elementType from the original JSON.
+        self.elementType = self.originalJSON["type"] as? String ?? "Unknown"
+        // Call the designated initializer of the superclass.
+        super.init(
+            type: .unknown,
+            spacing: nil,
+            height: nil,
+            targetWidth: nil,
+            separator: nil,
+            isVisible: true,
+            areaGridName: nil,
+            id: nil
+        )
+        // We intentionally do not assign additionalProperties here,
+        // so that toJSON() relies solely on originalJSON.
+    }
+    
+    override func toJSON() -> [String: Any] {
+        // Return the original JSON exactly.
+        return originalJSON
     }
     
     override func encode(to encoder: Encoder) throws {
-        // First, let BaseCardElement encode its properties.
-        try super.encode(to: encoder)
-        // Then encode our additional properties using a dynamic container.
         var container = encoder.container(keyedBy: DynamicCodingKey.self)
-        let typeKey = DynamicCodingKey(stringValue: "type")!
-        try container.encode(elementType, forKey: typeKey)
-        // Use additionalProperties from the base (or an empty dictionary if nil)
-        let additional = self.additionalProperties ?? [:]
-        for (key, value) in additional {
+        // Encode each key/value pair from our toJSON() result.
+        for (key, value) in self.toJSON() {
             let dynamicKey = DynamicCodingKey(stringValue: key)!
-            try container.encode(value, forKey: dynamicKey)
+            if let stringValue = value as? String {
+                try container.encode(stringValue, forKey: dynamicKey)
+            } else if let intValue = value as? Int {
+                try container.encode(intValue, forKey: dynamicKey)
+            } else if let doubleValue = value as? Double {
+                try container.encode(doubleValue, forKey: dynamicKey)
+            } else if let boolValue = value as? Bool {
+                try container.encode(boolValue, forKey: dynamicKey)
+            } else {
+                // Fallback: encode the JSON representation as a string.
+                let data = try JSONSerialization.data(withJSONObject: value, options: [])
+                let str = String(data: data, encoding: .utf8)
+                try container.encode(str, forKey: dynamicKey)
+            }
         }
     }
     
-    // MARK: - JSON Serialization Helpers
-    
     /// Serializes the UnknownElement into a JSON dictionary.
     func serializeToJson() -> [String: Any] {
-        // Use additionalProperties from the base (or an empty dictionary if nil)
         var json = (self.additionalProperties ?? [:]).mapValues { $0.value }
         json["type"] = elementType
-        return json
+        return ParseUtil.unwrapAnyCodable(from: json) as! [String: Any]
     }
     
-    /// Converts the UnknownElement to a pretty-printed JSON string.
+    /// Converts the UnknownElement to a JSON string.
     func serialize() -> String? {
-        guard let data = try? JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted) else {
+        guard let data = try? JSONSerialization.data(withJSONObject: serializeToJson(), options: [.sortedKeys]) else {
             return nil
         }
         return String(data: data, encoding: .utf8)
     }
     
-    /// Creates an UnknownElement object from a JSON dictionary.
     static func createFromJSON(_ json: [String: Any]) throws -> UnknownElement {
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
         return try JSONDecoder().decode(UnknownElement.self, from: data)

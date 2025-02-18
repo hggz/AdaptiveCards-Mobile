@@ -52,21 +52,9 @@ class TextBlock: BaseCardElement {
     /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Decoding and then performing HTML decoding here if needed.
         let rawText = try container.decode(String.self, forKey: .text)
         self.text = TextBlock.decodeHTMLEntities(rawText)
-        if container.contains(.textStyle) {
-            let rawStyle = try container.decode(String.self, forKey: .textStyle)
-            // Convert case-insensitively. If unknown => defaultStyle
-            switch rawStyle.lowercased() {
-            case "heading": self.textStyle = .heading
-            case "default": self.textStyle = .defaultStyle
-            default:
-                self.textStyle = .defaultStyle
-            }
-        } else {
-            self.textStyle = .defaultStyle
-        }
+        self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle) ?? .defaultStyle
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
@@ -77,8 +65,23 @@ class TextBlock: BaseCardElement {
         self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
         self.language = try container.decodeIfPresent(String.self, forKey: .language)
         try super.init(from: decoder)
+        // Now remove TextBlock-specific keys from additionalProperties.
+        if var additional = self.additionalProperties {
+            additional.removeValue(forKey: "text")
+            additional.removeValue(forKey: "style")
+            additional.removeValue(forKey: "size")
+            additional.removeValue(forKey: "weight")
+            additional.removeValue(forKey: "fontType")
+            additional.removeValue(forKey: "color")
+            additional.removeValue(forKey: "isSubtle")
+            additional.removeValue(forKey: "wrap")
+            additional.removeValue(forKey: "maxLines")
+            additional.removeValue(forKey: "horizontalAlignment")
+            additional.removeValue(forKey: "language")
+            self.additionalProperties = additional
+        }
     }
-    
+
     /// Encodes the TextBlock to JSON.
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)

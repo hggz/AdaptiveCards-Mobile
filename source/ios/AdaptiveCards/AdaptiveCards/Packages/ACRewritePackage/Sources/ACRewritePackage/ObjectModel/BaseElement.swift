@@ -35,33 +35,43 @@ class BaseElement: Codable {
     }
     
     required init(from decoder: Decoder) throws {
+        // First decode all keys using a dynamic container.
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKeys.self)
+        var rawDict = [String: AnyCodable]()
+        for key in dynamicContainer.allKeys {
+            rawDict[key.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: key)
+        }
+        
+        // Now decode known properties.
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.typeString = try container.decode(String.self, forKey: .typeString)
         self.id = try container.decodeIfPresent(String.self, forKey: .id)
         self.internalId = try container.decodeIfPresent(InternalId.self, forKey: .internalId) ?? InternalId.current()
-        self.additionalProperties = try container.decodeIfPresent([String: AnyCodable].self, forKey: .additionalProperties)
         self.requires = try container.decodeIfPresent([String: SemanticVersion].self, forKey: .requires)
         self.fallbackType = try container.decodeIfPresent(FallbackType.self, forKey: .fallbackType)
         self.fallbackContent = try container.decodeIfPresent(BaseElement.self, forKey: .fallbackContent)
         self.canFallbackToAncestor = try container.decodeIfPresent(Bool.self, forKey: .canFallbackToAncestor)
-        
-        // --- New code to also support the "fallback" key in the JSON ---
+        // Also support the "fallback" key (which might be a string or an object)
         if container.contains(.fallback) {
-            // If the fallback is given as a string (e.g. "drop")
             if let fallbackString = try? container.decode(String.self, forKey: .fallback) {
                 if fallbackString.lowercased() == "drop" {
                     self.fallbackType = .drop
                 }
-            }
-            // Otherwise try to decode it as an object.
-            else if let rawFallback = try? container.decode([String: AnyCodable].self, forKey: .fallback) {
-                // Convert [String: AnyCodable] to a [String: Any] dictionary.
+            } else if let rawFallback = try? container.decode([String: AnyCodable].self, forKey: .fallback) {
                 let fallbackDict = rawFallback.mapValues { $0.value }
                 self.fallbackContent = try BaseCardElement.deserialize(from: fallbackDict)
             }
         }
+        
+        // Remove all keys that are declared in CodingKeys.
+        for key in BaseElement.CodingKeys.allCases {
+            rawDict.removeValue(forKey: key.rawValue)
+        }
+        if !rawDict.isEmpty {
+            self.additionalProperties = rawDict
+        }
     }
-    
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         // Encode typeString using the key "type"
@@ -191,5 +201,19 @@ struct AnyCodable: Codable {
         } else {
             throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Invalid JSON format"))
         }
+    }
+}
+
+/// A dynamic coding key that can represent any key.
+struct DynamicCodingKeys: CodingKey {
+    var stringValue: String
+    var intValue: Int? { return nil }
+    init?(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { self.stringValue = "\(intValue)" }
+}
+
+extension BaseElement.CodingKeys: CaseIterable {
+    static var allCases: [BaseElement.CodingKeys] {
+        return [.typeString, .id, .internalId, .additionalProperties, .requires, .fallbackType, .fallbackContent, .canFallbackToAncestor, .fallback]
     }
 }

@@ -15,16 +15,16 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         get { return super.typeString }
         set { super.typeString = newValue }
     }
-
+    
     // MARK: - Initializers
-
+    
     /// Initializes a BaseActionElement using an ActionType.
     init(type: ActionType, id: String? = nil) {
         // Use the action type’s rawValue as the type string.
         self.role = (type == .openUrl ? .link : .button)
         super.init(typeString: type.rawValue, id: id)
     }
-
+    
     /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -36,8 +36,20 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         self.isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         self.role = try container.decodeIfPresent(ActionRole.self, forKey: .role)
         try super.init(from: decoder)
+        // Remove keys that were handled.
+        if var additional = self.additionalProperties {
+            additional.removeValue(forKey: "title")
+            additional.removeValue(forKey: "iconUrl")
+            additional.removeValue(forKey: "style")
+            additional.removeValue(forKey: "tooltip")
+            additional.removeValue(forKey: "mode")
+            additional.removeValue(forKey: "isEnabled")
+            additional.removeValue(forKey: "role")
+            additional.removeValue(forKey: "conditionallyEnabled")
+            self.additionalProperties = additional
+        }
     }
-
+    
     /// Encodes the BaseActionElement.
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -50,13 +62,13 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         try container.encode(role, forKey: .role)
         try super.encode(to: encoder)
     }
-
+    
     enum CodingKeys: String, CodingKey {
         case title, iconUrl, style, tooltip, mode, isEnabled, role
     }
-
+    
     // MARK: - Deserialization Helpers
-
+    
     /// Deserializes a BaseActionElement from a JSON string.
     /// This function is crucial and remains available for backward compatibility.
     class func deserializeAction(from jsonString: String) throws -> BaseActionElement {
@@ -88,7 +100,7 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(UnknownAction.self, from: data)
         }
     }
-
+    
     /// Deserializes a BaseActionElement from a JSON dictionary.
     class func deserializeAction(from originalJson: [String: Any]) throws -> BaseActionElement {
         let data = try JSONSerialization.data(withJSONObject: originalJson, options: [])
@@ -96,5 +108,41 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
             throw AdaptiveCardParseError.invalidJson
         }
         return try deserializeAction(from: jsonString)
+    }
+    
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = super.toJSON()
+        json["type"] = typeString
+        
+        // Remove default values
+        if title.isEmpty {
+            json.removeValue(forKey: "title")
+        }
+        if !isEnabled {
+            json.removeValue(forKey: "conditionallyEnabled")
+        }
+        
+        // Add additional properties
+        if let additionalProps = additionalProperties {
+            for (key, value) in additionalProps {
+                json[key] = value.value
+            }
+        }
+        
+        return json
+    }
+    
+    override func toJSON() -> [String: Any] {
+        var json = super.toJSON()
+        
+        // Only include non-default values
+        if !title.isEmpty {
+            json["title"] = title
+        }
+        if isEnabled != false {
+            json["conditionallyEnabled"] = isEnabled
+        }
+        
+        return json
     }
 }
