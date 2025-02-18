@@ -39,22 +39,21 @@ class Container: StyledCollectionElement {
         self.layouts = []
         self.rtl = nil
 
-        // Call super.init first to set up base properties including style
+        // Call super.init to set up base properties including style
         try super.init(from: decoder)
 
-        // Get the shared context and configure style immediately
+        // Get the shared context
         let context = BaseElement.parseContext
-        print("Container init - About to configure style")
-        self.configForContainerStyle(context)  // Add this line
+        print("Container init - About to configure style, hasBleed: \(hasBleed)")
+        
+        // Configure our own style and bleed
+        self.configForContainerStyle(context)
         
         // Then decode items with context and style configuration
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
-            // Save the current container's style as parent style for children
+            // Save our style as parent for children
             context.saveContextForStyledCollectionElement(self)
-            
-            print("Container parsing - self.style: \(self.style)")
-            print("Container parsing - context.parentalContainerStyle: \(String(describing: context.parentalContainerStyle))")
-            context.printStyleStack()
+            print("Container saving style to context: \(self.style)")
             
             self.items = try rawItems.map { rawDict in
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
@@ -63,17 +62,16 @@ class Container: StyledCollectionElement {
                 }
                 let element = try BaseCardElement.deserialize(from: dict)
                 
-                // If it's a styled element, configure its style
                 if let styledElement = element as? StyledCollectionElement {
-                    print("Configuring style for child element")
                     styledElement.configForContainerStyle(context)
                 }
                 
                 return element
             }
             
-            // Restore the context after parsing children
+            // Restore previous context
             context.restoreContextForStyledCollectionElement(self)
+            print("Container restored previous style")
         }
         
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []

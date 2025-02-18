@@ -13,7 +13,7 @@ class ParseContext {
     private var idStack: [(id: String, internalId: InternalId, isFallback: Bool)] = []
     
     /// Tracks container styles as they are nested.
-    private var parentalContainerStyles: [ContainerStyle] = []
+    public var parentalContainerStyles: [ContainerStyle] = []
     
     /// Tracks padding elements in the parse hierarchy.
     private var parentalPadding: [InternalId] = []
@@ -72,15 +72,22 @@ class ParseContext {
     }
     
     func saveContextForStyledCollectionElement(_ element: StyledCollectionElement) {
+        print("Saving context for element with style: \(element.style)")
         parentalContainerStyles.append(element.style)
-        parentalPadding.append(element.internalId)
+        
+        // Only add to padding parents if this element has padding
+        if element.hasPadding {
+            print("Adding padding parent with ID: \(element.internalId)")
+            parentalPadding.append(element.internalId)
+        }
         
         if element.hasBleed && element.hasPadding {
-            let newDirection: ContainerBleedDirection = .bleedAll
-            parentalBleedDirection.append(newDirection)
+            parentalBleedDirection.append(.bleedAll)
         } else {
             parentalBleedDirection.append(.bleedRestricted)
         }
+        
+        print("Current padding parents: \(parentalPadding)")
     }
     
     /// Returns the most recently pushed container style, or nil if none exists.
