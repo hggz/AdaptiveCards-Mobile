@@ -149,7 +149,7 @@ class TextBlock: BaseCardElement {
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
         if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
         if let textColor = textColor {
-            json[AdaptiveCardSchemaKey.color.rawValue] = textColor.rawValue.capitalized
+            json[AdaptiveCardSchemaKey.color.rawValue] = textColor.serializedString
         }
         if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
         if wrap != false { json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap }

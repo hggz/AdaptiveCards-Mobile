@@ -172,6 +172,7 @@ extension FontType {
 
 enum ForegroundColor: String, Codable {
     case `default`, dark, light, accent, good, warning, attention
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
@@ -180,6 +181,19 @@ enum ForegroundColor: String, Codable {
         } else {
             throw DecodingError.dataCorruptedError(in: container,
                 debugDescription: "Cannot initialize ForegroundColor from invalid String value \(raw)")
+        }
+    }
+    
+    // Add string conversion for use in serialization contexts
+    var serializedString: String {
+        switch self {
+        case .default: return "Default"
+        case .dark: return "Dark"
+        case .light: return "Light"
+        case .accent: return "Accent"
+        case .good: return "Good"
+        case .warning: return "Warning"
+        case .attention: return "Attention"
         }
     }
 }
