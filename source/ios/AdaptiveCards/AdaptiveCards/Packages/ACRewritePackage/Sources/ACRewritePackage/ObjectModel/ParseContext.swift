@@ -117,4 +117,8 @@ class ParseContext {
         }
         return style != .none && style != parentStyle
     }
+    
+    func printStyleStack() {
+        print("Current style stack: \(parentalContainerStyles)")
+    }
 }

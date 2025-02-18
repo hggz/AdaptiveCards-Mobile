@@ -91,23 +91,48 @@ class Column: StyledCollectionElement {
         self.width = try container.decodeIfPresent(String.self, forKey: .width) ?? "Auto"
         self.pixelWidth = try container.decodeIfPresent(Int.self, forKey: .pixelWidth) ?? 0
 
-        // Instead of decoding `[BaseCardElement].self`, decode a raw array of dictionaries.
+        // Initialize items array before super.init
+        self.items = []
+        self.rtl = nil
+        self.layouts = []
+        
+        // Call super.init to set up base properties including style
+        try super.init(from: decoder)
+        
+        // Get the shared context and configure our own style
+        let context = BaseElement.parseContext
+        self.configForContainerStyle(context)
+        
+        print("Column init - style: \(self.style)")
+        
+        // Save our style as the parent style for children
+        context.saveContextForStyledCollectionElement(self)
+        print("Column - Setting parent style to: \(self.style)")
+        
+        // Then decode items with context and style configuration
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
             self.items = try rawItems.map { rawDict in
-                // Convert [String: AnyCodable] → [String: Any], then let BaseCardElement do the polymorphic decode.
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
                 guard let dict = unwrapped as? [String: Any] else {
                     throw AdaptiveCardParseError.invalidJson
                 }
-                return try BaseCardElement.deserialize(from: dict)
+                let element = try BaseCardElement.deserialize(from: dict)
+                
+                // Configure style for styled elements
+                if let styledElement = element as? StyledCollectionElement {
+                    print("Column - Configuring child element style with parent style: \(self.style)")
+                    styledElement.configForContainerStyle(context)
+                }
+                
+                return element
             }
-        } else {
-            self.items = []
         }
+        
+        // Restore the context
+        context.restoreContextForStyledCollectionElement(self)
 
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
-        try super.init(from: decoder)
     }
 
     override func encode(to encoder: Encoder) throws {

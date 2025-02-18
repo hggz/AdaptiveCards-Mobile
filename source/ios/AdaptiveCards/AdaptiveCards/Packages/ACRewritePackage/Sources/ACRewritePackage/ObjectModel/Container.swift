@@ -42,12 +42,19 @@ class Container: StyledCollectionElement {
         // Call super.init first to set up base properties including style
         try super.init(from: decoder)
 
+        // Get the shared context and configure style immediately
+        let context = BaseElement.parseContext
+        print("Container init - About to configure style")
+        self.configForContainerStyle(context)  // Add this line
+        
         // Then decode items with context and style configuration
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
-            let context = ParseContext()
-            
             // Save the current container's style as parent style for children
-            context.setParentalContainerStyle(self.style)
+            context.saveContextForStyledCollectionElement(self)
+            
+            print("Container parsing - self.style: \(self.style)")
+            print("Container parsing - context.parentalContainerStyle: \(String(describing: context.parentalContainerStyle))")
+            context.printStyleStack()
             
             self.items = try rawItems.map { rawDict in
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
@@ -58,15 +65,25 @@ class Container: StyledCollectionElement {
                 
                 // If it's a styled element, configure its style
                 if let styledElement = element as? StyledCollectionElement {
+                    print("Configuring style for child element")
                     styledElement.configForContainerStyle(context)
                 }
                 
                 return element
             }
+            
+            // Restore the context after parsing children
+            context.restoreContextForStyledCollectionElement(self)
         }
         
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
+    }
+    
+    // Override configForContainerStyle to add debugging
+    override func configForContainerStyle(_ context: ParseContext) {
+        print("configForContainerStyle called on Container")
+        super.configForContainerStyle(context)
     }
 
     override func encode(to encoder: Encoder) throws {
@@ -112,22 +129,30 @@ struct ContainerParser: BaseCardElementParser {
     func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
         try ParseUtil.expectTypeString(value, expected: .container)
         
+        print("ContainerParser deserialize - Starting")
+        
         // Save current context
         let parentStyle = context.parentalContainerStyle
+        print("ContainerParser - Parent style before: \(String(describing: parentStyle))")
         
         // Parse the container itself
         guard let container = try BaseCardElement.deserialize(from: value) as? Container else {
             throw AdaptiveCardParseError.invalidType
         }
         
+        print("ContainerParser - Container style: \(container.style)")
+        
         // Set new parent style for children
         context.setParentalContainerStyle(container.style)
+        print("ContainerParser - Set new parent style: \(container.style)")
         
         // Configure container style
         container.configForContainerStyle(context)
+        print("ContainerParser - Configured container style")
         
         // Parse children (items) if any
         if let itemsArray = value["items"] as? [[String: Any]] {
+            print("ContainerParser - About to parse \(itemsArray.count) items")
             container.items = try itemsArray.map { itemJson in
                 var mutableJson = itemJson
                 if mutableJson["type"] == nil {
@@ -135,6 +160,7 @@ struct ContainerParser: BaseCardElementParser {
                 }
                 let element = try BaseCardElement.deserialize(from: mutableJson)
                 if let styledElement = element as? StyledCollectionElement {
+                    print("ContainerParser - Configuring style for child element")
                     styledElement.configForContainerStyle(context)
                 }
                 return element
@@ -144,8 +170,10 @@ struct ContainerParser: BaseCardElementParser {
         // Restore parent style
         if let parentStyle = parentStyle {
             context.setParentalContainerStyle(parentStyle)
+            print("ContainerParser - Restored parent style: \(String(describing: parentStyle))")
         }
         
+        print("ContainerParser deserialize - Complete")
         return container
     }
 

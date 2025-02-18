@@ -13,6 +13,21 @@ class BaseElement: Codable {
     
     // Add knownProperties for use in subclasses.
     var knownProperties: Set<String> = []
+    // Singleton ParseContext instance
+    private static var sharedParseContext: ParseContext = {
+        let context = ParseContext()
+        return context
+    }()
+    
+    // Public getter for the shared context
+    static var parseContext: ParseContext {
+        return sharedParseContext
+    }
+    
+    // Reset method for testing
+    static func resetParseContext() {
+        sharedParseContext = ParseContext()
+    }
 
     init(
         typeString: String,

@@ -31,10 +31,10 @@ class StyledCollectionElement: BaseCardElement {
     }
     
     func configPadding(_ context: ParseContext) {
-        // Set padding when child's style is set explicitly (not None)
-        // and is different than the parental style
         let parentStyle = context.parentalContainerStyle ?? .default
+        print("configPadding - self.style: \(self.style), parentStyle: \(parentStyle)")
         hasPadding = (style != .none) && (style != parentStyle)
+        print("configPadding - hasPadding set to: \(hasPadding)")
     }
     
     func configBleed(_ context: ParseContext) {
