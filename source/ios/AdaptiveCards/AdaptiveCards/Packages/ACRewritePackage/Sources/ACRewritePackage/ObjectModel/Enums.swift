@@ -172,6 +172,16 @@ extension FontType {
 
 enum ForegroundColor: String, Codable {
     case `default`, dark, light, accent, good, warning, attention
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        if let color = ForegroundColor(rawValue: raw.lowercased()) {
+            self = color
+        } else {
+            throw DecodingError.dataCorruptedError(in: container,
+                debugDescription: "Cannot initialize ForegroundColor from invalid String value \(raw)")
+        }
+    }
 }
 
 extension ForegroundColor {

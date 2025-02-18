@@ -148,7 +148,9 @@ class TextBlock: BaseCardElement {
         if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
         if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
         if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
-        if let textColor = textColor { json[AdaptiveCardSchemaKey.color.rawValue] = textColor.rawValue }
+        if let textColor = textColor {
+            json[AdaptiveCardSchemaKey.color.rawValue] = textColor.rawValue.capitalized
+        }
         if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
         if wrap != false { json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap }
         if maxLines != 0 { json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines }

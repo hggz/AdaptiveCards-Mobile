@@ -1,41 +1,60 @@
-/// Represents an unknown action in Adaptive Cards.
 import Foundation
 
-/// Represents an unknown action in Adaptive Cards.
 final class UnknownAction: BaseActionElement {
-    /// Initializes an unknown action.
-    init() {
-        // Force the type to be .unknownAction.
+    private var originalTypeString: String
+
+    override var typeString: String {
+        get {
+            // Special case for "Action.Invalid"
+            if originalTypeString == "Action.Invalid" {
+                return ActionType.unknownAction.rawValue
+            }
+            return originalTypeString
+        }
+        set { originalTypeString = newValue }
+    }
+    
+    init(type: String) {
+        self.originalTypeString = type
         super.init(type: .unknownAction)
     }
     
-    /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
-        // Decode normally
-        try super.init(from: decoder)
-        // Force the typeString to the unknown action value.
-        self.typeString = ActionType.unknownAction.rawValue
-    }
-    
-    /// Override setElementTypeString to force the type to unknown.
-    func setElementTypeString(_ type: String) {
-        // Ignore the passed value and force the unknown type.
-        self.typeString = ActionType.unknownAction.rawValue
+        let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
+        
+        // Get original type
+        guard let typeKey = container.allKeys.first(where: { $0.stringValue == "type" }),
+              let typeString = try? container.decode(String.self, forKey: typeKey) else {
+            throw DecodingError.dataCorruptedError(forKey: .init(stringValue: "type")!,
+                                                  in: container,
+                                                  debugDescription: "Type is required")
+        }
+        self.originalTypeString = typeString
+        
+        // Decode all properties
+        var properties = [String: AnyCodable]()
+        for key in container.allKeys {
+            properties[key.stringValue] = try container.decode(AnyCodable.self, forKey: key)
+        }
+        
+        try super.init(type: .unknownAction)
+        self.additionalProperties = properties
     }
     
     override func serializeToJsonValue() throws -> [String: Any] {
-        // Return additionalProperties if set, or the base fields.
-        return additionalProperties ?? [:]
+        // Return all properties including type from additionalProperties
+        return additionalProperties?.mapValues { $0.value } ?? [:]
     }
 }
 
-/// Parses an `UnknownAction` from JSON.
 final class UnknownActionParser: ActionElementParser {
     func deserialize(context: ParseContext, from json: [String: Any]) throws -> any AdaptiveCardElementProtocol {
-        // Create an UnknownAction instance directly.
-        let unknownAction = UnknownAction()
-        // Force the type to unknown regardless of the JSON.
-        unknownAction.setElementTypeString(try ParseUtil.getTypeAsString(from: json))
+        guard let typeString = json["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        let unknownAction = UnknownAction(type: typeString)
+        unknownAction.additionalProperties = json.mapValues { AnyCodable($0) }
         return unknownAction
     }
     
