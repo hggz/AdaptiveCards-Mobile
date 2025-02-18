@@ -60,30 +60,23 @@ struct TableColumnDefinition: Codable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Decode horizontal alignment.
         if let horizontalString = try container.decodeIfPresent(String.self, forKey: .horizontalCellContentAlignment) {
-            let alignment = HorizontalAlignment(from: horizontalString)
-            self.horizontalCellContentAlignment = alignment
+            self.horizontalCellContentAlignment = HorizontalAlignment(rawValue: horizontalString.lowercased()) ?? .left
         } else {
             self.horizontalCellContentAlignment = .left
         }
         
-        // Decode vertical alignment.
         if let verticalString = try container.decodeIfPresent(String.self, forKey: .verticalCellContentAlignment) {
-            self.verticalCellContentAlignment = VerticalContentAlignment(rawValue: verticalString.lowercased()) ?? .top
+            self.verticalCellContentAlignment = VerticalContentAlignment(from: verticalString)
         } else {
             self.verticalCellContentAlignment = .top
         }
-
         // Decode the "width" field.
         if container.contains(.width) {
-            // First try decoding as an unsigned integer.
             if let intValue = try? container.decode(UInt.self, forKey: .width) {
                 self.width = intValue
                 self.pixelWidth = nil
-            }
-            // Next try decoding as a string.
-            else if let stringValue = try? container.decode(String.self, forKey: .width) {
+            } else if let stringValue = try? container.decode(String.self, forKey: .width) {
                 if stringValue.hasSuffix("px") {
                     let numberPart = stringValue.dropLast(2)
                     if let pixelValue = UInt(numberPart) {
@@ -94,8 +87,7 @@ struct TableColumnDefinition: Codable {
                         self.pixelWidth = nil
                     }
                 } else {
-                    // If no valid unit is provided, do not throw;
-                    // leave both values nil.
+                    // When the unit is missing, do not set either width or pixelWidth.
                     self.width = nil
                     self.pixelWidth = nil
                 }

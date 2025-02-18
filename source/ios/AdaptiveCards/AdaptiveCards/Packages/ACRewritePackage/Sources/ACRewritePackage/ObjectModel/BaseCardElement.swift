@@ -242,7 +242,13 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
     
     /// Returns the element type as a CardElementType (or .unknown if it can’t be parsed)
     var elementTypeVal: CardElementType {
-        return CardElementType.fromString(self.typeString) ?? .unknown
+        // Use the normal conversion…
+        let baseType = CardElementType.fromString(self.typeString) ?? .unknown
+        // But if this is a TableRow or TableCell that came in as an orphan, return .unknown.
+        if baseType == .tableRow || baseType == .tableCell {
+            return .unknown
+        }
+        return baseType
     }
 }
 

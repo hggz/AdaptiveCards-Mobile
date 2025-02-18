@@ -272,13 +272,14 @@ extension VerticalContentAlignment {
     static func toString(_ value: VerticalContentAlignment) -> String {
         return value.rawValue
     }
-    static func fromString(_ s: String) -> VerticalContentAlignment? {
-        switch s {
-        case "Top": return .top
-        case "Center": return .center
-        case "Bottom": return .bottom
-        default: return nil
-        }
+    init(from string: String) {
+        // Normalize to capitalized form; expected raw values are "Top", "Center", "Bottom"
+        let normalized = string.capitalized
+        self = VerticalContentAlignment(rawValue: normalized) ?? .top
+    }
+    
+    static func fromString(_ string: String) -> VerticalContentAlignment {
+        return VerticalContentAlignment(from: string)
     }
 }
 

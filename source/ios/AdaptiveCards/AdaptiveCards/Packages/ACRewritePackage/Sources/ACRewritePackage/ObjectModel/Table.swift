@@ -34,11 +34,11 @@ class Table: BaseCardElement, CollectionCoreElement {
         case columns
         case rows
         case showGridLines
-        case firstRowAsHeaders
         case roundedCorners
         case horizontalCellContentAlignment
         case verticalCellContentAlignment
         case gridStyle
+        case firstRowAsHeaders
     }
 
     /// Initializes a new `Table` with default values.
@@ -73,13 +73,17 @@ class Table: BaseCardElement, CollectionCoreElement {
         try container.encode(columnDefinitions, forKey: .columns)
         try container.encode(rows, forKey: .rows)
         try container.encode(showGridLines, forKey: .showGridLines)
-        try container.encode(firstRowAsHeaders, forKey: .firstRowAsHeaders)
+        // Do not encode firstRowAsHeaders if true (the default)
+        if firstRowAsHeaders != true {
+            // Uncomment if you need to output it when not default:
+             try container.encode(firstRowAsHeaders, forKey: .firstRowAsHeaders)
+        }
         try container.encode(roundedCorners, forKey: .roundedCorners)
         try container.encodeIfPresent(horizontalCellContentAlignment, forKey: .horizontalCellContentAlignment)
         try container.encodeIfPresent(verticalCellContentAlignment, forKey: .verticalCellContentAlignment)
-        try container.encode(gridStyle, forKey: .gridStyle)
+        // When encoding gridStyle, output its capitalized raw value.
+        try container.encode(gridStyle.rawValue.capitalized, forKey: .gridStyle)
     }
-
     /// Sets the collection of columns.
     func setColumns(_ value: [TableColumnDefinition]) {
         self.columnDefinitions = value

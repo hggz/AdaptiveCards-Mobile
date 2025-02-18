@@ -10,6 +10,20 @@ class TableCell: Container {
         super.init(items: [], layouts: [], rtl: nil, cardElementType: .tableCell)
     }
     
+    private enum CodingKeys: String, CodingKey {
+        case items
+        case rtl
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(items, forKey: .items)
+        if let rtl = self.rtl {
+            try container.encode(rtl, forKey: .rtl)
+        }
+    }
+    
     /// Required initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
