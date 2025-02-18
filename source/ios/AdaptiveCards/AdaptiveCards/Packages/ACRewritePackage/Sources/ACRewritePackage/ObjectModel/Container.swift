@@ -86,64 +86,112 @@ class Container: StyledCollectionElement {
         if canBleed {
             print("Container can bleed, configuring direction")
             if let parentId = context.paddingParentInternalId() {
+                print("Found padding parent ID: \(parentId)")
+                
+                // First set parentalId from context
                 self.parentalId = parentId
                 
-                // Find parent Column
+                // Then try to find parent Column
                 if let parentColumn = findParentColumn() {
-                    if let columnSet = findParentColumnSet(of: parentColumn) {
-                        let columnIndex = columnSet.columns.firstIndex { $0.internalId == parentColumn.internalId } ?? 0
+                    print("Found parent column with ID: \(parentColumn.internalId), style: \(parentColumn.style)")
+                    
+                    // Set our final parentalId to the column
+                    self.parentalId = parentColumn.internalId
+                    
+                    if let parentColumnSet = findParentColumnSet(of: parentColumn) {
+                        let columnIndex = parentColumnSet.columns.firstIndex { $0.internalId == parentColumn.internalId } ?? 0
                         let isFirst = columnIndex == 0
-                        let isLast = columnIndex == columnSet.columns.count - 1
+                        let isLast = columnIndex == parentColumnSet.columns.count - 1
+                        print("Column position - index: \(columnIndex), total columns: \(parentColumnSet.columns.count)")
                         
+                        // Set bleed direction based on position
                         var direction: ContainerBleedDirection = .bleedDown
-                        
-                        // Add left/right based on position
                         if isFirst {
                             direction.insert(.bleedLeft)
+                            print("Adding bleedLeft for first position")
                         }
                         if isLast {
                             direction.insert(.bleedRight)
+                            print("Adding bleedRight for last position")
                         }
-                        
                         self.bleedDirection = direction
+                        print("Set bleed direction to: \(direction)")
                     } else {
-                        // Default container bleed if not in a ColumnSet
+                        print("No parent ColumnSet found, using default container bleed")
                         self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
                     }
                 } else {
+                    print("No parent Column found")
                     self.bleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
                 }
             } else {
+                print("No padding parent ID found, restricting bleed")
                 self.bleedDirection = .bleedRestricted
                 self.parentalId = nil
             }
         } else {
+            print("Container cannot bleed, restricting")
             self.bleedDirection = .bleedRestricted
             self.parentalId = nil
         }
         
-        print("Container.configForContainerStyle - Complete, direction: \(bleedDirection)")
+        print("Container.configForContainerStyle - Complete, parentalId: \(String(describing: parentalId)), direction: \(bleedDirection)")
     }
     
     private func findParentColumn() -> Column? {
         var current: BaseCardElement? = self
-        while let parent = current?.parentalId {
-            if let foundColumn = findElement(withId: parent) as? Column {
-                return foundColumn
+        var searchPath: [BaseCardElement] = []
+        print("Finding parent column - starting search from container")
+        print("Initial parentalId: \(String(describing: parentalId))")
+        
+        // First, build the parent chain
+        while let currentElement = current {
+            searchPath.append(currentElement)
+            if let parentId = currentElement.parentalId {
+                print("Found parent ID: \(parentId) for element type: \(Swift.type(of: currentElement))")
+                current = findElement(withId: parentId)
+            } else {
+                current = nil
             }
-            current = findElement(withId: parent)
         }
+        
+        print("Built search path with \(searchPath.count) elements")
+        
+        // Then search through the chain for the first Column
+        for (index, element) in searchPath.enumerated() {
+            if let parentId = element.parentalId,
+               let column = findElement(withId: parentId) as? Column {
+                print("Found Column at level \(index)")
+                return column
+            }
+            if let parentId = element.parentalId,
+               let parent = findElement(withId: parentId) {
+                print("Found parent at level \(index): \(Swift.type(of: parent))")
+            }
+        }
+        
+        print("No Column found in search path")
         return nil
     }
     
-    private func findParentColumnSet(of column: Column) -> ColumnSet? {
-        var current: BaseCardElement? = column
-        while let parent = current?.parentalId {
-            if let foundColumnSet = findElement(withId: parent) as? ColumnSet {
-                return foundColumnSet
+    private func findParentColumnSet(of element: BaseCardElement) -> ColumnSet? {
+        var current: BaseCardElement? = element
+        print("Finding parent ColumnSet starting from: \(Swift.type(of: element))")
+        
+        while let currentElement = current {
+            if let parentId = currentElement.parentalId {
+                print("Checking parent ID: \(parentId)")
+                if let columnSet = findElement(withId: parentId) as? ColumnSet {
+                    print("Found parent ColumnSet")
+                    return columnSet
+                }
+                current = findElement(withId: parentId)
+            } else {
+                current = nil
             }
-            current = findElement(withId: parent)
         }
+        
+        print("No parent ColumnSet found")
         return nil
     }
 
