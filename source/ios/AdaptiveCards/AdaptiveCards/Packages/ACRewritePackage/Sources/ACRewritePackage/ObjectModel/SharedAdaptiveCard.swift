@@ -109,7 +109,6 @@ public class AdaptiveCard: Codable {
             json[AdaptiveCardSchemaKey.rtl.rawValue] = rtl
         }
         json[AdaptiveCardSchemaKey.body.rawValue] = try body.map { try $0.serializeToJsonValue() }
-        json[AdaptiveCardSchemaKey.actions.rawValue] = try actions.map { try $0.serializeToJsonValue() }
         json[AdaptiveCardSchemaKey.layouts.rawValue] = layouts.map { $0.serializeToJsonValue() }
         if let selectAction = selectAction {
             json[AdaptiveCardSchemaKey.selectAction.rawValue] = selectAction.toJSON()
@@ -131,6 +130,23 @@ public class AdaptiveCard: Codable {
         if minHeight > 0 {
             json[AdaptiveCardSchemaKey.minHeight.rawValue] = "\(minHeight)px"
         }
+        
+        let serializedActions = try actions.map { action -> [String: Any] in
+            var actionJson = try action.serializeToJsonValue()
+            
+            // Cleanup code for actions
+            if let title = actionJson["title"] as? String, title.isEmpty {
+                actionJson.removeValue(forKey: "title")
+            }
+            actionJson.removeValue(forKey: "conditionallyEnabled")
+            
+            return actionJson
+        }
+        json[AdaptiveCardSchemaKey.actions.rawValue] = serializedActions
+        if !serializedActions.isEmpty {
+            json[AdaptiveCardSchemaKey.actions.rawValue] = serializedActions
+        }
+        
         // Return the modified JSON.
         return json
     }

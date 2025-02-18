@@ -36,17 +36,12 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         self.isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         self.role = try container.decodeIfPresent(ActionRole.self, forKey: .role)
         try super.init(from: decoder)
-        // Remove keys that were handled.
+        
+        // Only keep non-standard keys in additionalProperties
         if var additional = self.additionalProperties {
-            additional.removeValue(forKey: "title")
-            additional.removeValue(forKey: "iconUrl")
-            additional.removeValue(forKey: "style")
-            additional.removeValue(forKey: "tooltip")
-            additional.removeValue(forKey: "mode")
-            additional.removeValue(forKey: "isEnabled")
-            additional.removeValue(forKey: "role")
-            additional.removeValue(forKey: "conditionallyEnabled")
-            self.additionalProperties = additional
+            let knownKeys = Set(["title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"])
+            additional = additional.filter { !knownKeys.contains($0.key) }
+            self.additionalProperties = additional.isEmpty ? nil : additional
         }
     }
     
@@ -110,19 +105,12 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         return try deserializeAction(from: jsonString)
     }
     
-    override func serializeToJsonValue() throws -> [String: Any] {
-        var json = super.toJSON()
-        json["type"] = typeString
+    
+    override func toJSON() -> [String: Any] {
+        // Start with just the type
+        var json: [String: Any] = ["type": typeString]
         
-        // Remove default values
-        if title.isEmpty {
-            json.removeValue(forKey: "title")
-        }
-        if !isEnabled {
-            json.removeValue(forKey: "conditionallyEnabled")
-        }
-        
-        // Add additional properties
+        // Add ONLY additional properties
         if let additionalProps = additionalProperties {
             for (key, value) in additionalProps {
                 json[key] = value.value
@@ -132,17 +120,18 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
         return json
     }
     
-    override func toJSON() -> [String: Any] {
-        var json = super.toJSON()
-        
-        // Only include non-default values
-        if !title.isEmpty {
-            json["title"] = title
+    override func serializeToJsonValue() throws -> [String: Any] {
+        // Use toJSON as the base to ensure consistency
+        return toJSON()
+    }
+}
+
+extension Dictionary where Key == String, Value == Any {
+    func debugPrint(label: String) {
+        print("\n=== \(label) ===")
+        for (key, value) in self {
+            print("\(key): \(value)")
         }
-        if isEnabled != false {
-            json["conditionallyEnabled"] = isEnabled
-        }
-        
-        return json
+        print("================")
     }
 }
