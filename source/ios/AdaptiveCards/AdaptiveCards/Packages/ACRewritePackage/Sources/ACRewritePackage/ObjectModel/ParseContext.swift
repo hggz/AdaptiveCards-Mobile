@@ -71,18 +71,29 @@ class ParseContext {
         return parentalContainerStyles.last
     }
     
-    func paddingParentInternalId() -> InternalId? {
-        return parentalPadding.last
+    func saveContextForStyledCollectionElement(_ element: StyledCollectionElement) {
+        parentalContainerStyles.append(element.style)
+        parentalPadding.append(element.internalId)
+        
+        if element.hasBleed && element.hasPadding {
+            let newDirection: ContainerBleedDirection = .bleedAll
+            parentalBleedDirection.append(newDirection)
+        } else {
+            parentalBleedDirection.append(.bleedRestricted)
+        }
     }
     
-    func saveContextForStyledCollectionElement(_ current: StyledCollectionElement) {
-        parentalPadding.append(InternalId.next())
+    /// Returns the most recently pushed container style, or nil if none exists.
+    var parentalContainerStyle: ContainerStyle? {
+        return self.parentalContainerStyles.last
     }
     
     func restoreContextForStyledCollectionElement(_ current: StyledCollectionElement) {
-        _ = parentalPadding.popLast()
-    }
-    
+            _ = parentalPadding.popLast()
+            _ = parentalContainerStyles.popLast()
+            _ = parentalBleedDirection.popLast()
+        }
+        
     func pushBleedDirection(_ direction: ContainerBleedDirection) {
         parentalBleedDirection.append(direction)
     }
@@ -91,18 +102,19 @@ class ParseContext {
         _ = parentalBleedDirection.popLast()
     }
     
-    /// Returns the most recently pushed container style, or nil if none exists.
-    var parentalContainerStyle: ContainerStyle? {
-        return self.parentalContainerStyles.last
-    }
-    
-    /// Returns the current bleed direction; if none was pushed, returns .bleedRestricted.
     var bleedDirection: ContainerBleedDirection {
-        return self.parentalBleedDirection.last ?? .bleedRestricted
+        return parentalBleedDirection.last ?? .bleedAll
     }
     
-    /// Returns the most recently pushed padding parent InternalId.
-    var paddingParentId: InternalId? {
-        return self.paddingParentInternalId()
+    func paddingParentInternalId() -> InternalId? {
+        return parentalPadding.last
+    }
+    
+    // Add a helper method to check if a style requires padding
+    func doesStyleRequirePadding(_ style: ContainerStyle) -> Bool {
+        guard let parentStyle = parentalContainerStyle else {
+            return false
+        }
+        return style != .none && style != parentStyle
     }
 }

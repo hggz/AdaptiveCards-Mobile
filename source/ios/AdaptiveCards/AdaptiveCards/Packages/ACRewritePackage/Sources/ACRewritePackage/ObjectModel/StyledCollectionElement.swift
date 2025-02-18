@@ -30,6 +30,34 @@ class StyledCollectionElement: BaseCardElement {
         return hasBleed
     }
     
+    func configPadding(_ context: ParseContext) {
+        // Set padding when child's style is set explicitly (not None)
+        // and is different than the parental style
+        let parentStyle = context.parentalContainerStyle ?? .default
+        hasPadding = (style != .none) && (style != parentStyle)
+    }
+    
+    func configBleed(_ context: ParseContext) {
+        // Only allow bleed if we have padding and bleed is set
+        if hasPadding && hasBleed {
+            if context.bleedDirection != .bleedRestricted {
+                parentalId = context.paddingParentInternalId()
+                bleedDirection = context.bleedDirection
+            } else {
+                bleedDirection = .bleedRestricted
+                parentalId = nil
+            }
+        } else {
+            bleedDirection = .bleedRestricted
+            parentalId = nil
+        }
+    }
+    
+    func configForContainerStyle(_ context: ParseContext) {
+        configPadding(context)
+        configBleed(context)
+    }
+    
     init(type: CardElementType,
          style: ContainerStyle = .none,
          verticalContentAlignment: VerticalContentAlignment? = nil,

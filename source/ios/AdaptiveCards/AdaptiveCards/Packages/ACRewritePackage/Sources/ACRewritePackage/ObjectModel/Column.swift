@@ -38,15 +38,14 @@ class Column: StyledCollectionElement {
         }
     }
     
-    // Override the properties to meet the test expectations:
-    override var bleed: Bool {
-        // For Column in a nested ColumnSet, the test expects this to be false.
-        return hasBleed  // (If hasBleed is already false, this works.)
+    override var canBleed: Bool {
+        // Column can only bleed if it has padding and hasBleed is true
+        return hasPadding && hasBleed
     }
     
-    override var canBleed: Bool {
-        // The test expects nested Columns not to be bleedable.
-        return false
+    override var bleed: Bool {
+        get { return hasBleed }
+        set { hasBleed = newValue }
     }
     
     private var isUpdatingWidth = false

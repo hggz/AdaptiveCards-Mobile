@@ -14,33 +14,59 @@ class Container: StyledCollectionElement {
         self.items = items
         self.layouts = layouts
         self.rtl = rtl
-        // Call BaseCardElement initializer (adjust parameters as needed).
-        super.init(type: cardElementType)
+        super.init(
+            type: cardElementType,
+            style: .none,
+            verticalContentAlignment: nil,
+            bleedDirection: .bleedAll,
+            minHeight: 0,
+            hasPadding: false,
+            hasBleed: false,
+            showBorder: false,
+            roundedCorners: false,
+            parentalId: nil,
+            backgroundImage: nil,
+            selectAction: nil
+        )
     }
 
     /// Required initializer for Codable conformance (inherited from BaseCardElement).
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Decode "items" polymorphically
+        // Initialize arrays before super.init
+        self.items = []
+        self.layouts = []
+        self.rtl = nil
+
+        // Call super.init first to set up base properties including style
+        try super.init(from: decoder)
+
+        // Then decode items with context and style configuration
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
+            let context = ParseContext()
+            
+            // Save the current container's style as parent style for children
+            context.setParentalContainerStyle(self.style)
+            
             self.items = try rawItems.map { rawDict in
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
                 guard let dict = unwrapped as? [String: Any] else {
                     throw AdaptiveCardParseError.invalidJson
                 }
-                return try BaseCardElement.deserialize(from: dict)
+                let element = try BaseCardElement.deserialize(from: dict)
+                
+                // If it's a styled element, configure its style
+                if let styledElement = element as? StyledCollectionElement {
+                    styledElement.configForContainerStyle(context)
+                }
+                
+                return element
             }
-        } else {
-            self.items = []
         }
         
-        // Same for layouts if you want them to be dynamic.
-        // (But your Layout is likely a single type, so you can keep it as is or do the same approach.)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
-
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
-        try super.init(from: decoder)
     }
 
     override func encode(to encoder: Encoder) throws {
@@ -63,6 +89,20 @@ class Container: StyledCollectionElement {
     func setLayouts(_ layouts: [Layout]) {
         self.layouts = layouts
     }
+    
+    func deserializeChildren(from json: [String: Any]) throws {
+        // Parse Items array
+        if let itemsArray = json["items"] as? [[String: Any]] {
+            self.items = try itemsArray.map { itemJson in
+                var mutableJson = itemJson
+                // Ensure type is set for items that don't specify it
+                if mutableJson["type"] == nil {
+                    mutableJson["type"] = "TextBlock" // Default type
+                }
+                return try BaseCardElement.deserialize(from: mutableJson)
+            }
+        }
+    }
 }
 
 /// MARK: - Parser for Container
@@ -70,10 +110,42 @@ class Container: StyledCollectionElement {
 /// Parses a Container element from JSON.
 struct ContainerParser: BaseCardElementParser {
     func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
-        // Use the BaseCardElement deserialization extension and then cast.
+        try ParseUtil.expectTypeString(value, expected: .container)
+        
+        // Save current context
+        let parentStyle = context.parentalContainerStyle
+        
+        // Parse the container itself
         guard let container = try BaseCardElement.deserialize(from: value) as? Container else {
             throw AdaptiveCardParseError.invalidType
         }
+        
+        // Set new parent style for children
+        context.setParentalContainerStyle(container.style)
+        
+        // Configure container style
+        container.configForContainerStyle(context)
+        
+        // Parse children (items) if any
+        if let itemsArray = value["items"] as? [[String: Any]] {
+            container.items = try itemsArray.map { itemJson in
+                var mutableJson = itemJson
+                if mutableJson["type"] == nil {
+                    mutableJson["type"] = "TextBlock"
+                }
+                let element = try BaseCardElement.deserialize(from: mutableJson)
+                if let styledElement = element as? StyledCollectionElement {
+                    styledElement.configForContainerStyle(context)
+                }
+                return element
+            }
+        }
+        
+        // Restore parent style
+        if let parentStyle = parentStyle {
+            context.setParentalContainerStyle(parentStyle)
+        }
+        
         return container
     }
 

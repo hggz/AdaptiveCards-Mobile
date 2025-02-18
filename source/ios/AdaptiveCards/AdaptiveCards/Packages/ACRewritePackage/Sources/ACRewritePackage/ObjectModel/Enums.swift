@@ -1028,23 +1028,25 @@ enum ItemFit: String, Codable {
 
 struct ContainerBleedDirection: OptionSet, Codable {
     let rawValue: Int
-
-    static let bleedRestricted    = ContainerBleedDirection(rawValue: 0x0000)
+    
+    static let bleedRestricted    = ContainerBleedDirection([])
     static let bleedLeft          = ContainerBleedDirection(rawValue: 0x0001)
     static let bleedRight         = ContainerBleedDirection(rawValue: 0x0010)
-    static let bleedLeftRight     = ContainerBleedDirection(rawValue: 0x0011)
     static let bleedUp            = ContainerBleedDirection(rawValue: 0x0100)
-    static let bleedLeftUp        = ContainerBleedDirection(rawValue: 0x0101)
-    static let bleedRightUp       = ContainerBleedDirection(rawValue: 0x0110)
-    static let bleedLeftRightUp   = ContainerBleedDirection(rawValue: 0x0111)
     static let bleedDown          = ContainerBleedDirection(rawValue: 0x1000)
-    static let bleedLeftDown      = ContainerBleedDirection(rawValue: 0x1001)
-    static let bleedRightDown     = ContainerBleedDirection(rawValue: 0x1010)
-    static let bleedLeftRightDown = ContainerBleedDirection(rawValue: 0x1011)
-    static let bleedUpDown        = ContainerBleedDirection(rawValue: 0x1100)
-    static let bleedLeftUpDown    = ContainerBleedDirection(rawValue: 0x1101)
-    static let bleedRightUpDown   = ContainerBleedDirection(rawValue: 0x1110)
-    static let bleedAll           = ContainerBleedDirection(rawValue: 0x1111)
+    
+    // Composite directions
+    static let bleedLeftRight: ContainerBleedDirection     = [.bleedLeft, .bleedRight]
+    static let bleedLeftUp: ContainerBleedDirection        = [.bleedLeft, .bleedUp]
+    static let bleedRightUp: ContainerBleedDirection       = [.bleedRight, .bleedUp]
+    static let bleedLeftRightUp: ContainerBleedDirection   = [.bleedLeft, .bleedRight, .bleedUp]
+    static let bleedLeftDown: ContainerBleedDirection      = [.bleedLeft, .bleedDown]
+    static let bleedRightDown: ContainerBleedDirection     = [.bleedRight, .bleedDown]
+    static let bleedLeftRightDown: ContainerBleedDirection = [.bleedLeft, .bleedRight, .bleedDown]
+    static let bleedUpDown: ContainerBleedDirection        = [.bleedUp, .bleedDown]
+    static let bleedLeftUpDown: ContainerBleedDirection    = [.bleedLeft, .bleedUp, .bleedDown]
+    static let bleedRightUpDown: ContainerBleedDirection   = [.bleedRight, .bleedUp, .bleedDown]
+    static let bleedAll: ContainerBleedDirection           = [.bleedLeft, .bleedRight, .bleedUp, .bleedDown]
 }
 
 extension RawRepresentable where Self: Codable, RawValue == String {
