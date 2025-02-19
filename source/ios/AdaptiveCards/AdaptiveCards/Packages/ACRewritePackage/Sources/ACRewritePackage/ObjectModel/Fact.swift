@@ -30,8 +30,19 @@ struct Fact: Codable {
         return jsonString
     }
     
-    /// Deserializes a Fact from a JSON string.
-    /// The `context` parameter is accepted for compatibility even if unused.
+    /// Additional method specifically for FactSet serialization
+    func serializeWithType() -> [String: Any] {
+        var dict: [String: Any] = [
+            "type": "Fact",
+            "title": title,
+            "value": value
+        ]
+        if let language = language {
+            dict["language"] = language
+        }
+        return dict
+    }
+    
     static func deserialize(fromString jsonString: String, context: ParseContext) -> Fact? {
         guard let data = jsonString.data(using: .utf8) else { return nil }
         do {
@@ -42,7 +53,6 @@ struct Fact: Codable {
         }
     }
     
-    /// (Optional) Existing method to deserialize from a dictionary.
     static func deserialize(from json: [String: Any]) -> Fact? {
         guard let title = json["title"] as? String,
               let value = json["value"] as? String else {

@@ -87,37 +87,26 @@ class Image: BaseCardElement {
     
     // MARK: - Serialization
     /// Serializes the Image to a JSON dictionary.
-    func serializeToJsonVal() throws -> [String: Any] {
+    override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
         
-        // If explicit pixel dimensions were provided, use them.
-        if pixelWidth > 0 || pixelHeight > 0 {
-            if pixelWidth > 0 {
-                json["width"] = "\(pixelWidth)px"
-            }
-            if pixelHeight > 0 {
-                json["height"] = "\(pixelHeight)px"
-            }
-        }
-        else if imageSize != .none {
-            // Otherwise, use the imageSize if specified.
-            json["size"] = imageSize.rawValue
-        }
+        // Always include essential properties
+        json["type"] = "Image"
+        json["url"] = url
         
-        if imageStyle != .defaultImageStyle {
-            json["style"] = imageStyle.rawValue
-        }
+        // Always include style
+        json["style"] = imageStyle.rawValue
         
-        if !url.isEmpty {
-            json["url"] = url
+        // Always include size
+        json["size"] = imageSize.rawValue.lowercased()
+        
+        // Always include horizontalAlignment if present
+        if let alignment = hAlignment {
+            json["horizontalAlignment"] = alignment.rawValue.lowercased()
         }
         
         if !backgroundColor.isEmpty {
             json["backgroundColor"] = backgroundColor
-        }
-        
-        if let alignment = hAlignment {
-            json["horizontalAlignment"] = alignment.rawValue
         }
         
         if !altText.isEmpty {
@@ -126,6 +115,15 @@ class Image: BaseCardElement {
         
         if let action = selectAction {
             json["selectAction"] = try BaseCardElement.serializeSelectAction(action)
+        }
+        
+        // Handle spacing and separator
+        if let spacing = spacing {
+            json["spacing"] = spacing.rawValue.lowercased()
+        }
+        
+        if let separator = separator {
+            json["separator"] = separator
         }
         
         return json

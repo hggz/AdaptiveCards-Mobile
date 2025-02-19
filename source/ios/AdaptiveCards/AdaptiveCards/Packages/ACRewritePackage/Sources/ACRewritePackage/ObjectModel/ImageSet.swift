@@ -64,14 +64,18 @@ class ImageSet: BaseCardElement {
     
     // MARK: - Serialization
     /// Serializes the ImageSet into a JSON dictionary.
-    func serializeToJsonVal() throws -> [String: Any] {
+    override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
-        // If imageSize is not .none, add it using a converter.
-        if imageSize != .none {
-            json["imageSize"] = imageSize.rawValue
-        }
-        // Add the images array.
-        json["images"] = try images.map { try $0.serializeToJsonVal() }
+        
+        // Always include type
+        json["type"] = "ImageSet"
+        
+        // Always include imageSize in lowercase
+        json["imageSize"] = imageSize.rawValue.lowercased()
+        
+        // Serialize images
+        json["images"] = try images.map { try $0.serializeToJsonValue() }
+        
         return json
     }
     

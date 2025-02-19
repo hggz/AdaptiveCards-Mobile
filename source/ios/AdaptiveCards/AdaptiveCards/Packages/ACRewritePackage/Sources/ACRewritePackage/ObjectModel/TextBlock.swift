@@ -114,24 +114,6 @@ class TextBlock: BaseCardElement {
     }
     
     /// Converts this TextBlock into a JSON dictionary.
-    func serializeToJsonVal() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        json["text"] = text
-        json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
-        if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
-        if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
-        if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
-        if let textColor = textColor { json[AdaptiveCardSchemaKey.color.rawValue] = textColor.rawValue }
-        if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
-        if wrap != false { json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap }
-        if maxLines != 0 { json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines }
-        if let horizontalAlignment = horizontalAlignment { json[AdaptiveCardSchemaKey.horizontalAlignment.rawValue] = horizontalAlignment.rawValue }
-        if let language = language { json[AdaptiveCardSchemaKey.language.rawValue] = language }
-        
-        return json
-    }
-    
-    /// Converts this TextBlock into a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
         // Start with base properties
         var json = try super.serializeToJsonValue()
@@ -141,27 +123,45 @@ class TextBlock: BaseCardElement {
         
         // Add TextBlock-specific properties
         json["text"] = text
-        // Only add textStyle if it's not the default
+        
+        // Always include language if present
+        if let language = language {
+            json["lang"] = language
+        }
+        
+        // Only add style if it's not default
         if textStyle != .defaultStyle {
             json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
         }
-        if let textSize = textSize { json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue }
-        if let textWeight = textWeight { json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue }
-        if let fontType = fontType { json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue }
+        
+        if let textSize = textSize {
+            json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue
+        }
+        if let textWeight = textWeight {
+            json[AdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue
+        }
+        if let fontType = fontType {
+            json[AdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue
+        }
         if let textColor = textColor {
             json[AdaptiveCardSchemaKey.color.rawValue] = textColor.serializedString
         }
-        if let isSubtle = isSubtle { json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle }
-        if wrap != false { json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap }
-        if maxLines != 0 { json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines }
+        if let isSubtle = isSubtle {
+            json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle
+        }
+        if wrap != false {
+            json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap
+        }
+        if maxLines != 0 {
+            json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines
+        }
         if let horizontalAlignment = horizontalAlignment {
             json[AdaptiveCardSchemaKey.horizontalAlignment.rawValue] = horizontalAlignment.rawValue
         }
-        if let language = language { json[AdaptiveCardSchemaKey.language.rawValue] = language }
         
         return json
     }
-
+    
     /// Converts this TextBlock into a JSON string.
     override func serialize() throws -> String {
         let data = try JSONSerialization.data(withJSONObject: serializeToJsonValue(), options: [.sortedKeys])
