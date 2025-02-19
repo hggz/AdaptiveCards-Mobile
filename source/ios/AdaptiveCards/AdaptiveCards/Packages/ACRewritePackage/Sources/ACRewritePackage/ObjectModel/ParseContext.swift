@@ -29,8 +29,11 @@ class ParseContext {
 
     // MARK: - Initializers
     
-    init() {}
-
+    init() {
+        // Create default element parser registration with built-in parsers
+        self.elementParserRegistration = ElementParserRegistration()
+    }
+    
     init(elementParserRegistration: ElementParserRegistration?, actionParserRegistration: ActionParserRegistration?) {
         self.elementParserRegistration = elementParserRegistration
         self.actionParserRegistration = actionParserRegistration
