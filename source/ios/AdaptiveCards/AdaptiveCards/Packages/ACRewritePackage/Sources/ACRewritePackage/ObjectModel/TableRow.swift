@@ -36,13 +36,28 @@ class TableRow: BaseCardElement {
 
     /// Encodes a `TableRow` to JSON.
     override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(style, forKey: .style)
-        try container.encodeIfPresent(horizontalCellContentAlignment, forKey: .horizontalCellContentAlignment)
-        try container.encodeIfPresent(verticalCellContentAlignment, forKey: .verticalCellContentAlignment)
-        try container.encode(cells, forKey: .cells)
+        
+        // Always encode cells if not empty
+        if !cells.isEmpty {
+            try container.encode(cells, forKey: .cells)
+        }
+        
+        // Encode style if not default
+        if style != .none {
+            try container.encode(style.rawValue.capitalized, forKey: .style)
+        }
+        
+        // Encode alignments if present
+        if let horizontal = horizontalCellContentAlignment {
+            try container.encode(horizontal.rawValue, forKey: .horizontalCellContentAlignment)
+        }
+        if let vertical = verticalCellContentAlignment {
+            try container.encode(vertical.rawValue.capitalized, forKey: .verticalCellContentAlignment)
+        }
     }
-
+    
     /// Sets the collection of cells.
     func setCells(_ value: [TableCell]) {
         self.cells = value
@@ -104,5 +119,29 @@ class TableRow: BaseCardElement {
         case horizontalCellContentAlignment
         case verticalCellContentAlignment
         case cells
+    }
+    
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        
+        // Add cells if present
+        if !cells.isEmpty {
+            json["cells"] = try cells.map { try $0.serializeToJsonValue() }
+        }
+        
+        // Add style if not default
+        if style != .none {
+            json["style"] = style.rawValue.capitalized
+        }
+        
+        // Add alignments if present
+        if let horizontal = horizontalCellContentAlignment {
+            json["horizontalCellContentAlignment"] = horizontal.rawValue
+        }
+        if let vertical = verticalCellContentAlignment {
+            json["verticalCellContentAlignment"] = vertical.rawValue.capitalized
+        }
+        
+        return json
     }
 }
