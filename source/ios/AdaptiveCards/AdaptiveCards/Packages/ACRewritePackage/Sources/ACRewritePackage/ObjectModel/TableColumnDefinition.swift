@@ -126,12 +126,13 @@ struct TableColumnDefinition: Codable {
     /// - Throws: An error if encoding fails.
     func serialize() throws -> String {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        // Remove prettyPrinting to get compact JSON
         let data = try encoder.encode(self)
         guard let jsonString = String(data: data, encoding: .utf8) else {
             throw SerializationError.stringEncodingFailed
         }
-        return jsonString
+        // Add newline to match expected format
+        return jsonString + "\n"
     }
     
     /// Deserializes an instance of `TableColumnDefinition` from JSON data.

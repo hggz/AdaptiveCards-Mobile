@@ -103,13 +103,16 @@ class Table: BaseCardElement, CollectionCoreElement {
 /// Parses Table elements in an Adaptive Card.
 struct TableParser: BaseCardElementParser {
     func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
-        // Verify that the type is correct.
+        // Verify that the type is correct, using case-insensitive comparison
         guard let typeString = value["type"] as? String,
-              typeString == CardElementType.table.rawValue else {
+              typeString.lowercased() == CardElementType.table.rawValue.lowercased() else {
+            print("Type mismatch: got '\(value["type"] ?? "nil")', expected '\(CardElementType.table.rawValue)'")
             throw AdaptiveCardParseError.invalidType
         }
+        
         // Use the global BaseCardElement deserialization and cast to Table.
         guard let table = try BaseCardElement.deserialize(from: value) as? Table else {
+            print("Failed to cast deserialized element to Table")
             throw AdaptiveCardParseError.invalidType
         }
         return table
