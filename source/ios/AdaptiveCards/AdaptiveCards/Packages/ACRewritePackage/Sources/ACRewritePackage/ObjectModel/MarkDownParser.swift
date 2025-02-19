@@ -1,17 +1,17 @@
 import Foundation
 
-struct MarkDownParser {
+class MarkDownParser {
     private let text: String
     private var parsedResult = MarkDownParsedResult()
     private var hasHTMLTag = false
     private var isEscaped = false
 
-    init(text: String) {
+    init(_ text: String) {
         self.text = text
     }
 
     /// Transforms Markdown string to HTML
-    mutating func transformToHtml() -> String { // ✅ Made mutating
+    func transformToHtml() -> String { // ✅ Made mutating
         guard !text.isEmpty else {
             return "<p></p>"
         }
@@ -45,7 +45,7 @@ struct MarkDownParser {
     }
 
     /// Parses Markdown blocks
-    private mutating func parseBlock() {
+    private func parseBlock() {
         let escapedText = escapeText()
         var stream: StringIterator = StringIterator(escapedText) // ✅ Ensure correct iterator type
         var parser = EmphasisParser()
@@ -58,7 +58,7 @@ struct MarkDownParser {
     }
 
     /// Escapes special HTML characters in the Markdown text
-    private mutating func escapeText() -> String {
+    private func escapeText() -> String {
         var escaped = ""
         var nonEscapedCounts = 0
 
