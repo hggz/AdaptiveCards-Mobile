@@ -397,68 +397,61 @@ public class AdaptiveCard: Codable {
     
     required convenience public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Strings
+
+        // Decode the strings, and if they’re missing, provide defaults:
         let version = try container.decodeIfPresent(String.self, forKey: .version) ?? "1.0"
-        let fallbackText = try container.decodeIfPresent(String.self, forKey: .fallbackText)
-        let speak = try container.decodeIfPresent(String.self, forKey: .speak)
-        let language = try container.decodeIfPresent(String.self, forKey: .language)
+        let fallbackText = try container.decodeIfPresent(String.self, forKey: .fallbackText) ?? ""
+        let speak = try container.decodeIfPresent(String.self, forKey: .speak) ?? ""
+        let language = try container.decodeIfPresent(String.self, forKey: .language) ?? "en"
         
-        // ContainerStyle with a default if missing
+        // Decode the rest of the properties as before.
         let styleRaw = try container.decodeIfPresent(String.self, forKey: .style) ?? "none"
         let style = ContainerStyle(rawValue: styleRaw) ?? .none
-        
-        // Optional booleans
         let rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
-        
-        // FallbackType
         let fallbackTypeRaw = try container.decodeIfPresent(String.self, forKey: .fallbackType) ?? "none"
         let fallbackType = FallbackType(rawValue: fallbackTypeRaw) ?? .none
-        
-        // More complex objects
+
         let backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
         let refresh = try container.decodeIfPresent(Refresh.self, forKey: .refresh)
         let authentication = try container.decodeIfPresent(Authentication.self, forKey: .authentication)
         
-        // Instead of automatic decoding, decode the body as an array of dictionaries,
-        // then use our factory method to create the proper subclass instances.
+        // Decode body by reading an array of dictionaries, then using your factory.
         let rawBody = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .body) ?? []
         let body = try rawBody.map { rawElement in
             let dict = rawElement.mapValues { $0.value }
             return try BaseCardElement.deserialize(from: dict)
         }
         
-        // Actions
+        // Decode actions.
         let rawActions = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .actions) ?? []
         let actions = try rawActions.map { rawAction -> BaseActionElement in
             let dict = rawAction.mapValues { $0.value }
             return try BaseActionElement.deserializeAction(from: dict)
         }
         
-        // Layouts
+        // Decode layouts.
         let layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
         
-        // selectAction
+        // Decode selectAction.
         let selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
         
-        // Vertical Content Alignment
+        // Vertical Content Alignment.
         let verticalAlignmentRaw = try container.decodeIfPresent(String.self, forKey: .verticalContentAlignment) ?? "top"
         let verticalContentAlignment = VerticalContentAlignment(rawValue: verticalAlignmentRaw) ?? .top
         
-        // Height
+        // Height.
         let heightRaw = try container.decodeIfPresent(String.self, forKey: .height) ?? "auto"
         let height = HeightType(rawValue: heightRaw) ?? .auto
         
-        // minHeight
+        // minHeight.
         let minHeight = try container.decodeIfPresent(UInt.self, forKey: .minHeight) ?? 0
         
-        // requires
+        // requires.
         let requiresDict = try container.decodeIfPresent([String: SemanticVersion].self, forKey: .requires) ?? [:]
         
-        // fallbackContent – if you have a custom approach, implement decode here or set it nil by default
+        // fallbackContent.
         let fallbackContent = try container.decodeIfPresent(BaseElement.self, forKey: .fallbackContent)
         
-        // Initialize using your existing init
         self.init(
             version: version,
             fallbackText: fallbackText,

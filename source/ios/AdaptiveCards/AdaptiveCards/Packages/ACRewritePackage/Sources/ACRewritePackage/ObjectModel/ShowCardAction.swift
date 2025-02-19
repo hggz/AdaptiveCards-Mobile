@@ -62,8 +62,13 @@ class ShowCardAction: BaseActionElement {
     override func serializeToJsonValue() throws -> [String: Any] {
         var json = [String: Any]()
         if let card = card {
-            // Note: 'serializeToJsonValue()' is a throwing method so we use 'try'
+            // Get the card's JSON
             var cardJson = try card.serializeToJsonValue()
+            // Force fallback-related keys to non-nil defaults
+            cardJson[AdaptiveCardSchemaKey.fallbackText.rawValue] = card.fallbackText ?? ""
+            cardJson[AdaptiveCardSchemaKey.speak.rawValue] = card.speak ?? ""
+            // For language, if missing, force "en"
+            cardJson["lang"] = card.language ?? "en"
             // Ensure the sub-card JSON contains a type
             if cardJson["type"] == nil {
                 cardJson["type"] = "AdaptiveCard"
