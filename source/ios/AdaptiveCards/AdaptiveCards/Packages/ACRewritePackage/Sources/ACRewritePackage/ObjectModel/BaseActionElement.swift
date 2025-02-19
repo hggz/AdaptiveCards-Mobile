@@ -90,6 +90,8 @@ class BaseActionElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(SubmitAction.self, from: data)
         case ActionType.toggleVisibility.rawValue:
             return try decoder.decode(ToggleVisibilityAction.self, from: data)
+        case ActionType.execute.rawValue:
+            return try decoder.decode(ExecuteAction.self, from: data)
         default:
             // For any unknown or invalid type, decode as UnknownAction.
             return try decoder.decode(UnknownAction.self, from: data)
