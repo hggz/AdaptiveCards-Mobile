@@ -107,6 +107,24 @@ extension TextSize {
         default: return nil
         }
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // Use the provided fromString helper (which is case-insensitive)
+        if let value = TextSize.fromString(raw) {
+            self = value
+        } else {
+            // Fall back to the default case if unrecognized.
+            self = .defaultSize
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        // Always encode using the rawValue (e.g. "Default")
+        try container.encode(self.rawValue)
+    }
 }
 
 // MARK: - TextWeight
@@ -139,6 +157,29 @@ extension TextWeight {
         default: return nil
         }
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // Compare in a case-insensitive way.
+        switch raw.lowercased() {
+        case "default":
+            self = .defaultWeight
+        case "lighter":
+            self = .lighter
+        case "bolder":
+            self = .bolder
+        default:
+            // Fallback to .defaultWeight if unrecognized.
+            self = .defaultWeight
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        // Always encode using the rawValue you defined (e.g. "Default")
+        try container.encode(self.rawValue)
+    }
 }
 
 // MARK: - FontType
@@ -165,6 +206,18 @@ extension FontType {
         case "Monospace": return .monospace
         default: return nil
         }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // Capitalize the string so that "monospace" becomes "Monospace"
+        self = FontType(rawValue: raw.capitalized) ?? .defaultFont
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
     }
 }
 
@@ -934,6 +987,24 @@ enum ActionRole: String, Codable {
 enum AssociatedInputs: String, Codable {
     case auto = "Auto"
     case none = "None"
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        // Capitalize so "none" becomes "None"
+        let normalized = raw.capitalized
+        if let value = AssociatedInputs(rawValue: normalized) {
+            self = value
+        } else {
+            throw DecodingError.dataCorruptedError(in: container,
+                                                    debugDescription: "Cannot initialize AssociatedInputs from invalid String value \(raw)")
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
+    }
 }
 
 enum ImageFillMode: String, Codable {
