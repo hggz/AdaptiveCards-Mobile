@@ -16,9 +16,18 @@ class TableCell: Container {
     }
     
     override func encode(to encoder: Encoder) throws {
+        // First encode the Container properties
         try super.encode(to: encoder)
+        
+        // Then encode our local properties
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(items, forKey: .items)
+        
+        // Encode non-empty items array
+        if !items.isEmpty {
+            try container.encode(items, forKey: .items)
+        }
+        
+        // Encode RTL if present
         if let rtl = self.rtl {
             try container.encode(rtl, forKey: .rtl)
         }
@@ -94,5 +103,21 @@ class TableCell: Container {
             throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
         }
         return try deserialize(from: jsonDict, context: context)
+    }
+    
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        
+        // Add items if present
+        if !items.isEmpty {
+            json["items"] = try items.map { try $0.serializeToJsonValue() }
+        }
+        
+        // Add rtl if present
+        if let rtl = self.rtl {
+            json["rtl"] = rtl
+        }
+        
+        return json
     }
 }
