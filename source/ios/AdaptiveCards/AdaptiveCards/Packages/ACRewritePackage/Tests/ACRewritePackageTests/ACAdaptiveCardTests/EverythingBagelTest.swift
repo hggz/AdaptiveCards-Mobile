@@ -1,8 +1,678 @@
-//
-//  File.swift
-//  
-//
-//  Created by Hugo Gonzalez on 2/17/25.
-//
+import XCTest
+@testable import ACRewritePackage
 
-import Foundation
+// The expected JSON – using a multiline string for readability.
+private let EVERYTHING_JSON = """
+{"actions":[{"data":{"submitValue":true},"id":"Action.Submit_id","title":"Action.Submit","tooltip":"tooltip","type":"Action.Submit"},{"associatedInputs":"None","data":{"Action.Execute_data_keyA":"Action.Execute_data_valueA"},"id":"Action.Execute_id","isEnabled":false,"title":"Action.Execute_title","type":"Action.Execute","verb":"Action.Execute_verb"},{"card":{"actions":[],"backgroundImage":{"fillMode":"repeat","horizontalAlignment":"right","url":"https://adaptivecards.io/content/cats/1.png","verticalAlignment":"center"},"body":[{"isSubtle":true,"text":"Action.ShowCard text","type":"TextBlock"}],"lang":"en","type":"AdaptiveCard","version":"1.0"},"id":"Action.ShowCard_id","title":"Action.ShowCard","tooltip":"tooltip","type":"Action.ShowCard"}],"authentication":{"buttons":[{"image":"authentication_buttons_0_image","title":"authentication_buttons_0_title","type":"authentication_buttons_0_type","value":"authentication_buttons_0_value"}],"connectionName":"authentication_connectionName","text":"authentication_text","tokenExchangeResource":{"id":"authentication_tokenExchangeResource_id","providerId":"authentication_tokenExchangeResource_providerId","uri":"authentication_tokenExchangeResource_uri"}},"backgroundImage":"https://adaptivecards.io/content/cats/1.png","body":[{"color":"Default","horizontalAlignment":"left","id":"TextBlock_id","isSubtle":false,"italic":true,"maxLines":1,"size":"Default","strikethrough":true,"style":"heading","text":"TextBlock_text","type":"TextBlock","weight":"Default"},{"color":"Default","fontType":"Monospace","horizontalAlignment":"left","id":"TextBlock_id_mono","isSubtle":false,"italic":true,"maxLines":1,"size":"Default","strikethrough":true,"text":"TextBlock_text","type":"TextBlock","weight":"Default"},{"color":"Default","fontType":"Default","horizontalAlignment":"left","id":"TextBlock_id_def","isSubtle":false,"italic":true,"maxLines":1,"size":"Default","strikethrough":true,"text":"TextBlock_text","type":"TextBlock","weight":"Default"},{"altText":"Image_altText","horizontalAlignment":"center","id":"Image_id","isVisible":false,"selectAction":{"role":"Link","title":"Image_Action.OpenUrl","type":"Action.OpenUrl","url":"https://adaptivecards.io/"},"separator":true,"size":"Auto","spacing":"none","style":"person","type":"Image","url":"https://adaptivecards.io/content/cats/1.png"},{"id":"Container_id","items":[{"columns":[{"id":"Column_id1","items":[{"type":"Image","url":"https://adaptivecards.io/content/cats/1.png"}],"rtl":false,"style":"Default","type":"Column","width":"auto"},{"id":"Column_id2","items":[{"type":"Image","url":"https://adaptivecards.io/content/cats/2.png"}],"style":"Emphasis","type":"Column","width":"20px"},{"id":"Column_id3","items":[{"type":"Image","url":"https://adaptivecards.io/content/cats/3.png"},{"id":"Column3_TextBlock_id","text":"Column3_TextBlock_text","type":"TextBlock"}],"style":"Default","type":"Column","width":"stretch"}],"id":"ColumnSet_id","separator":true,"spacing":"large","type":"ColumnSet"}],"rtl":true,"selectAction":{"data":"Container_data","title":"Container_Action.Submit","type":"Action.Submit"},"spacing":"medium","style":"Default","type":"Container"},{"facts":[{"title":"Topping","value":"poppyseeds"},{"title":"Topping","value":"onion flakes"}],"id":"FactSet_id","type":"FactSet"},{"id":"ImageSet_id","imageSize":"Auto","images":[{"type":"Image","url":"https://adaptivecards.io/content/cats/1.png"},{"type":"Image","url":"https://adaptivecards.io/content/cats/2.png"},{"type":"Image","url":"https://adaptivecards.io/content/cats/3.png"}],"separator":true,"type":"ImageSet"},{"id":"Container_id_inputs","items":[{"id":"Input.Text_id","inlineAction":{"iconUrl":"https://adaptivecards.io/content/cats/1.png","title":"Input.Text_Action.Submit","type":"Action.Submit"},"label":"Input.Text_label","maxLength":10,"placeholder":"Input.Text_placeholder","regex":"([A-Z])\\\\w+","spacing":"small","style":"text","type":"Input.Text","value":"Input.Text_value"},{"id":"Input.Number_id","isRequired":true,"label":"Input.Number_label","max":9.5,"min":3.5,"placeholder":"Input.Number_placeholder","type":"Input.Number","value":4.5},{"id":"Input.Date_id","label":"Input.Date_label","max":"1/1/2020","min":"8/1/2018","placeholder":"Input.Date_placeholder","type":"Input.Date","value":"8/9/2018"},{"errorMessage":"Input.Time.ErrorMessage","id":"Input.Time_id","isRequired":true,"label":"Input.Time_label","max":"17:00","min":"10:00","placeholder":"Input.Time_placeholder","type":"Input.Time","value":"13:00"},{"id":"Input.Toggle_id","label":"Input.Toggle_label","title":"Input.Toggle_title","type":"Input.Toggle","value":"Input.Toggle_on","valueOff":"Input.Toggle_off","valueOn":"Input.Toggle_on"},{"size":"Large","text":"Everybody's got choices","type":"TextBlock","weight":"Bolder"},{"choices":[{"title":"Input.Choice1_title","value":"Input.Choice1"},{"title":"Input.Choice2_title","value":"Input.Choice2"},{"title":"Input.Choice3_title","value":"Input.Choice3"},{"title":"Input.Choice4_title","value":"Input.Choice4"}],"id":"Input.ChoiceSet_id","isMultiSelect":true,"label":"Input.ChoiceSet_label","style":"Compact","type":"Input.ChoiceSet","value":"Input.Choice2,Input.Choice4"}],"type":"Container"},{"actions":[{"associatedInputs":"None","id":"ActionSet.Action.Submit_id","isEnabled":false,"title":"ActionSet.Action.Submit","tooltip":"tooltip","type":"Action.Submit"},{"id":"ActionSet.Action.OpenUrl_id","role":"Link","title":"ActionSet.Action.OpenUrl","tooltip":"tooltip","type":"Action.OpenUrl","url":"https://adaptivecards.io/"}],"type":"ActionSet"},{"horizontalAlignment":"right","id":"RichTextBlock_id","inlines":[{"color":"Dark","fontType":"Monospace","highlight":true,"isSubtle":true,"italic":true,"size":"Large","strikethrough":true,"text":"This is a text run","type":"TextRun","underline":true,"weight":"Bolder"},{"selectAction":{"type":"Action.Submit"},"text":"This is another text run","type":"TextRun"},{"text":"This is a text run specified as a string","type":"TextRun"}],"type":"RichTextBlock"}],"fallbackText":"fallbackText","lang":"en","refresh":{"action":{"id":"refresh_action_id","type":"Action.Execute","verb":"refresh_action_verb"},"userIds":["refresh_userIds_0"]},"rtl":false,"speak":"speak","type":"AdaptiveCard","version":"1.0"}
+"""
+
+// MARK: - Test Case
+
+class EverythingBagelTests: XCTestCase {
+
+    // MARK: - Helper Validators
+
+    private func validateBackgroundImage(_ backImage: BackgroundImage,
+                                         mode: ImageFillMode,
+                                         hAlignment: HorizontalAlignment,
+                                         vAlignment: VerticalAlignment) {
+        XCTAssertEqual(backImage.url, "https://adaptivecards.io/content/cats/1.png")
+        XCTAssertEqual(backImage.fillMode, mode)
+        XCTAssertEqual(backImage.horizontalAlignment, hAlignment)
+        XCTAssertEqual(backImage.verticalAlignment, vAlignment)
+    }
+
+    private func validateRefresh(_ refresh: Refresh) {
+        XCTAssertNotNil(refresh.action)
+        XCTAssertEqual(refresh.action?.typeString, .execute)
+        XCTAssertEqual(refresh.action?.id, "refresh_action_id")
+        XCTAssertEqual(refresh.userIds.count, 1)
+        XCTAssertEqual(refresh.userIds.first, "refresh_userIds_0")
+    }
+
+    private func validateAuthentication(_ auth: Authentication) {
+        XCTAssertEqual(auth.text, "authentication_text")
+        XCTAssertEqual(auth.connectionName, "authentication_connectionName")
+        XCTAssertNotNil(auth.tokenExchangeResource)
+        XCTAssertEqual(auth.tokenExchangeResource?.id, "authentication_tokenExchangeResource_id")
+        XCTAssertEqual(auth.tokenExchangeResource?.uri, "authentication_tokenExchangeResource_uri")
+        XCTAssertEqual(auth.tokenExchangeResource?.providerId, "authentication_tokenExchangeResource_providerId")
+        XCTAssertEqual(auth.buttons.count, 1)
+        if let button = auth.buttons.first {
+            XCTAssertEqual(button.type, "authentication_buttons_0_type")
+            XCTAssertEqual(button.title, "authentication_buttons_0_title")
+            XCTAssertEqual(button.image, "authentication_buttons_0_image")
+            XCTAssertEqual(button.value, "authentication_buttons_0_value")
+        }
+    }
+
+    private func validateTopLevelProperties(_ card: AdaptiveCard) {
+        if let bg = card.backgroundImage {
+            validateBackgroundImage(bg, mode: .cover, hAlignment: .left, vAlignment: .top)
+        } else {
+            XCTFail("Missing background image")
+        }
+        if let refresh = card.refresh {
+            validateRefresh(refresh)
+        } else {
+            XCTFail("Missing refresh")
+        }
+        if let auth = card.authentication {
+            validateAuthentication(auth)
+        } else {
+            XCTFail("Missing authentication")
+        }
+        XCTAssertEqual(card.elementType, .adaptiveCard)
+        XCTAssertEqual(card.fallbackText, "fallbackText")
+        XCTAssertEqual(card.height, .auto)
+        XCTAssertEqual(card.language, "en")
+        XCTAssertNil(card.selectAction)
+        XCTAssertEqual(card.speak, "speak")
+        XCTAssertEqual(card.style, .none)
+        XCTAssertEqual(card.version, "1.0")
+        XCTAssertNotNil(card.rtl)
+        XCTAssertFalse(card.rtl!)
+        XCTAssertEqual(card.verticalContentAlignment, .top)
+    }
+
+    private func validateTextBlock(_ textBlock: TextBlock,
+                                   fontType: FontType?,
+                                   style: TextStyle?,
+                                   id: String) {
+        XCTAssertEqual(textBlock.elementType, .textBlock)
+        XCTAssertEqual(textBlock.elementTypeString, CardElementType.textBlock.rawValue)
+        XCTAssertEqual(textBlock.id, id)
+        XCTAssertEqual(textBlock.text, "TextBlock_text")
+        XCTAssertEqual(textBlock.style, style)
+        XCTAssertEqual(textBlock.textColor, .default)
+        XCTAssertEqual(textBlock.horizontalAlignment, .left)
+        XCTAssertEqual(textBlock.spacing, .default)
+        XCTAssertEqual(textBlock.maxLines, 1)
+        XCTAssertEqual(textBlock.language, "en")
+        XCTAssertEqual(textBlock.textSize, .default)
+        XCTAssertEqual(textBlock.textWeight, .default)
+        XCTAssertEqual(textBlock.fontType, fontType)
+        XCTAssertNotNil(textBlock.isSubtle)
+        XCTAssertFalse(textBlock.isSubtle!)
+        XCTAssertFalse(textBlock.separator == true)
+        XCTAssertFalse(textBlock.wrap)
+    }
+
+    private func validateImage(_ image: Image) {
+        XCTAssertEqual(image.elementType, .image)
+        XCTAssertEqual(image.elementTypeString, CardElementType.image.rawValue)
+        XCTAssertEqual(image.id, "Image_id")
+        XCTAssertEqual(image.altText, "Image_altText")
+        XCTAssertEqual(image.url, "https://adaptivecards.io/content/cats/1.png")
+        XCTAssertEqual(image.backgroundColor, "")
+        XCTAssertEqual(image.imageStyle, .person)
+        XCTAssertEqual(image.spacing, .none)
+        XCTAssertEqual(image.height, .auto)
+        XCTAssertEqual(image.horizontalAlignment, .center)
+        XCTAssertEqual(image.imageSize, .auto)
+        XCTAssertTrue(image.separator == true)
+        XCTAssertFalse(image.isVisible)
+        
+        if let imageAction = image.selectAction as? OpenUrlAction {
+            XCTAssertEqual(imageAction.title, "Image_Action.OpenUrl")
+            XCTAssertEqual(imageAction.url, "https://adaptivecards.io/")
+            XCTAssertEqual(imageAction.elementType, .openUrl)
+            XCTAssertEqual(imageAction.elementTypeString, ActionType.openUrl.rawValue)
+            XCTAssertTrue(imageAction.isEnabled)
+        } else {
+            XCTFail("Image selectAction is not OpenUrlAction")
+        }
+    }
+
+    private func validateColumnSet(_ columnSet: ColumnSet) {
+        XCTAssertEqual(columnSet.elementType, .columnSet)
+        XCTAssertEqual(columnSet.elementTypeString, CardElementType.columnSet.rawValue)
+        XCTAssertEqual(columnSet.id, "ColumnSet_id")
+        XCTAssertEqual(columnSet.spacing, .large)
+        XCTAssertTrue(columnSet.separator == true)
+        
+        let columns = columnSet.columns
+        XCTAssertEqual(columns.count, 3)
+        
+        // First column.
+        if let firstColumn = columns[0] as? Column {
+            XCTAssertEqual(firstColumn.elementType, .column)
+            XCTAssertEqual(firstColumn.elementTypeString, CardElementType.column.rawValue)
+            XCTAssertEqual(firstColumn.id, "Column_id1")
+            XCTAssertEqual(firstColumn.width, "auto")
+            XCTAssertEqual(firstColumn.pixelWidth, 0)
+            XCTAssertEqual(firstColumn.style, .default)
+            XCTAssertNotNil(firstColumn.rtl)
+            XCTAssertFalse(firstColumn.rtl!)
+            
+            let items = firstColumn.items
+            XCTAssertEqual(items.count, 1)
+            if let imageItem = items.first as? Image {
+                XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/1.png")
+            }
+        } else {
+            XCTFail("First column is invalid")
+        }
+        
+        // Second column.
+        if let secondColumn = columns[1] as? Column {
+            XCTAssertEqual(secondColumn.id, "Column_id2")
+            XCTAssertEqual(secondColumn.width, "20px")
+            XCTAssertEqual(secondColumn.pixelWidth, 20)
+            XCTAssertEqual(secondColumn.style, .emphasis)
+            XCTAssertNil(secondColumn.rtl)
+            
+            let items = secondColumn.items
+            XCTAssertEqual(items.count, 1)
+            if let imageItem = items.first as? Image {
+                XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/2.png")
+            }
+        } else {
+            XCTFail("Second column is invalid")
+        }
+        
+        // Third column.
+        if let thirdColumn = columns[2] as? Column {
+            XCTAssertEqual(thirdColumn.id, "Column_id3")
+            XCTAssertEqual(thirdColumn.width, "stretch")
+            XCTAssertEqual(thirdColumn.pixelWidth, 0)
+            XCTAssertEqual(thirdColumn.style, .default)
+            
+            let items = thirdColumn.items
+            XCTAssertEqual(items.count, 2)
+            if let imageItem = items[0] as? Image {
+                XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/3.png")
+            }
+            if let textBlockItem = items[1] as? TextBlock {
+                XCTAssertEqual(textBlockItem.text, "Column3_TextBlock_text")
+                XCTAssertEqual(textBlockItem.id, "Column3_TextBlock_id")
+            }
+        } else {
+            XCTFail("Third column is invalid")
+        }
+    }
+
+    private func validateColumnSetContainer(_ container: Container) {
+        XCTAssertEqual(container.elementType, .container)
+        XCTAssertEqual(container.elementTypeString, CardElementType.container.rawValue)
+        XCTAssertEqual(container.id, "Container_id")
+        XCTAssertEqual(container.spacing, .medium)
+        XCTAssertEqual(container.style, .default)
+        XCTAssertNotNil(container.rtl)
+        XCTAssertTrue(container.rtl!)
+        
+        // Validate container action.
+        if let action = container.selectAction as? SubmitAction {
+            XCTAssertEqual(action.title, "Container_Action.Submit")
+            let dataString = action.dataJson
+            XCTAssertEqual(dataString, "\"Container_data\"\n")
+            XCTAssertEqual(action.associatedInputs, .auto)
+        } else {
+            XCTFail("Container selectAction is not SubmitAction")
+        }
+        
+        let items = container.items
+        XCTAssertEqual(items.count, 1)
+        if let columnSet = items.first as? ColumnSet {
+            validateColumnSet(columnSet)
+        } else {
+            XCTFail("Container does not contain a ColumnSet")
+        }
+    }
+
+    private func validateFactSet(_ factSet: FactSet) {
+        XCTAssertEqual(factSet.elementType, .factSet)
+        XCTAssertEqual(factSet.elementTypeString, CardElementType.factSet.rawValue)
+        XCTAssertEqual(factSet.id, "FactSet_id")
+        
+        let facts = factSet.facts
+        XCTAssertEqual(facts.count, 2)
+        
+        if let fact = facts[0] as? Fact {
+            XCTAssertEqual(fact.title, "Topping")
+            XCTAssertEqual(fact.value, "poppyseeds")
+        } else {
+            XCTFail("First fact is invalid")
+        }
+        
+        if let fact = facts[1] as? Fact {
+            XCTAssertEqual(fact.title, "Topping")
+            XCTAssertEqual(fact.value, "onion flakes")
+        } else {
+            XCTFail("Second fact is invalid")
+        }
+    }
+
+    private func validateImageSet(_ imageSet: ImageSet) {
+        XCTAssertEqual(imageSet.elementType, .imageSet)
+        XCTAssertEqual(imageSet.elementTypeString, CardElementType.imageSet.rawValue)
+        XCTAssertEqual(imageSet.id, "ImageSet_id")
+        XCTAssertEqual(imageSet.imageSize, .auto)
+        
+        let images = imageSet.images
+        XCTAssertEqual(images.count, 3)
+        for (index, image) in images.enumerated() {
+            if let currImage = image as? Image {
+                XCTAssertEqual(currImage.elementType, .image)
+                let expectedUrl = "https://adaptivecards.io/content/cats/\(index + 1).png"
+                XCTAssertEqual(currImage.url, expectedUrl)
+            } else {
+                XCTFail("Image at index \(index) is invalid")
+            }
+        }
+    }
+
+    private func validateInputText(_ textInput: TextInput) {
+        XCTAssertEqual(textInput.elementType, .textInput)
+        XCTAssertEqual(textInput.elementTypeString, CardElementType.textInput.rawValue)
+        XCTAssertEqual(textInput.id, "Input.Text_id")
+        
+        XCTAssertFalse(textInput.isMultiline)
+        XCTAssertFalse(textInput.isRequired)
+        XCTAssertEqual(textInput.maxLength, 10)
+        XCTAssertEqual(textInput.placeholder, "Input.Text_placeholder")
+        XCTAssertEqual(textInput.spacing, .small)
+        XCTAssertEqual(textInput.textInputStyle, .text)
+        XCTAssertEqual(textInput.value, "Input.Text_value")
+        XCTAssertTrue(textInput.errorMessage?.isEmpty == true)
+        XCTAssertEqual(textInput.regex, "([A-Z])\\w+")
+        
+        XCTAssertEqual(textInput.label, "Input.Text_label")
+        
+        if let inlineAction = textInput.inlineAction as? SubmitAction {
+            XCTAssertEqual(inlineAction.title, "Input.Text_Action.Submit")
+            XCTAssertEqual(inlineAction.iconUrl, "https://adaptivecards.io/content/cats/1.png")
+            XCTAssertEqual(inlineAction.associatedInputs, .auto)
+            XCTAssertTrue(inlineAction.isEnabled)
+        } else {
+            XCTFail("TextInput inlineAction is not a SubmitAction")
+        }
+    }
+
+    private func validateInputNumber(_ numberInput: NumberInput) {
+        XCTAssertEqual(numberInput.elementType, .numberInput)
+        XCTAssertEqual(numberInput.elementTypeString, CardElementType.numberInput.rawValue)
+        XCTAssertEqual(numberInput.id, "Input.Number_id")
+        
+        XCTAssertTrue(numberInput.isRequired)
+        XCTAssertEqual(numberInput.max, 9.5)
+        XCTAssertEqual(numberInput.min, 3.5)
+        XCTAssertEqual(numberInput.value, 4.5)
+        XCTAssertEqual(numberInput.placeholder, "Input.Number_placeholder")
+        XCTAssertTrue(numberInput.errorMessage.isEmpty)
+        XCTAssertEqual(numberInput.label, "Input.Number_label")
+    }
+
+    private func validateInputDate(_ dateInput: DateInput) {
+        XCTAssertEqual(dateInput.elementType, .dateInput)
+        XCTAssertEqual(dateInput.elementTypeString, CardElementType.dateInput.rawValue)
+        XCTAssertEqual(dateInput.id, "Input.Date_id")
+        
+        XCTAssertEqual(dateInput.max, "1/1/2020")
+        XCTAssertEqual(dateInput.min, "8/1/2018")
+        XCTAssertEqual(dateInput.value, "8/9/2018")
+        XCTAssertEqual(dateInput.placeholder, "Input.Date_placeholder")
+        XCTAssertFalse(dateInput.isRequired)
+        XCTAssertTrue(dateInput.errorMessage?.isEmpty == true)
+        XCTAssertEqual(dateInput.label, "Input.Date_label")
+    }
+
+    private func validateInputTime(_ timeInput: TimeInput) {
+        XCTAssertEqual(timeInput.elementType, .timeInput)
+        XCTAssertEqual(timeInput.elementTypeString, CardElementType.timeInput.rawValue)
+        XCTAssertEqual(timeInput.id, "Input.Time_id")
+        
+        XCTAssertEqual(timeInput.min, "10:00")
+        XCTAssertEqual(timeInput.max, "17:00")
+        XCTAssertEqual(timeInput.value, "13:00")
+        XCTAssertTrue(timeInput.isRequired)
+        XCTAssertEqual(timeInput.errorMessage, "Input.Time.ErrorMessage")
+        XCTAssertEqual(timeInput.label, "Input.Time_label")
+    }
+
+    private func validateInputToggle(_ toggleInput: ToggleInput) {
+        XCTAssertEqual(toggleInput.elementType, .toggleInput)
+        XCTAssertEqual(toggleInput.elementTypeString, CardElementType.toggleInput.rawValue)
+        XCTAssertEqual(toggleInput.id, "Input.Toggle_id")
+        
+        XCTAssertEqual(toggleInput.title, "Input.Toggle_title")
+        XCTAssertEqual(toggleInput.value, "Input.Toggle_on")
+        XCTAssertEqual(toggleInput.valueOn, "Input.Toggle_on")
+        XCTAssertEqual(toggleInput.valueOff, "Input.Toggle_off")
+        XCTAssertFalse(toggleInput.isRequired)
+        XCTAssertTrue(toggleInput.errorMessage?.isEmpty == true)
+        XCTAssertEqual(toggleInput.label, "Input.Toggle_label")
+    }
+
+    private func validateTextBlockInInput(_ textBlock: TextBlock) {
+        XCTAssertEqual(textBlock.elementType, .textBlock)
+        XCTAssertEqual(textBlock.elementTypeString, CardElementType.textBlock.rawValue)
+        XCTAssertEqual(textBlock.id, "")
+        XCTAssertEqual(textBlock.text, "Everybody's got choices")
+        XCTAssertEqual(textBlock.textWeight, .bolder)
+        XCTAssertEqual(textBlock.textSize, .large)
+    }
+
+    private func validateInputChoiceSet(_ choiceSet: ChoiceSetInput) {
+        XCTAssertEqual(choiceSet.elementType, .choiceSetInput)
+        XCTAssertEqual(choiceSet.elementTypeString, CardElementType.choiceSetInput.rawValue)
+        XCTAssertEqual(choiceSet.id, "Input.ChoiceSet_id")
+        XCTAssertEqual(choiceSet.choiceSetStyle, .compact)
+        XCTAssertEqual(choiceSet.value, "Input.Choice2,Input.Choice4")
+        XCTAssertTrue(choiceSet.isMultiSelect)
+        XCTAssertFalse(choiceSet.isRequired)
+        XCTAssertTrue(choiceSet.errorMessage.isEmpty)
+        
+        let choices = choiceSet.choices
+        XCTAssertEqual(choices.count, 4)
+        for i in 0..<choices.count {
+            let currChoice = choices[i]
+            let expectedValue = "Input.Choice\(i+1)"
+            XCTAssertEqual(currChoice.value, expectedValue)
+            let expectedTitle = "Input.Choice\(i+1)_title"
+            XCTAssertEqual(currChoice.title, expectedTitle)
+        }
+        XCTAssertEqual(choiceSet.label, "Input.ChoiceSet_label")
+    }
+
+    private func validateInputContainer(_ container: Container) {
+        XCTAssertEqual(container.id, "Container_id_inputs")
+        XCTAssertNil(container.rtl)
+        
+        let items = container.items
+        XCTAssertEqual(items.count, 7)
+        
+        if let textInput = items[0] as? TextInput {
+            validateInputText(textInput)
+        } else {
+            XCTFail("Expected TextInput in input container")
+        }
+        
+        if let numberInput = items[1] as? NumberInput {
+            validateInputNumber(numberInput)
+        } else {
+            XCTFail("Expected NumberInput in input container")
+        }
+        
+        if let dateInput = items[2] as? DateInput {
+            validateInputDate(dateInput)
+        } else {
+            XCTFail("Expected DateInput in input container")
+        }
+        
+        if let timeInput = items[3] as? TimeInput {
+            validateInputTime(timeInput)
+        } else {
+            XCTFail("Expected TimeInput in input container")
+        }
+        
+        if let toggleInput = items[4] as? ToggleInput {
+            validateInputToggle(toggleInput)
+        } else {
+            XCTFail("Expected ToggleInput in input container")
+        }
+        
+        if let textBlock = items[5] as? TextBlock {
+            validateTextBlockInInput(textBlock)
+        } else {
+            XCTFail("Expected TextBlock in input container")
+        }
+        
+        if let choiceSet = items[6] as? ChoiceSetInput {
+            validateInputChoiceSet(choiceSet)
+        } else {
+            XCTFail("Expected ChoiceSetInput in input container")
+        }
+    }
+
+    private func validateActionSet(_ actionSet: ActionSet) {
+        let actions = actionSet.actions
+        XCTAssertEqual(actions.count, 2)
+        
+        if let submitAction = actions.first as? SubmitAction {
+            XCTAssertEqual(submitAction.id, "ActionSet.Action.Submit_id")
+            XCTAssertEqual(submitAction.associatedInputs, .none)
+            XCTAssertEqual(submitAction.tooltip, "tooltip")
+            XCTAssertFalse(submitAction.isEnabled)
+        } else {
+            XCTFail("Expected SubmitAction in ActionSet")
+        }
+        
+        if let openUrlAction = actions.last as? OpenUrlAction {
+            XCTAssertEqual(openUrlAction.id, "ActionSet.Action.OpenUrl_id")
+            XCTAssertEqual(openUrlAction.tooltip, "tooltip")
+            XCTAssertTrue(openUrlAction.isEnabled)
+        } else {
+            XCTFail("Expected OpenUrlAction in ActionSet")
+        }
+    }
+
+    private func validateRichTextBlock(_ richTextBlock: RichTextBlock) {
+        XCTAssertEqual(richTextBlock.elementType, .richTextBlock)
+        XCTAssertEqual(richTextBlock.elementTypeString, CardElementType.richTextBlock.rawValue)
+        XCTAssertEqual(richTextBlock.id, "RichTextBlock_id")
+        XCTAssertEqual(richTextBlock.horizontalAlignment, .right)
+        
+        let inlines = richTextBlock.inlines
+        XCTAssertEqual(inlines.count, 3)
+        
+        if let inlineTextElement = inlines[0] as? TextRun {
+            XCTAssertEqual(inlineTextElement.text, "This is a text run")
+            XCTAssertEqual(inlineTextElement.textColor, .dark)
+            XCTAssertEqual(inlineTextElement.language, "en")
+            XCTAssertEqual(inlineTextElement.textSize, .large)
+            XCTAssertEqual(inlineTextElement.textWeight, .bolder)
+            XCTAssertEqual(inlineTextElement.fontType, .monospace)
+            XCTAssertNotNil(inlineTextElement.isSubtle)
+            XCTAssertTrue(inlineTextElement.isSubtle!)
+            XCTAssertTrue(inlineTextElement.italic)
+            XCTAssertTrue(inlineTextElement.highlight)
+            XCTAssertTrue(inlineTextElement.strikethrough)
+            XCTAssertTrue(inlineTextElement.underline)
+        } else {
+            XCTFail("Expected TextRun as first inline in RichTextBlock")
+        }
+        
+        if let inlineTextElement = inlines[1] as? TextRun {
+            if let selectAction = inlineTextElement.selectAction as? SubmitAction {
+                XCTAssertEqual(selectAction.elementType, .submit)
+                XCTAssertEqual(selectAction.associatedInputs, .auto)
+            } else {
+                XCTFail("Expected inline text selectAction to be SubmitAction")
+            }
+        } else {
+            XCTFail("Expected TextRun as second inline in RichTextBlock")
+        }
+        
+        // Third inline could be a TextRun or a string.
+        if let inlineTextElement = inlines[2] as? TextRun {
+            XCTAssertEqual(inlineTextElement.text, "This is a text run specified as a string")
+        } else if let text = inlines[2] as? String {
+            XCTAssertEqual(text, "This is a text run specified as a string")
+        } else {
+            XCTFail("Expected third inline in RichTextBlock to be a TextRun or String")
+        }
+    }
+
+    private func validateBody(_ card: AdaptiveCard) {
+        let body = card.body
+        XCTAssertEqual(body.count, 10)
+        
+        if let textBlock = body[0] as? TextBlock {
+            validateTextBlock(textBlock, fontType: nil, style: .heading, id: "TextBlock_id")
+        } else {
+            XCTFail("Expected TextBlock as first element in body")
+        }
+        
+        if let textBlock = body[1] as? TextBlock {
+            validateTextBlock(textBlock, fontType: .monospace, style: nil, id: "TextBlock_id_mono")
+        } else {
+            XCTFail("Expected TextBlock as second element in body")
+        }
+        
+        if let textBlock = body[2] as? TextBlock {
+            validateTextBlock(textBlock, fontType: .default, style: nil, id: "TextBlock_id_def")
+        } else {
+            XCTFail("Expected TextBlock as third element in body")
+        }
+        
+        if let image = body[3] as? Image {
+            validateImage(image)
+        } else {
+            XCTFail("Expected Image as fourth element in body")
+        }
+        
+        if let container = body[4] as? Container {
+            validateColumnSetContainer(container)
+        } else {
+            XCTFail("Expected Container as fifth element in body")
+        }
+        
+        if let factSet = body[5] as? FactSet {
+            validateFactSet(factSet)
+        } else {
+            XCTFail("Expected FactSet as sixth element in body")
+        }
+        
+        if let imageSet = body[6] as? ImageSet {
+            validateImageSet(imageSet)
+        } else {
+            XCTFail("Expected ImageSet as seventh element in body")
+        }
+        
+        if let inputContainer = body[7] as? Container {
+            validateInputContainer(inputContainer)
+        } else {
+            XCTFail("Expected input Container as eighth element in body")
+        }
+        
+        if let actionSet = body[8] as? ActionSet {
+            validateActionSet(actionSet)
+        } else {
+            XCTFail("Expected ActionSet as ninth element in body")
+        }
+        
+        if let richTextBlock = body[9] as? RichTextBlock {
+            validateRichTextBlock(richTextBlock)
+        } else {
+            XCTFail("Expected RichTextBlock as tenth element in body")
+        }
+    }
+
+    private func validateToplevelActions(_ card: AdaptiveCard) {
+        let actions = card.actions
+        XCTAssertEqual(actions.count, 3)
+        
+        // Validate Submit Action.
+        if let submitAction = actions[0] as? SubmitAction {
+            XCTAssertEqual(submitAction.elementType, .submit)
+            XCTAssertEqual(submitAction.elementTypeString, ActionType.submit.rawValue)
+            XCTAssertEqual(submitAction.iconUrl, "")
+            XCTAssertEqual(submitAction.id, "Action.Submit_id")
+            XCTAssertEqual(submitAction.title, "Action.Submit")
+            XCTAssertEqual(submitAction.dataJson, "{\"submitValue\":true}\n")
+            XCTAssertEqual(submitAction.associatedInputs, .auto)
+            XCTAssertEqual(submitAction.tooltip, "tooltip")
+            XCTAssertTrue(submitAction.isEnabled)
+            XCTAssertTrue(submitAction.additionalProperties?.isEmpty == true)
+            var resourceUris: [RemoteResourceInformation] = []
+            submitAction.getResourceInformation(&resourceUris)
+            XCTAssertEqual(resourceUris.count, 0)
+        } else {
+            XCTFail("Expected SubmitAction as first top-level action")
+        }
+        
+        // Validate Execute Action.
+        if let executeAction = actions[1] as? ExecuteAction {
+            XCTAssertEqual(executeAction.elementType, .execute)
+            XCTAssertEqual(executeAction.elementTypeString, ActionType.execute.rawValue)
+            XCTAssertEqual(executeAction.iconUrl, "")
+            XCTAssertEqual(executeAction.id, "Action.Execute_id")
+            XCTAssertEqual(executeAction.title, "Action.Execute_title")
+            XCTAssertEqual(executeAction.verb, "Action.Execute_verb")
+            XCTAssertEqual(executeAction.dataJson, "{\"Action.Execute_data_keyA\":\"Action.Execute_data_valueA\"}\n")
+            XCTAssertEqual(executeAction.associatedInputs, .none)
+            XCTAssertFalse(executeAction.isEnabled)
+            XCTAssertTrue(executeAction.additionalProperties?.isEmpty == true)
+            var resourceUris: [RemoteResourceInformation] = []
+            executeAction.getResourceInformation(&resourceUris)
+            XCTAssertEqual(resourceUris.count, 0)
+        } else {
+            XCTFail("Expected ExecuteAction as second top-level action")
+        }
+        
+        // Validate ShowCard Action.
+        if let showCardAction = actions[2] as? ShowCardAction {
+            XCTAssertEqual(showCardAction.elementType, .showCard)
+            XCTAssertEqual(showCardAction.elementTypeString, ActionType.showCard.rawValue)
+            XCTAssertEqual(showCardAction.iconUrl, "")
+            XCTAssertEqual(showCardAction.id, "Action.ShowCard_id")
+            XCTAssertEqual(showCardAction.title, "Action.ShowCard")
+            XCTAssertEqual(showCardAction.tooltip, "tooltip")
+            XCTAssertTrue(showCardAction.isEnabled)
+            XCTAssertTrue(showCardAction.additionalProperties?.isEmpty == true)
+            var resourceUris: [RemoteResourceInformation] = []
+            showCardAction.getResourceInformation(&resourceUris)
+            XCTAssertEqual(resourceUris.count, 1)
+            
+            // Validate the subcard.
+            if let subCard = showCardAction.card as? AdaptiveCard {
+                XCTAssertEqual(subCard.actions.count, 0)
+                // In the subcard, the background image should be validated with different parameters.
+                validateBackgroundImage(subCard.backgroundImage!, mode: .repeatMode, hAlignment: .right, vAlignment: .center)
+                XCTAssertEqual(subCard.elementType, .adaptiveCard)
+                XCTAssertEqual(subCard.fallbackText, "")
+                XCTAssertEqual(subCard.height, .auto)
+                XCTAssertEqual(subCard.language, "en")
+                XCTAssertNil(subCard.selectAction)
+                XCTAssertEqual(subCard.speak, "")
+                XCTAssertEqual(subCard.style, .none)
+                XCTAssertEqual(subCard.version, "1.0")
+                XCTAssertEqual(subCard.verticalContentAlignment, .top)
+                XCTAssertEqual(try subCard.serialize(), "{\"actions\":[],\"backgroundImage\":{\"fillMode\":\"repeat\",\"horizontalAlignment\":\"right\",\"url\":\"https://adaptivecards.io/content/cats/1.png\",\"verticalAlignment\":\"center\"},\"body\":[{\"isSubtle\":true,\"text\":\"Action.ShowCard text\",\"type\":\"TextBlock\"}],\"lang\":\"en\",\"type\":\"AdaptiveCard\",\"version\":\"1.0\"}\n")
+            } else {
+                XCTFail("ShowCardAction card is not an AdaptiveCard")
+            }
+        } else {
+            XCTFail("Expected ShowCardAction as third top-level action")
+        }
+    }
+
+    private func validateFallbackCard(_ card: AdaptiveCard) {
+        if let fallbackCard = card.makeFallbackTextCard(text: "fallback", language: "en", speak: "speak") {
+            if let fallbackTextBlock = fallbackCard.body.first as? TextBlock {
+                XCTAssertEqual(fallbackTextBlock.text, "fallback")
+                XCTAssertEqual(fallbackTextBlock.language, "en")
+                XCTAssertEqual(fallbackCard.speak, "speak")
+            } else {
+                XCTFail("Fallback card body did not contain a TextBlock")
+            }
+        } else {
+            XCTFail("makeFallbackTextCard returned nil")
+        }
+    }
+
+    // MARK: - Test Method
+
+    func testEverythingBagel() throws {
+        guard let parseResult = try? AdaptiveCard.deserializeFromString(EVERYTHING_JSON, version: "1.0") else {
+            XCTFail("Failed to deserialize card")
+            return
+        }
+        
+        XCTAssertEqual(parseResult.warnings.count, 0)
+        
+        let everythingBagel = parseResult.adaptiveCard
+        
+        validateTopLevelProperties(everythingBagel)
+        validateBody(everythingBagel)
+        validateToplevelActions(everythingBagel)
+        validateFallbackCard(everythingBagel)
+        
+        // Optionally log expected vs. actual JSON.
+        print("Expected: \(EVERYTHING_JSON)")
+        print("Actual: \(try everythingBagel.serialize())")
+        
+        XCTAssertEqual(EVERYTHING_JSON, try everythingBagel.serialize())
+    }
+}
