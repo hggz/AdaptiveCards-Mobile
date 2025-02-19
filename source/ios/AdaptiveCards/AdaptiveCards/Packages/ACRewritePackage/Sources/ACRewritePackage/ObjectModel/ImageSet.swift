@@ -4,7 +4,7 @@ import Foundation
 class ImageSet: BaseCardElement {
     // MARK: - Properties
     var images: [Image] = []
-    var imageSize: ImageSize = .none  // Default value
+    var imageSize: ImageSize = .auto
     
     // MARK: - Initializer
     init(id: String? = nil) {
@@ -28,30 +28,31 @@ class ImageSet: BaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode the images array (using our helper for AnyCodable dictionaries)
         let rawImages = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .images) ?? []
         var finalImages = [Image]()
         for rawImg in rawImages {
             var dict = rawImg.mapValues { $0.value }
+            // Ensure that the type is set to "Image"
             if let existingType = dict["type"] as? String {
-                // If the type is NOT "Image", throw
                 if existingType.lowercased() != "image" {
                     throw AdaptiveCardParseError.invalidType
                 }
             } else {
-                // If missing, set "Image"
                 dict["type"] = "Image"
             }
-            
             let base = try BaseCardElement.deserialize(from: dict)
             guard let img = base as? Image else {
-                // If it still didn't parse as Image, throw
                 throw AdaptiveCardParseError.invalidType
             }
             finalImages.append(img)
         }
         self.images = finalImages
         
-        // Then call super
+        // Decode imageSize; if missing, default to .auto
+        self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .auto
+        
         try super.init(from: decoder)
     }
     
@@ -66,16 +67,10 @@ class ImageSet: BaseCardElement {
     /// Serializes the ImageSet into a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
-        
-        // Always include type
         json["type"] = "ImageSet"
-        
-        // Always include imageSize in lowercase
-        json["imageSize"] = imageSize.rawValue.lowercased()
-        
-        // Serialize images
+        // Use the rawValue directly, so that "Auto" is preserved.
+        json["imageSize"] = imageSize.rawValue
         json["images"] = try images.map { try $0.serializeToJsonValue() }
-        
         return json
     }
     
@@ -96,20 +91,17 @@ class ImageSet: BaseCardElement {
 /// Parses ImageSet elements in an Adaptive Card.
 struct ImageSetParser: BaseCardElementParser {
     func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
-        try ParseUtil.expectTypeString(value, expected: .imageSet) // Already present
+        try ParseUtil.expectTypeString(value, expected: .imageSet)
         let imageSet = try BaseCardElement.deserialize(from: value) as! ImageSet
         
-        // Grab the "images" array
+        // Grab the "images" array from the JSON.
         let imagesArray: [[String: Any]] = try ParseUtil.getArray(from: value, key: "images", required: true)
         var images: [Image] = []
         for imageJson in imagesArray {
-            // 1) If "type" is missing, set it to "Image"
             var temp = imageJson
             if temp["type"] == nil {
                 temp["type"] = "Image"
             }
-            
-            // 2) Parse it. If it’s not actually an Image, throw.
             let base = try BaseCardElement.deserialize(from: temp)
             guard let asImage = base as? Image else {
                 throw AdaptiveCardParseError.invalidType
@@ -117,6 +109,13 @@ struct ImageSetParser: BaseCardElementParser {
             images.append(asImage)
         }
         imageSet.images = images
+        
+        // Decode imageSize from the original JSON if present.
+        if let sizeStr = value["imageSize"] as? String, let size = ImageSize.fromString(sizeStr) {
+            imageSet.imageSize = size
+        } else {
+            imageSet.imageSize = .auto
+        }
         return imageSet
     }
 
