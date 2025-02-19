@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a number input element in an Adaptive Card.
-class NumberInput: BaseCardElement {
+class NumberInput: BaseInputElement {
     var placeholder: String?
     var value: Double?
     var min: Double?
@@ -40,13 +40,13 @@ class NumberInput: BaseCardElement {
         // Assuming CardElementType has a case for numberInput.
         super.init(
             type: .numberInput,
+            id: id, 
             spacing: spacing,
             height: height,
             targetWidth: targetWidth,
             separator: separator,
             isVisible: isVisible,
-            areaGridName: areaGridName,
-            id: id
+            areaGridName: areaGridName
         )
     }
     

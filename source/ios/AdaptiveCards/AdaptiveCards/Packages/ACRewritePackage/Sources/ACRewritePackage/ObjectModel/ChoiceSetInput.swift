@@ -2,7 +2,7 @@ import Foundation
 
 /// Represents a ChoiceSetInput in an Adaptive Card.
 /// Now implemented as a class that extends BaseCardElement so that it can be parsed directly.
-class ChoiceSetInput: BaseCardElement {
+class ChoiceSetInput: BaseInputElement {
     var isMultiSelect: Bool
     var choiceSetStyle: ChoiceSetStyle
     var choices: [ChoiceInput]

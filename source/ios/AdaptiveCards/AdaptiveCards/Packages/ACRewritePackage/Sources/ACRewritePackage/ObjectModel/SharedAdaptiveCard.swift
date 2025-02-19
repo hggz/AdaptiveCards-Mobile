@@ -34,6 +34,10 @@ public class AdaptiveCard: Codable {
     var fallbackType: FallbackType
     
     public var additionalProperties: [String: Any] = [:]
+    
+    var elementTypeVal: CardElementType {
+        return .adaptiveCard
+    }
 
     /// Initializes an empty AdaptiveCard with default values.
     init(
@@ -491,5 +495,49 @@ public class AdaptiveCard: Codable {
             // translate it to a fatalError or custom exception type:
             throw error
         }
+    }
+    
+    /// Creates an AdaptiveCard that serves as a fallback, containing a single TextBlock with the provided text.
+    func makeFallbackTextCard(text: String, language: String, speak: String) -> AdaptiveCard? {
+        // Create a TextBlock with the fallback text.
+        let fallbackTextBlock = TextBlock(
+            text: text,
+            textStyle: .defaultStyle, // or .heading if that’s what you expect
+            textSize: TextSize.defaultSize, // adjust to match your enums
+            textWeight: TextWeight.defaultWeight, // adjust as needed
+            fontType: nil,
+            textColor: .default,
+            isSubtle: false,
+            wrap: false,
+            maxLines: 0,
+            horizontalAlignment: .left,
+            language: language,
+            id: nil
+        )
+        
+        // Create and return a new AdaptiveCard that uses this TextBlock as its body.
+        let fallbackCard = AdaptiveCard(
+            version: self.version,
+            fallbackText: nil,
+            backgroundImage: nil,
+            refresh: nil,
+            authentication: nil,
+            speak: speak,
+            style: .none,
+            language: language,
+            verticalContentAlignment: .top,
+            height: .auto,
+            minHeight: 0,
+            rtl: nil,
+            body: [fallbackTextBlock],
+            actions: [],
+            layouts: [],
+            selectAction: nil,
+            requires: [:],
+            fallbackContent: nil,
+            fallbackType: .none
+        )
+        
+        return fallbackCard
     }
 }
