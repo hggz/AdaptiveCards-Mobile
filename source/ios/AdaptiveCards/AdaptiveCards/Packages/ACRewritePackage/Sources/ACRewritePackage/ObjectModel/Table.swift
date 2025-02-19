@@ -136,10 +136,14 @@ class Table: BaseCardElement, CollectionCoreElement {
     override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
         
-        // Add table-specific properties
-        json["columns"] = try columnDefinitions.map { try $0.serializeToJsonValue() }
-        json["rows"] = try rows.map { try $0.serializeToJsonValue() }
+        // Only include non-empty arrays
+        if !columnDefinitions.isEmpty {
+            json["columns"] = try columnDefinitions.map { try $0.serializeToJsonValue() }
+        }
         
+        if !rows.isEmpty {
+            json["rows"] = try rows.map { try $0.serializeToJsonValue() }
+        }
         if showGridLines != true {
             json["showGridLines"] = showGridLines
         }
