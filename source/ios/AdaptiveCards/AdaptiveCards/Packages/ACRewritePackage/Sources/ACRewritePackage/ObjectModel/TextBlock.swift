@@ -7,7 +7,7 @@ import Foundation
 /// Represents a TextBlock element in an Adaptive Card.
 class TextBlock: BaseCardElement {
     var text: String
-    var textStyle: TextStyle = .defaultStyle
+    var textStyle: TextStyle?
     var textSize: TextSize?
     var textWeight: TextWeight?
     var fontType: FontType?
@@ -20,20 +20,19 @@ class TextBlock: BaseCardElement {
 
     /// Designated initializer.
     init(
-        text: String = "",
-        textStyle: TextStyle = .defaultStyle,
-        textSize: TextSize? = nil,
-        textWeight: TextWeight? = nil,
-        fontType: FontType? = nil,
-        textColor: ForegroundColor? = nil,
-        isSubtle: Bool? = nil,
-        wrap: Bool = false,
-        maxLines: UInt = 0,
-        horizontalAlignment: HorizontalAlignment? = nil,
-        language: String? = nil,
-        id: String? = nil
+            text: String = "",
+            textStyle: TextStyle? = .defaultStyle,  // Default to .defaultStyle
+            textSize: TextSize? = nil,
+            textWeight: TextWeight? = nil,
+            fontType: FontType? = nil,
+            textColor: ForegroundColor? = nil,
+            isSubtle: Bool? = nil,
+            wrap: Bool = false,
+            maxLines: UInt = 0,
+            horizontalAlignment: HorizontalAlignment? = nil,
+            language: String? = "en",
+            id: String? = nil
     ) {
-        // Use the helper to decode HTML entities on initialization
         self.text = TextBlock.decodeHTMLEntities(text)
         self.textStyle = textStyle
         self.textSize = textSize
@@ -45,7 +44,6 @@ class TextBlock: BaseCardElement {
         self.maxLines = maxLines
         self.horizontalAlignment = horizontalAlignment
         self.language = language
-        // Initialize BaseCardElement with the textBlock type.
         super.init(type: .textBlock, id: id)
     }
     
@@ -54,7 +52,15 @@ class TextBlock: BaseCardElement {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawText = try container.decode(String.self, forKey: .text)
         self.text = TextBlock.decodeHTMLEntities(rawText)
-        self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle) ?? .defaultStyle
+        
+        // Default to .defaultStyle if not present or invalid
+        // Handle style - default to .defaultStyle only if style key exists
+        if container.contains(.textStyle) {
+            self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle)
+        } else {
+            // No style specified = defaultStyle
+            self.textStyle = .defaultStyle
+        }
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
@@ -63,10 +69,14 @@ class TextBlock: BaseCardElement {
         self.wrap = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
         self.maxLines = try container.decodeIfPresent(UInt.self, forKey: .maxLines) ?? 0
         self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
-        self.language = try container.decodeIfPresent(String.self, forKey: .language)
+        self.language = try container.decodeIfPresent(String.self, forKey: .language) ?? "en"
+        
+        // Decode the base class after handling local properties
         try super.init(from: decoder)
-        // Now remove TextBlock-specific keys from additionalProperties.
+        
+        // After decoding, remove known properties from additionalProperties
         if var additional = self.additionalProperties {
+            additional.removeValue(forKey: "type")
             additional.removeValue(forKey: "text")
             additional.removeValue(forKey: "style")
             additional.removeValue(forKey: "size")
@@ -77,7 +87,7 @@ class TextBlock: BaseCardElement {
             additional.removeValue(forKey: "wrap")
             additional.removeValue(forKey: "maxLines")
             additional.removeValue(forKey: "horizontalAlignment")
-            additional.removeValue(forKey: "language")
+            additional.removeValue(forKey: "lang")
             self.additionalProperties = additional
         }
     }
@@ -115,25 +125,21 @@ class TextBlock: BaseCardElement {
     
     /// Converts this TextBlock into a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
-        // Start with base properties
         var json = try super.serializeToJsonValue()
-        
-        // Ensure we have the correct type
         json["type"] = "TextBlock"
-        
-        // Add TextBlock-specific properties
         json["text"] = text
         
-        // Always include language if present
-        if let language = language {
-            json["lang"] = language
-        }
-        
-        // Only add style if it's not default
-        if textStyle != .defaultStyle {
+        // Only include style if it differs from default
+        if let textStyle = textStyle, textStyle != .defaultStyle {
             json[AdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
         }
         
+        // Only include language if it's not "en"
+        if let language = language, language != "en" {
+            json["lang"] = language
+        }
+        
+        // Include other properties only if they have non-default values
         if let textSize = textSize {
             json[AdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue
         }
@@ -149,10 +155,10 @@ class TextBlock: BaseCardElement {
         if let isSubtle = isSubtle {
             json[AdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle
         }
-        if wrap != false {
+        if wrap {
             json[AdaptiveCardSchemaKey.wrap.rawValue] = wrap
         }
-        if maxLines != 0 {
+        if maxLines > 0 {
             json[AdaptiveCardSchemaKey.maxLines.rawValue] = maxLines
         }
         if let horizontalAlignment = horizontalAlignment {
@@ -161,7 +167,7 @@ class TextBlock: BaseCardElement {
         
         return json
     }
-    
+
     /// Converts this TextBlock into a JSON string.
     override func serialize() throws -> String {
         let data = try JSONSerialization.data(withJSONObject: serializeToJsonValue(), options: [.sortedKeys])

@@ -226,10 +226,15 @@ extension FontType {
 enum ForegroundColor: String, Codable {
     case `default`, dark, light, accent, good, warning, attention
     
+    // Static dictionary to store original values
+    private static var originalValues: [String: String] = [:]
+    
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
+        // Store original value in dictionary using instance description as key
         if let color = ForegroundColor(rawValue: raw.lowercased()) {
+            ForegroundColor.originalValues["\(color)"] = raw
             self = color
         } else {
             throw DecodingError.dataCorruptedError(in: container,
@@ -237,8 +242,12 @@ enum ForegroundColor: String, Codable {
         }
     }
     
-    // Add string conversion for use in serialization contexts
+    // Update serializedString to use original value if available
     var serializedString: String {
+        if let original = ForegroundColor.originalValues["\(self)"] {
+            return original
+        }
+        // Fall back to existing capitalized values if no original
         switch self {
         case .default: return "Default"
         case .dark: return "Dark"
@@ -251,9 +260,9 @@ enum ForegroundColor: String, Codable {
     }
 }
 
+// Rest of the extension remains the same
 extension ForegroundColor {
     static func toString(_ value: ForegroundColor) -> String {
-        // e.g. "accent" → "Accent" if test expects capital letter
         switch value {
         case .default: return "Default"
         case .dark: return "Dark"
@@ -278,7 +287,6 @@ extension ForegroundColor {
         }
     }
 }
-
 // MARK: - HorizontalAlignment
 
 enum HorizontalAlignment: String, Codable {
@@ -1039,12 +1047,8 @@ enum LayoutContainerType: String, Codable {
 
 /// Minimal stubs for text-related enums.
 enum TextStyle: String, Codable {
-    case defaultStyle = "default"  // Can simplify since raw value matches toString
+    case defaultStyle = "default"
     case heading = "heading"
-    
-    init(from rawValue: String) {
-        self = TextStyle(rawValue: rawValue) ?? .defaultStyle
-    }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -1056,7 +1060,7 @@ enum TextStyle: String, Codable {
         case "heading":
             self = .heading
         default:
-            // If unknown, fall back to .defaultStyle:
+            // For invalid values, fall back to .defaultStyle
             self = .defaultStyle
         }
     }
