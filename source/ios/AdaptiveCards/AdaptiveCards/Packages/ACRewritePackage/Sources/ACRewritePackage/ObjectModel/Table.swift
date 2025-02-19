@@ -50,11 +50,23 @@ class Table: BaseCardElement, CollectionCoreElement {
         self.roundedCorners = false
         self.gridStyle = .none
         super.init(type: .table)
+        self.knownProperties = Set([
+            "columns",
+            "rows",
+            "showGridLines",
+            "roundedCorners",
+            "horizontalCellContentAlignment",
+            "verticalCellContentAlignment",
+            "gridStyle",
+            "firstRowAsHeaders"
+        ])
     }
 
     /// Decodes a `Table` from JSON.
     required init(from decoder: Decoder) throws {
+        // First decode the Table-specific properties
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
         self.columnDefinitions = try container.decodeIfPresent([TableColumnDefinition].self, forKey: .columns) ?? []
         self.rows = try container.decodeIfPresent([TableRow].self, forKey: .rows) ?? []
         self.showGridLines = try container.decodeIfPresent(Bool.self, forKey: .showGridLines) ?? true
@@ -62,28 +74,55 @@ class Table: BaseCardElement, CollectionCoreElement {
         self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
         self.horizontalCellContentAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
         self.verticalCellContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
-        self.gridStyle = try container.decodeIfPresent(ContainerStyle.self, forKey: .gridStyle) ?? .none
+        
+        // Handle gridStyle with proper case handling
+        if let gridStyleString = try container.decodeIfPresent(String.self, forKey: .gridStyle) {
+            self.gridStyle = ContainerStyle(rawValue: gridStyleString.lowercased()) ?? .none
+        } else {
+            self.gridStyle = .none
+        }
+        
+        // Initialize base class with .table type
         try super.init(from: decoder)
+        
+        // Clear any additional properties that might have been set during decoding
+        self.additionalProperties = nil
+        
+        // Ensure knownProperties is set
+        self.knownProperties = Set([
+            "type",
+            "id",
+            "columns",
+            "rows",
+            "showGridLines",
+            "roundedCorners",
+            "horizontalCellContentAlignment",
+            "verticalCellContentAlignment",
+            "gridStyle",
+            "firstRowAsHeaders"
+        ])
     }
 
     /// Encodes a `Table` to JSON.
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
+        
         try container.encode(columnDefinitions, forKey: .columns)
         try container.encode(rows, forKey: .rows)
         try container.encode(showGridLines, forKey: .showGridLines)
-        // Do not encode firstRowAsHeaders if true (the default)
-        if firstRowAsHeaders != true {
-            // Uncomment if you need to output it when not default:
-             try container.encode(firstRowAsHeaders, forKey: .firstRowAsHeaders)
-        }
+        try container.encode(firstRowAsHeaders, forKey: .firstRowAsHeaders)
         try container.encode(roundedCorners, forKey: .roundedCorners)
         try container.encodeIfPresent(horizontalCellContentAlignment, forKey: .horizontalCellContentAlignment)
         try container.encodeIfPresent(verticalCellContentAlignment, forKey: .verticalCellContentAlignment)
-        // When encoding gridStyle, output its capitalized raw value.
-        try container.encode(gridStyle.rawValue.capitalized, forKey: .gridStyle)
+        
+        // Encode gridStyle with first letter capitalized
+        if gridStyle != .none {
+            let gridStyleString = gridStyle.rawValue.prefix(1).uppercased() + gridStyle.rawValue.dropFirst()
+            try container.encode(gridStyleString, forKey: .gridStyle)
+        }
     }
+
     /// Sets the collection of columns.
     func setColumns(_ value: [TableColumnDefinition]) {
         self.columnDefinitions = value
@@ -92,6 +131,43 @@ class Table: BaseCardElement, CollectionCoreElement {
     /// Sets the collection of rows.
     func setRows(_ value: [TableRow]) {
         self.rows = value
+    }
+    
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        
+        // Add table-specific properties
+        json["columns"] = try columnDefinitions.map { try $0.serialize() }
+        json["rows"] = try rows.map { try $0.serializeToJsonValue() }
+        
+        if showGridLines != true {
+            json["showGridLines"] = showGridLines
+        }
+        
+        if firstRowAsHeaders != true {
+            json["firstRowAsHeaders"] = firstRowAsHeaders
+        }
+        
+        if roundedCorners {
+            json["roundedCorners"] = roundedCorners
+        }
+        
+        if let horizontalAlignment = horizontalCellContentAlignment {
+            json["horizontalCellContentAlignment"] = horizontalAlignment.rawValue
+        }
+        
+        if let verticalAlignment = verticalCellContentAlignment {
+            json["verticalCellContentAlignment"] = verticalAlignment.rawValue
+        }
+        
+        if gridStyle != .none {
+            json["gridStyle"] = gridStyle.rawValue.prefix(1).uppercased() + gridStyle.rawValue.dropFirst()
+        }
+        
+        // Clear any additional properties
+        self.additionalProperties = nil
+        
+        return json
     }
 
     /// Conforms to CollectionCoreElement.

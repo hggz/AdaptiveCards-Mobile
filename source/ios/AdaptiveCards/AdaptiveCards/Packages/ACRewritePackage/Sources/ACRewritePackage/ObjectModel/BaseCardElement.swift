@@ -105,6 +105,8 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
         try super.init(from: decoder)
     }
     /// Parses a BaseCardElement from a JSON dictionary.
+    // Inside BaseCardElement.swift, update the deserialize method's switch statement
+
     static func deserialize(from originalJson: [String: Any]) throws -> BaseCardElement {
         // 1) Unwrap first
         let unwrapped = ParseUtil.unwrapAnyCodable(from: originalJson)
@@ -128,13 +130,13 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             CardElementType.choiceSetInput.rawValue,
             CardElementType.toggleInput.rawValue,
             CardElementType.media.rawValue,
-            CardElementType.table.rawValue // <<-- Added so Table is recognized as known.
+            CardElementType.table.rawValue // This is already here from your code
         ]
         if !knownTypes.contains(typeString) {
             // For unknown types, return an UnknownElement that just preserves the JSON.
             return try UnknownElement.createFromJSON(jsonDict)
         }
-
+        
         // 3) Convert to Data and decode
         let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
         let decoder = JSONDecoder()
@@ -149,7 +151,7 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(Column.self, from: data)
         case CardElementType.image.rawValue:
             return try decoder.decode(Image.self, from: data)
-        case CardElementType.imageSet.rawValue:    // <<== Add this!
+        case CardElementType.imageSet.rawValue:
             return try decoder.decode(ImageSet.self, from: data)
         case CardElementType.textInput.rawValue:
             return try decoder.decode(TextInput.self, from: data)
@@ -159,6 +161,8 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(ToggleInput.self, from: data)
         case CardElementType.media.rawValue:
             return try decoder.decode(Media.self, from: data)
+        case CardElementType.table.rawValue:    // Add this case
+            return try decoder.decode(Table.self, from: data)
         case CardElementType.unknown.rawValue:
             fallthrough
         default:
