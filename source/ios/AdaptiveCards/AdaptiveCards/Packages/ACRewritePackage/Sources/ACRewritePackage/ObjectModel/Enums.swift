@@ -377,6 +377,23 @@ extension ImageSize {
         default: return nil
         }
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        if let value = ImageSize.fromString(raw) {
+            self = value
+        } else {
+            // Fallback value; you can also choose to throw an error if you prefer.
+            self = .none
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        // Encode using the rawValue (e.g. "Auto")
+        try container.encode(self.rawValue)
+    }
 }
 
 // MARK: - ImageStyle
@@ -402,6 +419,21 @@ extension ImageStyle {
         case "roundedcorners": return .roundedCorners
         default: return nil
         }
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self)
+        if let value = ImageStyle.fromString(raw) {
+            self = value
+        } else {
+            self = .defaultImageStyle
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
     }
 }
 

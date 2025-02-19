@@ -27,11 +27,11 @@ class Image: BaseCardElement {
         self.altText = ""
         self.hAlignment = nil
         self.selectAction = nil
-        // Call the BaseCardElement initializer.
+        // Set default spacing to .none and height to .auto.
         super.init(
             type: .image,
-            spacing: nil,
-            height: nil,
+            spacing: .none,
+            height: .auto,
             targetWidth: nil,
             separator: nil,
             isVisible: true,
@@ -43,34 +43,53 @@ class Image: BaseCardElement {
     
     // MARK: - Codable
     private enum CodingKeys: String, CodingKey {
-        case url, backgroundColor, imageStyle, imageSize, pixelWidth, pixelHeight, altText, hAlignment, selectAction
+        case url
+        case backgroundColor
+        case imageStyle = "style"        // maps JSON "style" to imageStyle
+        case imageSize = "size"            // maps JSON "size" to imageSize
+        case pixelWidth, pixelHeight, altText
+        case hAlignment = "horizontalAlignment" // maps JSON "horizontalAlignment" to hAlignment
+        case selectAction
     }
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
         self.url = try container.decode(String.self, forKey: .url)
         
-        // Decode the raw color from JSON (which might be #00A1F1 or @ABF65314, etc.)
+        // Decode backgroundColor and validate it.
         let rawColor = try container.decodeIfPresent(String.self, forKey: .backgroundColor) ?? ""
-        
-        // Pass into validateColor so it becomes "#FF00A1F1" for #00A1F1, or "#00000000" for invalid, etc.
         var dummyWarnings = [AdaptiveCardParseWarning]()
         self.backgroundColor = validateColor(rawColor, warnings: &dummyWarnings)
         
-        // Continue decoding other properties as before
+        // Decode style and size using our custom enum decoders.
         self.imageStyle = try container.decodeIfPresent(ImageStyle.self, forKey: .imageStyle) ?? .defaultImageStyle
         self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
+        
         self.pixelWidth = try container.decodeIfPresent(UInt.self, forKey: .pixelWidth) ?? 0
         self.pixelHeight = try container.decodeIfPresent(UInt.self, forKey: .pixelHeight) ?? 0
         self.altText = try container.decodeIfPresent(String.self, forKey: .altText) ?? ""
         self.hAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .hAlignment)
-        self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
         
-        // Finish up
+        // Manually decode selectAction using your custom action parser.
+        if container.contains(.selectAction) {
+            let actionDict = try container.decode([String: AnyCodable].self, forKey: .selectAction)
+            let dict = actionDict.mapValues { $0.value }
+            self.selectAction = try BaseActionElement.deserializeAction(from: dict)
+        } else {
+            self.selectAction = nil
+        }
+        
         try super.init(from: decoder)
+        
+        // Ensure defaults if not provided.
+        if self.height == nil {
+            self.height = .auto
+        }
+        if self.spacing == nil {
+            self.spacing = .none
+        }
     }
-
+    
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(url, forKey: .url)
@@ -81,7 +100,10 @@ class Image: BaseCardElement {
         try container.encode(pixelHeight, forKey: .pixelHeight)
         try container.encode(altText, forKey: .altText)
         try container.encodeIfPresent(hAlignment, forKey: .hAlignment)
-        try container.encodeIfPresent(selectAction, forKey: .selectAction)
+        
+        if let action = selectAction {
+            try container.encode(AnyCodable(try BaseCardElement.serializeSelectAction(action)), forKey: .selectAction)
+        }
         try super.encode(to: encoder)
     }
     
@@ -89,18 +111,14 @@ class Image: BaseCardElement {
     /// Serializes the Image to a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
-        
-        // Always include essential properties
         json["type"] = "Image"
         json["url"] = url
         
-        // Always include style
+        // Use "style" for imageStyle.
         json["style"] = imageStyle.rawValue
-        
-        // Always include size
+        // Use "size" for imageSize (converted to lowercase).
         json["size"] = imageSize.rawValue.lowercased()
         
-        // Always include horizontalAlignment if present
         if let alignment = hAlignment {
             json["horizontalAlignment"] = alignment.rawValue.lowercased()
         }
@@ -117,7 +135,6 @@ class Image: BaseCardElement {
             json["selectAction"] = try BaseCardElement.serializeSelectAction(action)
         }
         
-        // Handle spacing and separator
         if let spacing = spacing {
             json["spacing"] = spacing.rawValue.lowercased()
         }
@@ -217,7 +234,7 @@ class Image: BaseCardElement {
     
     // MARK: - Resource Information
     func getResourceInformation(_ resourceInfo: inout [RemoteResourceInformation]) {
-        var info = RemoteResourceInformation(url: self.url, mimeType: "image")
+        let info = RemoteResourceInformation(url: self.url, mimeType: "image")
         resourceInfo.append(info)
     }
 }
