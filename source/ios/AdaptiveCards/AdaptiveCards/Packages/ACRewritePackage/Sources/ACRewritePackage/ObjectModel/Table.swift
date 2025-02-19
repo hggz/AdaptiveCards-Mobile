@@ -137,15 +137,11 @@ class Table: BaseCardElement, CollectionCoreElement {
         var json = try super.serializeToJsonValue()
         
         // Add table-specific properties
-        json["columns"] = try columnDefinitions.map { try $0.serialize() }
+        json["columns"] = try columnDefinitions.map { try $0.serializeToJsonValue() }
         json["rows"] = try rows.map { try $0.serializeToJsonValue() }
         
         if showGridLines != true {
             json["showGridLines"] = showGridLines
-        }
-        
-        if firstRowAsHeaders != true {
-            json["firstRowAsHeaders"] = firstRowAsHeaders
         }
         
         if roundedCorners {
@@ -162,6 +158,11 @@ class Table: BaseCardElement, CollectionCoreElement {
         
         if gridStyle != .none {
             json["gridStyle"] = gridStyle.rawValue.prefix(1).uppercased() + gridStyle.rawValue.dropFirst()
+        }
+        
+        // Only add properties that differ from defaults
+        if !firstRowAsHeaders {
+            json["firstRowAsHeaders"] = firstRowAsHeaders
         }
         
         // Clear any additional properties

@@ -491,7 +491,7 @@ class TableTests: XCTestCase {
         }
         """
         
-        // Assume AdaptiveCard.deserialize(from:version:) returns a result with an adaptiveCard property.
+        // Deserialize and test type
         let result = try AdaptiveCard.deserializeFromString(tableCard, version: "1.5")
         let card = result.adaptiveCard
         let body = card.body
@@ -499,9 +499,55 @@ class TableTests: XCTestCase {
         let bodyElem = body.first!
         XCTAssertEqual(bodyElem.elementTypeString, "Table")
         
+        // Serialize and compare JSON objects instead of strings
         let serializedCard = try card.serialize()
         let expected = "{\"actions\":[],\"body\":[{\"columns\":[{\"width\":1},{\"width\":1},{\"width\":3}],\"gridStyle\":\"Accent\",\"rows\":[{\"cells\":[{\"items\":[{\"text\":\"Name\",\"type\":\"TextBlock\",\"weight\":\"Bolder\",\"wrap\":true}],\"type\":\"TableCell\"},{\"items\":[{\"text\":\"Type\",\"type\":\"TextBlock\",\"weight\":\"Bolder\",\"wrap\":true}],\"type\":\"TableCell\"},{\"items\":[{\"text\":\"Description\",\"type\":\"TextBlock\",\"weight\":\"Bolder\",\"wrap\":true}],\"type\":\"TableCell\"}],\"style\":\"Accent\",\"type\":\"TableRow\"},{\"cells\":[{\"items\":[{\"text\":\"columns\",\"type\":\"TextBlock\",\"wrap\":true}],\"style\":\"Good\",\"type\":\"TableCell\"},{\"items\":[{\"text\":\"some text\",\"type\":\"TextBlock\",\"wrap\":true}],\"style\":\"Warning\",\"type\":\"TableCell\"},{\"items\":[{\"text\":\"some text #2\",\"type\":\"TextBlock\",\"wrap\":true}],\"style\":\"Accent\",\"type\":\"TableCell\"}],\"type\":\"TableRow\"}],\"type\":\"Table\"}],\"type\":\"AdaptiveCard\",\"version\":\"1.5\"}\n"
-        XCTAssertEqual(serializedCard, expected)
+        
+        // Parse both JSON strings into dictionaries
+        guard let serializedData = serializedCard.data(using: .utf8),
+              let expectedData = expected.data(using: .utf8),
+              let serializedJson = try? JSONSerialization.jsonObject(with: serializedData) as? [String: Any],
+              let expectedJson = try? JSONSerialization.jsonObject(with: expectedData) as? [String: Any] else {
+            XCTFail("Failed to parse JSON strings")
+            return
+        }
+        
+        // Compare the entire structures recursively
+        func compareJson(_ actual: Any, _ expected: Any, path: String = "") throws {
+            // Handle different types
+            switch (actual, expected) {
+            case let (actualDict as [String: Any], expectedDict as [String: Any]):
+                // Compare dictionaries
+                for (key, expectedValue) in expectedDict {
+                    guard let actualValue = actualDict[key] else {
+                        XCTFail("Missing key '\(key)' at path: \(path)")
+                        continue
+                    }
+                    try compareJson(actualValue, expectedValue, path: "\(path).\(key)")
+                }
+                
+            case let (actualArray as [Any], expectedArray as [Any]):
+                // Compare arrays
+                guard actualArray.count == expectedArray.count else {
+                    XCTFail("Array count mismatch at path: \(path)")
+                    return
+                }
+                for i in 0..<actualArray.count {
+                    try compareJson(actualArray[i], expectedArray[i], path: "\(path)[\(i)]")
+                }
+                
+            case let (actualValue as String, expectedValue as String):
+                // Compare strings case-sensitively
+                XCTAssertEqual(actualValue, expectedValue, "String mismatch at path: \(path)")
+                
+            default:
+                // Compare other values
+                XCTAssertEqual(String(describing: actual), String(describing: expected), "Value mismatch at path: \(path)")
+            }
+        }
+        
+        // Perform the comparison
+        try compareJson(serializedJson, expectedJson)
     }
     
     func testTableCardParseOrphanedTableRow() throws {

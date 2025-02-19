@@ -142,6 +142,16 @@ class TableRow: BaseCardElement {
             json["verticalCellContentAlignment"] = vertical.rawValue.capitalized
         }
         
+        // Add cells if present
+        if !cells.isEmpty {
+            json["cells"] = try cells.map { try $0.serializeToJsonValue() }
+        }
+        
+        // Add style if not default, with proper capitalization
+        if style != .none {
+            json["style"] = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
+        }
+        
         return json
     }
 }

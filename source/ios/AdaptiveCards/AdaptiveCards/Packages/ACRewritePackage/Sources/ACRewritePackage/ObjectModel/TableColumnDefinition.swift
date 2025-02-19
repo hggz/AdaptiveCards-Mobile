@@ -171,6 +171,17 @@ struct TableColumnDefinition: Codable {
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
         return try JSONDecoder().decode(TableColumnDefinition.self, from: data)
     }
+    
+    func serializeToJsonValue() throws -> [String: Any] {
+        var json: [String: Any] = [:]
+        // Only include width or pixelWidth, not both
+        if let pixelWidth = pixelWidth {
+            json["width"] = "\(pixelWidth)px"
+        } else if let width = width {
+            json["width"] = width
+        }
+        return json
+    }
 }
 
 extension TableColumnDefinition {

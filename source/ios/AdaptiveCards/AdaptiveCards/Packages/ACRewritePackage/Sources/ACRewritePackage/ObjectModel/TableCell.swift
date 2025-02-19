@@ -13,6 +13,7 @@ class TableCell: Container {
     private enum CodingKeys: String, CodingKey {
         case items
         case rtl
+        case style
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -31,11 +32,23 @@ class TableCell: Container {
         if let rtl = self.rtl {
             try container.encode(rtl, forKey: .rtl)
         }
+        
+        // Encode style with proper capitalization if not .none
+        if style != .none {
+            let styleString = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
+            try container.encode(styleString, forKey: .style)
+        }
     }
     
     /// Required initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
+        
+        // Decode style after super.init
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let styleString = try container.decodeIfPresent(String.self, forKey: .style) {
+            style = ContainerStyle(rawValue: styleString.lowercased()) ?? .none
+        }
     }
     
     /// Deserializes a `TableCell` from a JSON dictionary.
@@ -50,9 +63,15 @@ class TableCell: Container {
         // Convert the JSON dictionary to Data.
         let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
         let cell = try JSONDecoder().decode(TableCell.self, from: jsonData)
+        
         // Set RTL if provided (as before) …
         if let rtl = json[AdaptiveCardSchemaKey.rtl.rawValue] as? Bool {
             cell.setRtl(rtl)
+        }
+        
+        // Set style if provided in the JSON
+        if let styleString = json["style"] as? String {
+            cell.style = ContainerStyle(rawValue: styleString.lowercased()) ?? .none
         }
         
         // Process layouts if provided.
@@ -116,6 +135,11 @@ class TableCell: Container {
         // Add rtl if present
         if let rtl = self.rtl {
             json["rtl"] = rtl
+        }
+        
+        // Add style with proper capitalization if not .none
+        if style != .none {
+            json["style"] = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
         }
         
         return json
