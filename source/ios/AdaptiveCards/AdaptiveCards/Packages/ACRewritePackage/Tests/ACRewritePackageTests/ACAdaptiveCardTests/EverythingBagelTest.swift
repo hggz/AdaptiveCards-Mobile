@@ -1009,8 +1009,7 @@ class EverythingBagelTests: XCTestCase {
             XCTAssertTrue(showCardAction.additionalProperties?.isEmpty ?? true)
             if let subCard = showCardAction.card as? AdaptiveCard {
                 XCTAssertEqual(subCard.actions.count, 0)
-                // For the subcard background image, use .repeatMode (assuming that’s the proper enum case)
-                validateBackgroundImage(subCard.backgroundImage!, mode: .`repeat`, hAlignment: .right, vAlignment: .center)
+                validateBackgroundImage(subCard.backgroundImage!, mode: .repeat, hAlignment: .right, vAlignment: .center)
                 XCTAssertEqual(subCard.elementTypeVal, CardElementType.adaptiveCard)
                 XCTAssertEqual(subCard.fallbackText, "")
                 XCTAssertEqual(subCard.height, .auto)
@@ -1020,7 +1019,18 @@ class EverythingBagelTests: XCTestCase {
                 XCTAssertEqual(subCard.style, .none)
                 XCTAssertEqual(subCard.version, "1.0")
                 XCTAssertEqual(subCard.verticalContentAlignment, .top)
-                XCTAssertEqual(try subCard.serialize(), "{\"actions\":[],\"backgroundImage\":{\"fillMode\":\"repeat\",\"horizontalAlignment\":\"right\",\"url\":\"https://adaptivecards.io/content/cats/1.png\",\"verticalAlignment\":\"center\"},\"body\":[{\"isSubtle\":true,\"text\":\"Action.ShowCard text\",\"type\":\"TextBlock\"}],\"lang\":\"en\",\"type\":\"AdaptiveCard\",\"version\":\"1.0\"}\n")
+                
+                // Replace string comparison with JSON structure comparison
+                guard let serializedData = try? subCard.serialize().data(using: .utf8),
+                      let actualJson = try? JSONSerialization.jsonObject(with: serializedData) as? [String: Any],
+                      let expectedJsonString = "{\"actions\":[],\"backgroundImage\":{\"fillMode\":\"repeat\",\"horizontalAlignment\":\"right\",\"url\":\"https://adaptivecards.io/content/cats/1.png\",\"verticalAlignment\":\"center\"},\"body\":[{\"isSubtle\":true,\"text\":\"Action.ShowCard text\",\"type\":\"TextBlock\"}],\"lang\":\"en\",\"type\":\"AdaptiveCard\",\"version\":\"1.0\"}".data(using: .utf8),
+                      let expectedJson = try? JSONSerialization.jsonObject(with: expectedJsonString) as? [String: Any] else {
+                    XCTFail("Failed to parse JSON")
+                    return
+                }
+                
+                // Compare JSON structures
+                XCTAssertEqual(NSDictionary(dictionary: actualJson), NSDictionary(dictionary: expectedJson))
             } else {
                 XCTFail("ShowCardAction card is not an AdaptiveCard")
             }
