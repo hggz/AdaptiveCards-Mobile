@@ -618,13 +618,11 @@ class ObjectModelTest: XCTestCase {
         // The original C++ test wanted: [Heading, Heading, Default, (invalid => no style?), (implicit => default)]
         // Your Swift code calls it textStyle. If it's invalid, it presumably becomes .defaultStyle
         let expected: [TextStyle?] = [
-            .heading,
-            .heading,
-            .defaultStyle,
-            // The snippet for "Footer" would likely fallback to .defaultStyle if unknown
-            .defaultStyle,
-            // If there's no style, also defaultStyle
-            .defaultStyle
+            .heading,       // explicit "heading"
+            .heading,       // explicit "Heading"
+            .defaultStyle,  // explicit "Default"
+            nil,           // invalid "Footer"
+            nil            // no style specified
         ]
 
         for (idx, elem) in body.enumerated() {

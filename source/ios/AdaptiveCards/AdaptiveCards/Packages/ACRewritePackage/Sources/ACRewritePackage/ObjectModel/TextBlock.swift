@@ -55,11 +55,20 @@ class TextBlock: BaseCardElement {
         
         // Default to .defaultStyle if not present or invalid
         // Handle style - default to .defaultStyle only if style key exists
-        if container.contains(.textStyle) {
-            self.textStyle = try container.decodeIfPresent(TextStyle.self, forKey: .textStyle)
+        // Only set textStyle if the key exists in the JSON
+        if let styleStr = try? container.decodeIfPresent(String.self, forKey: .textStyle) {
+            switch styleStr.lowercased() {
+            case "heading":
+                self.textStyle = .heading
+            case "default":
+                self.textStyle = .defaultStyle
+            default:
+                // Invalid style should be nil
+                self.textStyle = nil
+            }
         } else {
-            // No style specified = defaultStyle
-            self.textStyle = .defaultStyle
+            // No style specified should be nil
+            self.textStyle = nil
         }
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
