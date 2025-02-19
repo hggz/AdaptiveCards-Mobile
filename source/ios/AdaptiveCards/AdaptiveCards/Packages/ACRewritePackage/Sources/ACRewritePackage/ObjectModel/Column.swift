@@ -2,6 +2,10 @@ import Foundation
 
 // MARK: - Column & ColumnParser Implementation
 class Column: StyledCollectionElement {
+    // Flag that tracks whether the default value is still in effect.
+    private var isDefaultWidth: Bool = true
+    private var isUpdatingFromWidth: Bool = false  // new flag
+
     // Use property observers with backing flags to avoid recursive updates.
     var width: String {
         didSet {
@@ -9,19 +13,25 @@ class Column: StyledCollectionElement {
                 isUpdatingPixelWidth = true
                 let lower = width.lowercased()
                 if lower == "stretch" {
-                    // Normalize to lowercase "stretch"
+                    isUpdatingFromWidth = true
                     width = "stretch"
                     pixelWidth = 0
+                    isDefaultWidth = false
                 } else if lower == "auto" {
-                    // Preserve capitalized "Auto"
-                    width = "Auto"
+                    isUpdatingFromWidth = true
+                    // If still default, preserve "Auto"; otherwise use lowercase "auto"
+                    width = isDefaultWidth ? "Auto" : "auto"
                     pixelWidth = 0
                 } else if let pxValue = parseSizeForPixelSize(width) {
+                    isUpdatingFromWidth = true
                     pixelWidth = pxValue
+                    isDefaultWidth = false
                 } else {
-                    // For non-px values, default pixelWidth to 0.
+                    isUpdatingFromWidth = true
                     pixelWidth = 0
+                    isDefaultWidth = false
                 }
+                isUpdatingWidth = false
                 isUpdatingPixelWidth = false
             }
         }
@@ -29,10 +39,15 @@ class Column: StyledCollectionElement {
     
     var pixelWidth: Int {
         didSet {
+            if isUpdatingFromWidth {
+                // This update came from width’s didSet; reset the flag and do nothing.
+                isUpdatingFromWidth = false
+                return
+            }
             if !isUpdatingPixelWidth {
                 isUpdatingWidth = true
-                // When pixelWidth is updated, force width to reflect that as "NNpx"
                 width = "\(pixelWidth)px"
+                isDefaultWidth = false
                 isUpdatingWidth = false
             }
         }
@@ -67,18 +82,18 @@ class Column: StyledCollectionElement {
     
     // MARK: - Initializer
     init(id: String? = nil) {
-        // Initialize arrays before super.init
         self.items = []
         self.layouts = []
+        // Default width is capitalized "Auto"
         self.width = "Auto"
         self.pixelWidth = 0
+        self.isDefaultWidth = true
         
-        // Call super.init with bleedRestricted instead of bleedAll
         super.init(
             type: .column,
             style: .none,
             verticalContentAlignment: nil,
-            bleedDirection: .bleedRestricted,  // Changed from .bleedAll
+            bleedDirection: .bleedRestricted,
             minHeight: 0,
             hasPadding: false,
             hasBleed: false,
@@ -93,76 +108,68 @@ class Column: StyledCollectionElement {
     
     // MARK: - Codable
     private enum CodingKeys: String, CodingKey {
-        case width, pixelWidth, items, rtl, layouts
+        case width, pixelWidth, items, rtl, layouts, size
     }
     
     required init(from decoder: Decoder) throws {
-        // Initialize properties
         self.items = []
         self.layouts = []
+        // Use "Auto" as the default when nothing is provided.
         self.width = "Auto"
         self.pixelWidth = 0
-            
-        // Decode container
+        self.isDefaultWidth = true
+
         let container = try decoder.container(keyedBy: CodingKeys.self)
-            
-        // Call super.init but start with restricted bleed
+        
         try super.init(from: decoder)
+        
+        // Decode width using "width" key or fallback to "size"
+        let decodedWidth = try container.decodeIfPresent(String.self, forKey: .width)
+            ?? container.decodeIfPresent(String.self, forKey: .size)
+            ?? "Auto"
+        // Set the default flag based on the decoded value.
+        // If JSON provides "auto" (lowercase) then default should be false.
+        self.isDefaultWidth = (decodedWidth == "Auto")
+        
+        var dummyWarnings = [AdaptiveCardParseWarning]()
+        self.setWidth(decodedWidth, warnings: &dummyWarnings)
+        
         print("Column.init - Setting initial bleed to restricted")
         self.bleedDirection = .bleedRestricted
-        // Get the shared context
         let context = BaseElement.parseContext
         
-        // Configure our own style (but don't set bleed direction)
         configPadding(context)
-        
-        // Configure parental ID if needed
-        if canBleed {
-            if let parentId = context.paddingParentInternalId() {
-                parentalId = parentId
-            }
+        if canBleed, let parentId = context.paddingParentInternalId() {
+            parentalId = parentId
         }
         
-        // Process items
         if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
             context.saveContextForStyledCollectionElement(self)
-            
             for rawDict in rawItems {
                 let unwrapped = ParseUtil.unwrapAnyCodable(from: rawDict)
                 guard let dict = unwrapped as? [String: Any] else {
                     throw AdaptiveCardParseError.invalidJson
                 }
                 let element = try BaseCardElement.deserialize(from: dict)
-                
-                if let container = element as? Container {
-                    container.configForContainerStyle(context)
-                    container.parentalId = self.internalId
+                if let containerElement = element as? Container {
+                    containerElement.configForContainerStyle(context)
+                    containerElement.parentalId = self.internalId
                 }
-                
                 self.items.append(element)
             }
-            
             context.restoreContextForStyledCollectionElement(self)
         }
         
-        // Handle additional properties
         self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
     }
     
     override func configForContainerStyle(_ context: ParseContext) {
         print("Column.configForContainerStyle - Before config, bleedDirection: \(bleedDirection)")
-        
-        // Configure padding
         configPadding(context)
-        
-        // Configure parental ID if needed
-        if canBleed {
-            if let parentId = context.paddingParentInternalId() {
-                parentalId = parentId
-            }
+        if canBleed, let parentId = context.paddingParentInternalId() {
+            parentalId = parentId
         }
-        
         print("Column.configForContainerStyle - After config, bleedDirection: \(bleedDirection)")
     }
 
