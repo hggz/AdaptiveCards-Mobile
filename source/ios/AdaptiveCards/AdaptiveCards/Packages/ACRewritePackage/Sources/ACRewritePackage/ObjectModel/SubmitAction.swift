@@ -31,7 +31,6 @@ class SubmitAction: BaseActionElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: SubmitActionCodingKeys.self)
         
-        // Decode dataJson as a [String: AnyCodable] then convert.
         if let dataDict = try container.decodeIfPresent([String: AnyCodable].self, forKey: .dataJson) {
             self.dataJson = dataDict.mapValues { $0.value }
         } else {
@@ -41,8 +40,18 @@ class SubmitAction: BaseActionElement {
         self.conditionallyEnabled = try container.decodeIfPresent(Bool.self, forKey: .conditionallyEnabled) ?? false
         
         try super.init(from: decoder)
+        
+        // Filter out known keys so that additionalProperties is empty if nothing extra was provided.
+        if var additional = self.additionalProperties {
+            let knownKeys: Set<String> = [
+                "data", "associatedInputs", "conditionallyEnabled",
+                "title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"
+            ]
+            additional = additional.filter { !knownKeys.contains($0.key) }
+            self.additionalProperties = additional.isEmpty ? nil : additional
+        }
     }
-    
+
     /// Encodes this action to an Encoder.
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)

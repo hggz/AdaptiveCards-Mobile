@@ -30,8 +30,18 @@ final class ExecuteAction: BaseActionElement {
         self.associatedInputs = try container.decodeIfPresent(AssociatedInputs.self, forKey: .associatedInputs) ?? .auto
         self.conditionallyEnabled = try container.decodeIfPresent(Bool.self, forKey: .conditionallyEnabled) ?? false
         try super.init(from: decoder)
+        
+        // Filter out known keys so that additionalProperties is empty if nothing extra was provided.
+        if var additional = self.additionalProperties {
+            let knownKeys: Set<String> = [
+                "data", "verb", "associatedInputs", "conditionallyEnabled",
+                "title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"
+            ]
+            additional = additional.filter { !knownKeys.contains($0.key) }
+            self.additionalProperties = additional.isEmpty ? nil : additional
+        }
     }
-    
+
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
