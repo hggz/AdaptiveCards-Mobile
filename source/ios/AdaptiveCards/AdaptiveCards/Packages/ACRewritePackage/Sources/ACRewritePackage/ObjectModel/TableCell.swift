@@ -4,6 +4,8 @@ import Foundation
 /// This class now subclasses our updated Container.
 class TableCell: Container {
     
+    var isOrphaned: Bool = true
+    
     /// Initializes a `TableCell` with default values.
     init() {
         // Call the designated initializer with CardElementType.tableCell.
@@ -14,6 +16,11 @@ class TableCell: Container {
         case items
         case rtl
         case style
+    }
+    
+    // New helper to check for an explicit type field in JSON.
+    private enum BaseCodingKeys: String, CodingKey {
+        case type
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -40,17 +47,28 @@ class TableCell: Container {
         }
     }
     
-    /// Required initializer for Codable conformance.
+    /// Updated initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
-        try super.init(from: decoder)
+        // (Our previous changes to check for an explicit "type" are still useful
+        // for ensuring we call the correct initializer; see previous solution.)
+        let baseContainer = try decoder.container(keyedBy: BaseCodingKeys.self)
+        if !baseContainer.contains(.type) {
+            // No explicit "type" → use the designated initializer.
+            super.init(items: [], layouts: [], rtl: nil, cardElementType: .tableCell)
+        } else {
+            try super.init(from: decoder)
+        }
         
-        // Decode style after super.init
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let styleString = try container.decodeIfPresent(String.self, forKey: .style) {
             style = ContainerStyle(rawValue: styleString.lowercased()) ?? .none
         }
     }
     
+    /// Override to report .tableCell when not orphaned.
+    override var elementTypeVal: CardElementType {
+        return isOrphaned ? .unknown : .tableCell
+    }
     /// Deserializes a `TableCell` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: ParseContext) throws -> TableCell {
         // Retrieve the id property using the expected key.

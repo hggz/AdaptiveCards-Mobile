@@ -13,6 +13,12 @@ class TableRow: BaseCardElement {
 
     /// The collection of table cells in the row.
     var cells: [TableCell]
+    
+    var isOrphaned: Bool = true
+    
+    override var elementTypeVal: CardElementType {
+        return isOrphaned ? .unknown : .tableRow
+    }
 
     /// Initializes a new `TableRow` with default values.
     init() {
@@ -26,7 +32,6 @@ class TableRow: BaseCardElement {
     /// Decodes a `TableRow` from JSON.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Assuming ContainerStyle conforms to Codable; otherwise, decode as a String and convert.
         self.style = try container.decodeIfPresent(ContainerStyle.self, forKey: .style) ?? .none
         self.horizontalCellContentAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
         self.verticalCellContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalCellContentAlignment)

@@ -64,7 +64,6 @@ class Table: BaseCardElement, CollectionCoreElement {
 
     /// Decodes a `Table` from JSON.
     required init(from decoder: Decoder) throws {
-        // First decode the Table-specific properties
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         self.columnDefinitions = try container.decodeIfPresent([TableColumnDefinition].self, forKey: .columns) ?? []
@@ -74,21 +73,14 @@ class Table: BaseCardElement, CollectionCoreElement {
         self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
         self.horizontalCellContentAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
         self.verticalCellContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
-        
-        // Handle gridStyle with proper case handling
         if let gridStyleString = try container.decodeIfPresent(String.self, forKey: .gridStyle) {
             self.gridStyle = ContainerStyle(rawValue: gridStyleString.lowercased()) ?? .none
         } else {
             self.gridStyle = .none
         }
         
-        // Initialize base class with .table type
         try super.init(from: decoder)
-        
-        // Clear any additional properties that might have been set during decoding
         self.additionalProperties = nil
-        
-        // Ensure knownProperties is set
         self.knownProperties = Set([
             "type",
             "id",
@@ -101,6 +93,14 @@ class Table: BaseCardElement, CollectionCoreElement {
             "gridStyle",
             "firstRowAsHeaders"
         ])
+        
+        // Mark all deserialized rows (and their cells) as non-orphaned.
+        for row in self.rows {
+            row.isOrphaned = false
+            for cell in row.cells {
+                cell.isOrphaned = false
+            }
+        }
     }
 
     /// Encodes a `Table` to JSON.
