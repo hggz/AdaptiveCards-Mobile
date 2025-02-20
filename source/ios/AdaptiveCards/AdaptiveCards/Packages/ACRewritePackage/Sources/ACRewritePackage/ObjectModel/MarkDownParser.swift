@@ -47,14 +47,10 @@ class MarkDownParser {
     /// Parses Markdown blocks
     private func parseBlock() {
         let escapedText = escapeText()
-        var stream: StringIterator = StringIterator(escapedText) // ✅ Ensure correct iterator type
+        var stream = StringIterator(escapedText)
         var parser = EmphasisParser()
-
-        while let _ = stream.next() {
-            parser.parseBlock(stream: &stream) // ✅ Ensure correct method call with argument label
-        }
-
-        parsedResult.appendParseResult(parser.getParsedResult()) // ✅ Ensure method exists in EmphasisParser
+        parser.parseBlock(stream: &stream)
+        parsedResult.appendParseResult(parser.getParsedResult())
     }
 
     /// Escapes special HTML characters in the Markdown text

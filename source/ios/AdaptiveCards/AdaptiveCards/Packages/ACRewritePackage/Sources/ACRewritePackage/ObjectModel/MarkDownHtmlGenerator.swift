@@ -9,6 +9,11 @@ enum MarkDownBlockType {
 }
 
 class MarkDownHtmlGenerator {
+    var numberOfUnusedDelimiters: Int = 0
+    var directionType: Int = 0 // default to 0 (left)
+    var type: DelimiterType = .initType
+    var tags: [String] = []
+    
     var token: String
     var isHead: Bool = false
     var isTail: Bool = false
@@ -57,16 +62,14 @@ class MarkDownNewLineHtmlGenerator: MarkDownStringHtmlGenerator {
 
 // - MarkDownEmphasisHtmlGenerator
 class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
-    var numberOfUnusedDelimiters: Int
-    var directionType: Int = 1 // Right by default
-    var type: DelimiterType
-    var tags: [String]
+    
+    // Remove duplicate property declarations; we use the ones inherited from MarkDownHtmlGenerator.
     
     init(token: String, sizeOfEmphasisDelimiterRun: Int, type: DelimiterType, tags: [String] = []) {
+        super.init(token: token)
         self.numberOfUnusedDelimiters = sizeOfEmphasisDelimiterRun
         self.type = type
         self.tags = tags
-        super.init(token: token)
     }
     
     func isRightEmphasis() -> Bool { return false }
@@ -82,7 +85,8 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
     }
     
     func isMatch(_ emphasisToken: MarkDownEmphasisHtmlGenerator) -> Bool {
-        return self.type == emphasisToken.type && !((self.isLeftAndRightEmphasis() || emphasisToken.isLeftAndRightEmphasis()) &&
+        return self.type == emphasisToken.type &&
+          !((self.isLeftAndRightEmphasis() || emphasisToken.isLeftAndRightEmphasis()) &&
             ((self.numberOfUnusedDelimiters + emphasisToken.numberOfUnusedDelimiters) % 3 == 0))
     }
     
@@ -118,17 +122,14 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
         return hasHtmlTags
     }
     
-    // ✅ Fix: Added method to change direction to left
     func changeDirectionToLeft() {
         self.directionType = -1
     }
-
-    // ✅ Fix: Added method to check if two tokens are the same type
+    
     func isSameType(_ other: MarkDownEmphasisHtmlGenerator) -> Bool {
         return self.type == other.type
     }
-
-    // ✅ Fix: Added method to check if this emphasis token is fully used
+    
     func isDone() -> Bool {
         return self.numberOfUnusedDelimiters == 0
     }

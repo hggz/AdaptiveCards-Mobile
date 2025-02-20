@@ -14,7 +14,7 @@ extension MarkDownBlockParser {
         
         switch peekChar {
         case "[":
-            var linkParser = LinkParser()
+            let linkParser = LinkParser()  // now using 'let' since LinkParser is a class
             linkParser.match(stream: &stream)
             parsedResult.appendParseResult(linkParser.parsedResult)
         case "]", ")":
@@ -24,11 +24,11 @@ extension MarkDownBlockParser {
             parsedResult.addNewLineTokenToParsedResult(peekChar)
             _ = stream.next()
         case "-", "+", "*":
-            var listParser = ListParser()
+            let listParser = ListParser()
             listParser.match(stream: &stream)
             parsedResult.appendParseResult(listParser.parsedResult)
         case "0"..."9":
-            var orderedListParser = OrderedListParser()
+            let orderedListParser = OrderedListParser()
             orderedListParser.match(stream: &stream)
             parsedResult.appendParseResult(orderedListParser.parsedResult)
         default:
@@ -48,81 +48,45 @@ extension MarkDownBlockParser {
 // MARK: - Emphasis Parser
 
 struct EmphasisParser: MarkDownBlockParser {
-    enum EmphasisState {
-        case text, emphasis, captured
-    }
-    
     var parsedResult = MarkDownParsedResult()
-    private var currentState: EmphasisState = .text
     private var currentToken: String = ""
     
-    // Additional internal state (stubs for now)
-    private var delimiterCounts: Int = 0
-    private var currentDelimiterType: DelimiterType = .initType
-    private var lookBehind: DelimiterType = .initType
-    
+    // MARK: - Conformance to MarkDownBlockParser
     mutating func match(stream: inout StringIterator) {
-        while currentState != .captured, stream.peek() != nil {
-            currentState = matchState(stream: &stream)
-        }
+        self.parseBlock(stream: &stream)
     }
     
-    private mutating func matchState(stream: inout StringIterator) -> EmphasisState {
-        guard let currentChar = stream.peek() else { return .captured }
-        switch currentState {
-        case .text:
-            return matchText(stream: &stream, char: currentChar)
-        case .emphasis:
-            return matchEmphasis(stream: &stream, char: currentChar)
-        case .captured:
-            return .captured
-        }
-    }
-    
-    private mutating func matchText(stream: inout StringIterator, char: Character) -> EmphasisState {
-        // If an emphasis token is encountered, finish the token.
-        if isEmphasisToken(char) {
-            flushToken()
-            return .captured
-        }
-        // If a markdown delimiter is encountered, switch state.
-        if isMarkDownDelimiter(char) {
-            flushToken()
-            if let nextChar = stream.next() {
-                currentToken.append(nextChar)
-                updateCurrentEmphasisRunState(with: nextChar)
-                return .emphasis
+    mutating func parseBlock(stream: inout StringIterator) {
+        while let ch = stream.peek() {
+            if isMarkDownDelimiter(ch) {
+                let (delimStr, count) = consumeDelimiterRun(stream: &stream, delimiter: ch)
+                flushToken()
+                // Look ahead: if the next char is whitespace or punctuation, consider this a closing delimiter.
+                let nextChar = stream.peek()
+                let delimiterIsClosing: Bool = {
+                    if let nc = nextChar {
+                        return nc.isWhitespace || isPunctuation(nc)
+                    } else {
+                        return true
+                    }
+                }()
+                let direction = delimiterIsClosing ? 1 : 0  // 1 for right (closing), 0 for left (opening)
+                var emphasisToken = MarkDownLeftAndRightEmphasisHtmlGenerator(
+                    token: delimStr,
+                    sizeOfEmphasisDelimiterRun: count,
+                    type: (ch == "*") ? .asterisk : .underscore
+                )
+                // Set the direction; ambiguity is resolved since we now have a single definition.
+                emphasisToken.directionType = direction
+                parsedResult.appendToLookUpTable(emphasisToken)
+                parsedResult.appendToTokens(emphasisToken)
+            } else {
+                if let nextChar = stream.next() {
+                    currentToken.append(nextChar)
+                }
             }
-            return .captured
         }
-        // Otherwise, consume and append the character.
-        if let nextChar = stream.next() {
-            currentToken.append(nextChar)
-        }
-        return .text
-    }
-    
-    private mutating func matchEmphasis(stream: inout StringIterator, char: Character) -> EmphasisState {
-        // If an emphasis token is encountered, finish the token.
-        if isEmphasisToken(char) {
-            flushToken()
-            return .captured
-        }
-        // If another markdown delimiter is encountered, update run state.
-        if isMarkDownDelimiter(char) {
-            if let nextChar = stream.next() {
-                currentToken.append(nextChar)
-                updateCurrentEmphasisRunState(with: nextChar)
-            }
-            return .emphasis
-        } else {
-            // Otherwise, capture the emphasis token and switch back to text state.
-            captureEmphasisToken()
-            if let nextChar = stream.next() {
-                currentToken.append(nextChar)
-            }
-            return .text
-        }
+        flushToken()
     }
     
     private mutating func flushToken() {
@@ -132,27 +96,23 @@ struct EmphasisParser: MarkDownBlockParser {
         }
     }
     
-    private mutating func captureEmphasisToken() {
-        parsedResult.addNewTokenToParsedResult("<em>" + currentToken + "</em>")
-        currentToken = ""
-    }
-    
-    private func isEmphasisToken(_ char: Character) -> Bool {
-        return ["[", "]", ")", "\n", "\r"].contains(char)
-    }
-    
     private func isMarkDownDelimiter(_ char: Character) -> Bool {
         return char == "*" || char == "_"
     }
     
-    private mutating func updateCurrentEmphasisRunState(with char: Character) {
-        let delimiterType = Self.getDelimiterType(for: char)
-        currentDelimiterType = delimiterType
-        delimiterCounts += 1
+    private func isPunctuation(_ char: Character) -> Bool {
+        return String(char).rangeOfCharacter(from: .punctuationCharacters) != nil
     }
     
-    static func getDelimiterType(for char: Character) -> DelimiterType {
-        return (char == "*") ? .asterisk : .underscore
+    private mutating func consumeDelimiterRun(stream: inout StringIterator, delimiter: Character) -> (String, Int) {
+        var delimStr = ""
+        var count = 0
+        while let ch = stream.peek(), ch == delimiter {
+            _ = stream.next()
+            delimStr.append(ch)
+            count += 1
+        }
+        return (delimStr, count)
     }
     
     func getParsedResult() -> MarkDownParsedResult {
@@ -186,15 +146,20 @@ struct StringIterator {
 // These stub implementations provide minimal behavior so that the overall parser compiles.
 // You can expand these implementations to provide full Markdown parsing functionality later.
 
-class LinkParser: MarkDownBlockParser {
+class ListParser: MarkDownBlockParser {
     var parsedResult = MarkDownParsedResult()
     
     func match(stream: inout StringIterator) {
-        // Stub: simply consume the '[' if present
-        if let ch = stream.next(), ch == "[" {
-            parsedResult.addNewTokenToParsedResult(ch)
+        guard let marker = stream.next(), marker == "-" || marker == "+" || marker == "*" else { return }
+        if let ch = stream.peek(), ch == " " { _ = stream.next() }
+        var listText = ""
+        while let c = stream.peek(), c != "\n", c != "\r" {
+            listText.append(stream.next()!)
         }
-        // (Full link parsing logic not implemented)
+        let listToken = MarkDownListHtmlGenerator(token: "<li>" + listText + "</li>")
+        listToken.makeItHead()
+        listToken.makeItTail()
+        parsedResult.appendToTokens(listToken)
     }
     
     func parseBlock(stream: inout StringIterator) {
@@ -202,18 +167,18 @@ class LinkParser: MarkDownBlockParser {
     }
 }
 
-class ListParser: MarkDownBlockParser {
-    var parsedResult = MarkDownParsedResult()
+class MarkDownAnchorHtmlGenerator: MarkDownHtmlGenerator {
+    var href: String
+    var linkText: String
     
-    func match(stream: inout StringIterator) {
-        // Stub: consume one list marker character and add it as a token
-        if let ch = stream.next(), (ch == "-" || ch == "+" || ch == "*") {
-            parsedResult.addNewTokenToParsedResult(ch)
-        }
+    init(linkText: String, href: String) {
+        self.linkText = linkText
+        self.href = href
+        super.init(token: "")
     }
     
-    func parseBlock(stream: inout StringIterator) {
-        match(stream: &stream)
+    override func generateHtmlString() -> String {
+        return "<a href=\"\(href)\">\(linkText)</a>"
     }
 }
 
@@ -221,15 +186,21 @@ class OrderedListParser: MarkDownBlockParser {
     var parsedResult = MarkDownParsedResult()
     
     func match(stream: inout StringIterator) {
-        // Stub: consume digits until a '.' is encountered
         var numberString = ""
         while let ch = stream.peek(), ch.isNumber {
-            if let digit = stream.next() {
-                numberString.append(digit)
-            }
+            numberString.append(stream.next()!)
         }
-        if let ch = stream.next(), ch == "." {
-            numberString.append(ch)
+        if let dot = stream.next(), dot == "." {
+            if let ch = stream.peek(), ch == " " { _ = stream.next() }
+            var listText = ""
+            while let c = stream.peek(), c != "\n", c != "\r" {
+                listText.append(stream.next()!)
+            }
+            let orderedToken = MarkDownOrderedListHtmlGenerator(token: "<li>" + listText + "</li>", numberString: numberString)
+            orderedToken.makeItHead()
+            orderedToken.makeItTail()
+            parsedResult.appendToTokens(orderedToken)
+        } else {
             parsedResult.addNewTokenToParsedResult(numberString)
         }
     }
@@ -238,3 +209,34 @@ class OrderedListParser: MarkDownBlockParser {
         match(stream: &stream)
     }
 }
+
+class LinkParser: MarkDownBlockParser {
+    var parsedResult = MarkDownParsedResult()
+    
+    func match(stream: inout StringIterator) {
+        // Assume stream.peek() is '['.
+        guard let ch = stream.next(), ch == "[" else { return }
+        var linkText = ""
+        while let c = stream.peek(), c != "]" {
+            linkText.append(stream.next()!)
+        }
+        _ = stream.next() // consume ']'
+        guard let openParen = stream.next(), openParen == "(" else {
+           parsedResult.addNewTokenToParsedResult("[" + linkText)
+           return
+        }
+        var url = ""
+        while let c = stream.peek(), c != ")" {
+            url.append(stream.next()!)
+        }
+        _ = stream.next() // consume ')'
+        
+        let anchorToken = MarkDownAnchorHtmlGenerator(linkText: linkText, href: url)
+        parsedResult.appendToTokens(anchorToken)
+    }
+    
+    func parseBlock(stream: inout StringIterator) {
+        match(stream: &stream)
+    }
+}
+

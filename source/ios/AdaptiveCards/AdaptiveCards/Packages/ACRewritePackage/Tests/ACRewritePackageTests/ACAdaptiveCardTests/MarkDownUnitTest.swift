@@ -9,8 +9,6 @@ final class MarkDownTests: XCTestCase {
         XCTAssertEqual(parser.hasHtmlTags(), false)
     }
     
-    /*
-    
     func testMarkDownBasicSanityTest_CanHandleEmphasisTest() {
         let parser = MarkDownParser("*")
         XCTAssertEqual(parser.transformToHtml(), "<p>*</p>")
@@ -677,7 +675,6 @@ final class MarkDownTests: XCTestCase {
      func testRule9Test_MultipleOf3Test() {
          XCTAssertEqual(MarkDownParser("Hello***World***").transformToHtml(), "<p>Hello***World***</p>")
      }
-     */
     
     func testEscapeHtmlCharactersTest_CanDetectEscapeTest() {
         let parser = MarkDownParser("")
