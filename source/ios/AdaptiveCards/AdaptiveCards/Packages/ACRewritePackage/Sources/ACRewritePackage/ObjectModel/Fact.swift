@@ -17,23 +17,9 @@ struct Fact: Codable {
         self.language = language
     }
     
-    /// Returns a JSON string representation of the Fact.
-    /// This produces the exact output expected by the test.
-    func serialize() -> String {
-        // Note: The test expects exactly: {"title":"1 Example Title!","value":"1 Example Value!"}\n
-        var jsonString = "{\"title\":\"\(title)\",\"value\":\"\(value)\""
-        // Include language if it exists.
-        if let language = language {
-            jsonString += ",\"language\":\"\(language)\""
-        }
-        jsonString += "}\n"
-        return jsonString
-    }
-    
-    /// Additional method specifically for FactSet serialization
-    func serializeWithType() -> [String: Any] {
+    // Base serialization method
+    func serializeToJsonValue() -> [String: Any] {
         var dict: [String: Any] = [
-            "type": "Fact",
             "title": title,
             "value": value
         ]
@@ -43,6 +29,20 @@ struct Fact: Codable {
         return dict
     }
     
+    // Other methods use serializeToJsonValue as base
+    func serialize() -> String {
+        let dict = serializeToJsonValue()
+        let data = try? JSONSerialization.data(withJSONObject: dict, options: [.sortedKeys])
+        return (String(data: data ?? Data(), encoding: .utf8) ?? "{}") + "\n"
+    }
+    
+    func serializeWithType() -> [String: Any] {
+        var dict = serializeToJsonValue()
+        dict["type"] = "Fact"
+        return dict
+    }
+    
+    // Keep existing static deserialize methods
     static func deserialize(fromString jsonString: String, context: ParseContext) -> Fact? {
         guard let data = jsonString.data(using: .utf8) else { return nil }
         do {
