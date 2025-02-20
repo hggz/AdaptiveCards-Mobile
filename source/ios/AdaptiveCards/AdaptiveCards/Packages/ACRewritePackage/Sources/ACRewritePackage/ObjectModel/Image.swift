@@ -50,6 +50,8 @@ class Image: BaseCardElement {
         case pixelWidth, pixelHeight, altText
         case hAlignment = "horizontalAlignment" // maps JSON "horizontalAlignment" to hAlignment
         case selectAction
+        case width    // new key for explicit width string
+        case height   // new key for explicit height string
     }
     
     required init(from decoder: Decoder) throws {
@@ -65,6 +67,7 @@ class Image: BaseCardElement {
         self.imageStyle = try container.decodeIfPresent(ImageStyle.self, forKey: .imageStyle) ?? .defaultImageStyle
         self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
         
+        // Decode pixelWidth/pixelHeight if present (they won’t be in our JSON)
         self.pixelWidth = try container.decodeIfPresent(UInt.self, forKey: .pixelWidth) ?? 0
         self.pixelHeight = try container.decodeIfPresent(UInt.self, forKey: .pixelHeight) ?? 0
         self.altText = try container.decodeIfPresent(String.self, forKey: .altText) ?? ""
@@ -88,8 +91,22 @@ class Image: BaseCardElement {
         if self.spacing == nil {
             self.spacing = .none
         }
+        
+        // --- NEW CODE TO PARSE EXPLICIT DIMENSIONS ---
+        if let widthString = try? container.decode(String.self, forKey: .width) {
+            var warnings = [AdaptiveCardParseWarning]()
+            if let parsedWidth = parseSizeForPixelSize(widthString, warnings: &warnings) {
+                self.pixelWidth = parsedWidth
+            }
+        }
+        if let heightString = try? container.decode(String.self, forKey: .height) {
+            var warnings = [AdaptiveCardParseWarning]()
+            if let parsedHeight = parseSizeForPixelSize(heightString, warnings: &warnings) {
+                self.pixelHeight = parsedHeight
+            }
+        }
     }
-    
+
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(url, forKey: .url)
@@ -260,14 +277,20 @@ struct ImageParser: BaseCardElementParser {
         image.setAltText(try ParseUtil.getString(from: value, key: "altText"))
         image.setHorizontalAlignment(try ParseUtil.getOptionalEnumValue(from: value, key: "horizontalAlignment", converter: HorizontalAlignment.fromString))
         
-        let widthDimension = parseSizeForPixelSize(try ParseUtil.getString(from: value, key: "width"), warnings: &context.warnings)
-        let heightDimension = parseSizeForPixelSize(try ParseUtil.getString(from: value, key: "height"), warnings: &context.warnings)
-        
-        if let widthDim = widthDimension, let heightDim = heightDimension {
-            image.setPixelWidth(UInt(widthDim))
-            image.setPixelHeight(UInt(heightDim))
+        // Parse width independently using the raw JSON dictionary.
+        if let widthStr = value["width"] as? String {
+            if let widthDim = parseSizeForPixelSize(widthStr, warnings: &context.warnings) {
+                image.setPixelWidth(widthDim)
+            }
         }
-        else {
+        // Parse height independently using the raw JSON dictionary.
+        if let heightStr = value["height"] as? String {
+            if let heightDim = parseSizeForPixelSize(heightStr, warnings: &context.warnings) {
+                image.setPixelHeight(heightDim)
+            }
+        }
+        // Only if neither valid width nor height was provided do we fallback to using the "size" enum.
+        if image.getPixelWidth() == 0 && image.getPixelHeight() == 0 {
             image.setImageSize(try ParseUtil.getEnumValue(from: value, key: "size", defaultValue: .none, converter: ImageSize.fromString))
         }
         

@@ -50,9 +50,23 @@ func validateColor(_ backgroundColor: String, warnings: inout [AdaptiveCardParse
 }
 
 
-func parseSizeForPixelSize(_ sizeString: String, warnings: inout [AdaptiveCardParseWarning]) -> Int? {
-    guard shouldParseForExplicitDimension(sizeString) else { return nil }
-    return validateUserInputForDimensionWithUnit("px", sizeString, warnings: &warnings)
+/// Parses an explicit dimension string (e.g. "10px") into a UInt value.
+/// If the dimension does not match the expected format (digits with an optional fractional part immediately followed by "px"),
+/// a warning is appended and nil is returned.
+func parseSizeForPixelSize(_ dimension: String, warnings: inout [AdaptiveCardParseWarning]) -> UInt? {
+    let pattern = "^[0-9]+(?:\\.[0-9]+)?px$"
+    guard let _ = dimension.range(of: pattern, options: .regularExpression) else {
+        warnings.append(AdaptiveCardParseWarning(statusCode: .invalidDimensionSpecified,
+                                                   message: "Invalid dimension format: \(dimension)"))
+        return nil
+    }
+    let numberPart = dimension.dropLast(2)
+    guard let value = Double(numberPart), value >= 0 else {
+        warnings.append(AdaptiveCardParseWarning(statusCode: .invalidDimensionSpecified,
+                                                   message: "Invalid numeric value in dimension: \(dimension)"))
+        return nil
+    }
+    return UInt(floor(value))
 }
 
 /// Ensures that all ShowCard actions have the correct version assigned.
