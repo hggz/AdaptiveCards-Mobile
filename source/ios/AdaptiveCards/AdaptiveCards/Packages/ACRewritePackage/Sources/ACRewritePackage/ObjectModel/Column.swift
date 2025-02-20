@@ -5,12 +5,16 @@ class Column: StyledCollectionElement {
     // Flag that tracks whether the default value is still in effect.
     private var isDefaultWidth: Bool = true
     private var isUpdatingFromWidth: Bool = false  // new flag
+    var isRelativeWidth: Bool = false
 
     // Use property observers with backing flags to avoid recursive updates.
     var width: String {
         didSet {
+            // If this is a relative width (i.e. does not end with "px"), do not override it.
+            if isRelativeWidth {
+                return
+            }
             if !isUpdatingWidth {
-                isUpdatingPixelWidth = true
                 let lower = width.lowercased()
                 if lower == "stretch" {
                     isUpdatingFromWidth = true
@@ -19,12 +23,11 @@ class Column: StyledCollectionElement {
                     isDefaultWidth = false
                 } else if lower == "auto" {
                     isUpdatingFromWidth = true
-                    // If still default, preserve "Auto"; otherwise use lowercase "auto"
                     width = isDefaultWidth ? "Auto" : "auto"
                     pixelWidth = 0
-                } else if let pxValue = parseSizeForPixelSize(width) {
+                } else if let parsed = parseExplicitWidth(width) {
                     isUpdatingFromWidth = true
-                    pixelWidth = pxValue
+                    pixelWidth = parsed
                     isDefaultWidth = false
                 } else {
                     isUpdatingFromWidth = true
@@ -36,11 +39,14 @@ class Column: StyledCollectionElement {
             }
         }
     }
-    
+
     var pixelWidth: Int {
         didSet {
+            // If this is a relative width, do nothing.
+            if isRelativeWidth {
+                return
+            }
             if isUpdatingFromWidth {
-                // This update came from width’s didSet; reset the flag and do nothing.
                 isUpdatingFromWidth = false
                 return
             }
@@ -52,7 +58,7 @@ class Column: StyledCollectionElement {
             }
         }
     }
-    
+
     override var canBleed: Bool {
         // Column can only bleed if it has padding AND hasBleed is true
         return hasPadding && hasBleed
@@ -127,8 +133,6 @@ class Column: StyledCollectionElement {
         let decodedWidth = try container.decodeIfPresent(String.self, forKey: .width)
             ?? container.decodeIfPresent(String.self, forKey: .size)
             ?? "Auto"
-        // Set the default flag based on the decoded value.
-        // If JSON provides "auto" (lowercase) then default should be false.
         self.isDefaultWidth = (decodedWidth == "Auto")
         
         var dummyWarnings = [AdaptiveCardParseWarning]()
@@ -164,6 +168,14 @@ class Column: StyledCollectionElement {
         self.layouts = try container.decodeIfPresent([Layout].self, forKey: .layouts) ?? []
     }
     
+    private func parseExplicitWidth(_ val: String) -> Int? {
+        var localWarnings = [AdaptiveCardParseWarning]()
+        if let result = parseSizeForPixelSize(val, warnings: &localWarnings) {
+            return Int(result)
+        }
+        return nil
+    }
+
     override func configForContainerStyle(_ context: ParseContext) {
         print("Column.configForContainerStyle - Before config, bleedDirection: \(bleedDirection)")
         configPadding(context)
@@ -194,19 +206,52 @@ class Column: StyledCollectionElement {
         return joined
     }
     
-    // Helper to parse strings ending in "px" (e.g., "20px" → 20)
-    private func parseSizeForPixelSize(_ val: String) -> Int? {
-        let lower = val.lowercased()
-        guard lower.hasSuffix("px") else { return nil }
-        let numberPart = lower.dropLast(2)
-        return Int(numberPart)
-    }
-    
-    // MARK: - setWidth Methods
     func setWidth(_ value: String, warnings: inout [AdaptiveCardParseWarning]) {
-        self.width = value  // Property observer on 'width' will update pixelWidth
+        let lower = value.lowercased()
+        if lower == "stretch" {
+            isRelativeWidth = false
+            isUpdatingWidth = true
+            self.width = "stretch"
+            self.pixelWidth = 0
+            self.isDefaultWidth = false
+            isUpdatingWidth = false
+        } else if lower == "auto" {
+            isRelativeWidth = false
+            isUpdatingWidth = true
+            isUpdatingPixelWidth = true
+            self.width = "auto"
+            self.pixelWidth = 0
+            self.isDefaultWidth = false
+            isUpdatingPixelWidth = false
+            isUpdatingWidth = false
+        } else if value.hasSuffix("px") {
+            // Explicit dimension
+            isRelativeWidth = false
+            if let parsed = parseSizeForPixelSize(value, warnings: &warnings) {
+                isUpdatingWidth = true
+                self.width = value
+                self.pixelWidth = Int(parsed)
+                self.isDefaultWidth = false
+                isUpdatingWidth = false
+            } else {
+                // Malformed explicit dimension
+                isUpdatingWidth = true
+                self.width = value
+                self.pixelWidth = 0
+                self.isDefaultWidth = false
+                isUpdatingWidth = false
+            }
+        } else {
+            // Otherwise, treat as a relative width (e.g. "20")
+            isRelativeWidth = true
+            isUpdatingWidth = true
+            self.width = value   // Preserve the literal value.
+            self.pixelWidth = 0
+            self.isDefaultWidth = false
+            isUpdatingWidth = false
+        }
     }
-    
+
     func setWidth(_ value: String) {
         var dummyWarnings = [AdaptiveCardParseWarning]()
         setWidth(value, warnings: &dummyWarnings)
