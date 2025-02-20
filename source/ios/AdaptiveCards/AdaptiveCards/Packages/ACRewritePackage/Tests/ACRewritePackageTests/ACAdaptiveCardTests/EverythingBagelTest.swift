@@ -713,7 +713,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(numberInput.min, 3.5)
         XCTAssertEqual(numberInput.value, 4.5)
         XCTAssertEqual(numberInput.placeholder, "Input.Number_placeholder")
-        XCTAssertTrue(numberInput.errorMessage?.isEmpty == true)
+        XCTAssertTrue(numberInput.errorMessage?.isEmpty ?? true)
         XCTAssertEqual(numberInput.label, "Input.Number_label")
     }
     
@@ -775,7 +775,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(choiceSet.value, "Input.Choice2,Input.Choice4")
         XCTAssertTrue(choiceSet.isMultiSelect)
         XCTAssertFalse(choiceSet.isRequired)
-        XCTAssertTrue(choiceSet.errorMessage?.isEmpty == true)
+        XCTAssertTrue(choiceSet.errorMessage?.isEmpty ?? true)
         
         let choices = choiceSet.choices
         XCTAssertEqual(choices.count, 4)
