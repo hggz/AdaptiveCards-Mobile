@@ -54,7 +54,7 @@ func validateColor(_ backgroundColor: String, warnings: inout [AdaptiveCardParse
 /// If the dimension does not match the expected format (digits with an optional fractional part immediately followed by "px"),
 /// a warning is appended and nil is returned.
 func parseSizeForPixelSize(_ dimension: String, warnings: inout [AdaptiveCardParseWarning]) -> UInt? {
-    let pattern = "^[0-9]+(?:\\.[0-9]+)?px$"
+    let pattern = "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?px$"
     guard let _ = dimension.range(of: pattern, options: .regularExpression) else {
         warnings.append(AdaptiveCardParseWarning(statusCode: .invalidDimensionSpecified,
                                                    message: "Invalid dimension format: \(dimension)"))
