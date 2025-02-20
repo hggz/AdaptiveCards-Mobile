@@ -20,18 +20,18 @@ class TextBlock: BaseCardElement {
 
     /// Designated initializer.
     init(
-            text: String = "",
-            textStyle: TextStyle? = .defaultStyle,  // Default to .defaultStyle
-            textSize: TextSize? = nil,
-            textWeight: TextWeight? = nil,
-            fontType: FontType? = nil,
-            textColor: ForegroundColor? = nil,
-            isSubtle: Bool? = nil,
-            wrap: Bool = false,
-            maxLines: UInt = 0,
-            horizontalAlignment: HorizontalAlignment? = nil,
-            language: String? = "en",
-            id: String? = nil
+        text: String = "",
+        textStyle: TextStyle? = .defaultStyle,
+        textSize: TextSize? = nil,
+        textWeight: TextWeight? = nil,
+        fontType: FontType? = nil,
+        textColor: ForegroundColor? = nil,
+        isSubtle: Bool? = nil,
+        wrap: Bool = false,
+        maxLines: UInt = 0,
+        horizontalAlignment: HorizontalAlignment? = nil,
+        language: String? = "en",
+        id: String? = nil
     ) {
         self.text = TextBlock.decodeHTMLEntities(text)
         self.textStyle = textStyle
@@ -44,7 +44,7 @@ class TextBlock: BaseCardElement {
         self.maxLines = maxLines
         self.horizontalAlignment = horizontalAlignment
         self.language = language
-        super.init(type: .textBlock, id: id)
+        super.init(type: .textBlock, id: id ?? "") // Convert nil to empty string here
     }
     
     /// Required initializer for decoding.
@@ -54,8 +54,6 @@ class TextBlock: BaseCardElement {
         self.text = TextBlock.decodeHTMLEntities(rawText)
         
         // Default to .defaultStyle if not present or invalid
-        // Handle style - default to .defaultStyle only if style key exists
-        // Only set textStyle if the key exists in the JSON
         if let styleStr = try? container.decodeIfPresent(String.self, forKey: .textStyle) {
             switch styleStr.lowercased() {
             case "heading":
@@ -63,13 +61,12 @@ class TextBlock: BaseCardElement {
             case "default":
                 self.textStyle = .defaultStyle
             default:
-                // Invalid style should be nil
                 self.textStyle = nil
             }
         } else {
-            // No style specified should be nil
             self.textStyle = nil
         }
+        
         self.textSize = try container.decodeIfPresent(TextSize.self, forKey: .textSize)
         self.textWeight = try container.decodeIfPresent(TextWeight.self, forKey: .textWeight)
         self.fontType = try container.decodeIfPresent(FontType.self, forKey: .fontType)
@@ -80,7 +77,7 @@ class TextBlock: BaseCardElement {
         self.horizontalAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalAlignment)
         self.language = try container.decodeIfPresent(String.self, forKey: .language) ?? "en"
         
-        // Decode the base class after handling local properties
+        // Decode the base class first - this will handle id, spacing, and other base properties
         try super.init(from: decoder)
         
         // After decoding, remove known properties from additionalProperties
@@ -98,6 +95,11 @@ class TextBlock: BaseCardElement {
             additional.removeValue(forKey: "horizontalAlignment")
             additional.removeValue(forKey: "lang")
             self.additionalProperties = additional
+        }
+
+        // Force empty string for id if nil
+        if self.id == nil {
+            self.id = ""
         }
     }
 
@@ -137,6 +139,14 @@ class TextBlock: BaseCardElement {
         var json = try super.serializeToJsonValue()
         json["type"] = "TextBlock"
         json["text"] = text
+        
+        // Only include id if it's non-nil and non-empty
+        if let id = id, !id.isEmpty {
+            json["id"] = id
+        } else {
+            // Remove id from json if it was added by super class
+            json.removeValue(forKey: "id")
+        }
         
         // Only include style if it differs from default
         if let textStyle = textStyle, textStyle != .defaultStyle {

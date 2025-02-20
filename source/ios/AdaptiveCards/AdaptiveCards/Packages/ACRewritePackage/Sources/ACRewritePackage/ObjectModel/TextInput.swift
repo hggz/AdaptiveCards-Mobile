@@ -48,7 +48,12 @@ class TextInput: BaseInputElement {
         self.isMultiline = try container.decodeIfPresent(Bool.self, forKey: .isMultiline) ?? false
         self.maxLength = try container.decodeIfPresent(UInt.self, forKey: .maxLength) ?? 0
         self.style = try container.decodeIfPresent(TextInputStyle.self, forKey: .style)
-        self.inlineAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .inlineAction)
+        if let actionData = try container.decodeIfPresent([String: AnyCodable].self, forKey: .inlineAction) {
+            let actionDict = actionData.mapValues { $0.value }
+            self.inlineAction = try BaseActionElement.deserializeAction(from: actionDict)
+        } else {
+            self.inlineAction = nil
+        }
         self.regex = try container.decodeIfPresent(String.self, forKey: .regex)
         // Call the superclass decoder initializer.
         try super.init(from: decoder)
@@ -63,7 +68,11 @@ class TextInput: BaseInputElement {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(placeholder, forKey: .placeholder)
         try container.encodeIfPresent(value, forKey: .value)
-        try container.encode(isMultiline, forKey: .isMultiline)
+        if let action = inlineAction {
+            let actionJson = try action.serializeToJsonValue()
+            let encodableDict = actionJson.mapValues { AnyCodable($0) }
+            try container.encode(encodableDict, forKey: .inlineAction)
+        }
         try container.encode(maxLength, forKey: .maxLength)
         try container.encode(style, forKey: .style)
         try container.encodeIfPresent(inlineAction, forKey: .inlineAction)
