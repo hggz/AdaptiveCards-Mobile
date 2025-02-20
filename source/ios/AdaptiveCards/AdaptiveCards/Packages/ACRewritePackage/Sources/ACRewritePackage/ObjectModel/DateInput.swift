@@ -7,7 +7,7 @@ class DateInput: BaseInputElement {
     var placeholder: String?
     var value: String?
     
-    /// Designated initializer.
+    // Keep the existing initializer
     init(id: String? = nil,
          max: String? = nil,
          min: String? = nil,
@@ -17,21 +17,23 @@ class DateInput: BaseInputElement {
         self.min = min
         self.placeholder = placeholder
         self.value = value
-        // Set type to .dateInput (ensure CardElementType includes this case)
         super.init(type: .dateInput, id: id)
     }
     
-    // MARK: - Codable
     private enum CodingKeys: String, CodingKey {
         case max, min, placeholder, value
     }
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Handle optional properties with proper decoding
         self.max = try container.decodeIfPresent(String.self, forKey: .max)
         self.min = try container.decodeIfPresent(String.self, forKey: .min)
         self.placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
         self.value = try container.decodeIfPresent(String.self, forKey: .value)
+        
+        // Decode base properties
         try super.init(from: decoder)
     }
     
@@ -44,49 +46,47 @@ class DateInput: BaseInputElement {
         try super.encode(to: encoder)
     }
     
-    // Helper methods for manual JSON serialization/deserialization.
-    override func toJSON() -> [String: Any] {
-        var json: [String: Any] = [:]
-        if let max = max { json["max"] = max }
-        if let min = min { json["min"] = min }
-        if let placeholder = placeholder { json["placeholder"] = placeholder }
-        if let value = value { json["value"] = value }
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        
+        // Add DateInput specific properties
+        if let max = max {
+            json["max"] = max
+        }
+        if let min = min {
+            json["min"] = min
+        }
+        if let placeholder = placeholder {
+            json["placeholder"] = placeholder
+        }
+        if let value = value {
+            json["value"] = value
+        }
+        
         return json
     }
     
-    func toJSONString() -> String {
-        do {
-            let data = try JSONSerialization.data(withJSONObject: toJSON(), options: .prettyPrinted)
-            return String(data: data, encoding: .utf8) ?? "{}"
-        } catch {
-            return "{}"
-        }
+    // Static creation methods like we did for NumberInput
+    static func createFromJSON(_ json: [String: Any]) throws -> DateInput {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(DateInput.self, from: data)
     }
     
-    static func fromJSONString(_ jsonString: String) -> BaseCardElement? {
-        guard let data = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            return nil
+    static func createFromJSONString(_ jsonString: String) throws -> DateInput {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
         }
-        return fromJSON(jsonDict)
+        return try JSONDecoder().decode(DateInput.self, from: data)
     }
 }
 
-
-/// Parses DateInput elements in an Adaptive Card.
+// Update the parser to match the NumberInput pattern
 class DateInputParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String : Any]) throws -> any AdaptiveCardElementProtocol {
-        guard let dateInput = DateInput.fromJSON(value) else {
-            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid DateInput JSON")
-        }
-        return dateInput
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
+        return try DateInput.createFromJSON(value)
     }
     
     func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
-        guard let dateInput = DateInput.fromJSONString(value) else {
-            throw AdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid DateInput JSON string")
-        }
-        return dateInput
+        return try DateInput.createFromJSONString(value)
     }
 }

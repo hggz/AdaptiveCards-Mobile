@@ -169,8 +169,8 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(TextInput.self, from: data)
         case CardElementType.numberInput.rawValue:
             return try decoder.decode(NumberInput.self, from: data)
-//        case CardElementType.dateInput.rawValue:
-//            return try decoder.decode(DateInput.self, from: data)
+        case CardElementType.dateInput.rawValue:
+            return try decoder.decode(DateInput.self, from: data)
 //        case CardElementType.timeInput.rawValue:
 //            return try decoder.decode(TimeInput.self, from: data)
         case CardElementType.choiceSetInput.rawValue:
