@@ -155,7 +155,9 @@ class StyledCollectionElement: BaseCardElement {
     
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(style, forKey: .style)
+        if style != .none {
+            try container.encode(ContainerStyle.toString(style), forKey: .style)  // Use toString
+        }
         try container.encodeIfPresent(verticalContentAlignment, forKey: .verticalContentAlignment)
         try container.encode(bleedDirection, forKey: .bleedDirection)
         try container.encode(minHeight, forKey: .minHeight)
@@ -186,7 +188,9 @@ class StyledCollectionElement: BaseCardElement {
     // MARK: - Custom Serialization
     func serializeToJsonV() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
-        json["style"] = style.rawValue
+        if style != .none {
+            json["style"] = ContainerStyle.toString(style)  // Use toString instead of rawValue
+        }
         if let verticalAlignment = verticalContentAlignment {
             json["verticalContentAlignment"] = verticalAlignment.rawValue
         }

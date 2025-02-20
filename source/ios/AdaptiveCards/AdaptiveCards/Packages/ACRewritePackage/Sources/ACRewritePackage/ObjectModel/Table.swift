@@ -74,7 +74,7 @@ class Table: BaseCardElement, CollectionCoreElement {
         self.horizontalCellContentAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
         self.verticalCellContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
         if let gridStyleString = try container.decodeIfPresent(String.self, forKey: .gridStyle) {
-            self.gridStyle = ContainerStyle(rawValue: gridStyleString.lowercased()) ?? .none
+            self.gridStyle = ContainerStyle.fromString(gridStyleString)
         } else {
             self.gridStyle = .none
         }
@@ -118,8 +118,7 @@ class Table: BaseCardElement, CollectionCoreElement {
         
         // Encode gridStyle with first letter capitalized
         if gridStyle != .none {
-            let gridStyleString = gridStyle.rawValue.prefix(1).uppercased() + gridStyle.rawValue.dropFirst()
-            try container.encode(gridStyleString, forKey: .gridStyle)
+            try container.encode(gridStyle, forKey: .gridStyle)  // Let enum handle it
         }
     }
 
@@ -161,7 +160,7 @@ class Table: BaseCardElement, CollectionCoreElement {
         }
         
         if gridStyle != .none {
-            json["gridStyle"] = gridStyle.rawValue.prefix(1).uppercased() + gridStyle.rawValue.dropFirst()
+            json["gridStyle"] = ContainerStyle.toString(gridStyle)  // Use toString
         }
         
         // Only add properties that differ from defaults

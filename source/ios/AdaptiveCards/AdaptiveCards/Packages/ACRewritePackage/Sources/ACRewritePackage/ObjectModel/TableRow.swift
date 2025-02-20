@@ -4,13 +4,13 @@ import Foundation
 class TableRow: BaseCardElement {
     /// The style of the row.
     var style: ContainerStyle
-
+    
     /// The horizontal alignment of cell content.
     var horizontalCellContentAlignment: HorizontalAlignment?
-
+    
     /// The vertical alignment of cell content.
     var verticalCellContentAlignment: VerticalContentAlignment?
-
+    
     /// The collection of table cells in the row.
     var cells: [TableCell]
     
@@ -19,7 +19,7 @@ class TableRow: BaseCardElement {
     override var elementTypeVal: CardElementType {
         return isOrphaned ? .unknown : .tableRow
     }
-
+    
     /// Initializes a new `TableRow` with default values.
     init() {
         self.style = .none
@@ -28,7 +28,7 @@ class TableRow: BaseCardElement {
         self.cells = []
         super.init(type: .tableRow)
     }
-
+    
     /// Decodes a `TableRow` from JSON.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -38,8 +38,7 @@ class TableRow: BaseCardElement {
         self.cells = try container.decodeIfPresent([TableCell].self, forKey: .cells) ?? []
         super.init(type: .tableRow)
     }
-
-    /// Encodes a `TableRow` to JSON.
+    
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -49,9 +48,10 @@ class TableRow: BaseCardElement {
             try container.encode(cells, forKey: .cells)
         }
         
-        // Encode style if not default
+        // Encode style with proper capitalization if not .none
         if style != .none {
-            try container.encode(style.rawValue.capitalized, forKey: .style)
+            let styleString = style.rawValue  // Use rawValue directly to preserve case
+            try container.encode(styleString, forKey: .style)
         }
         
         // Encode alignments if present
@@ -67,7 +67,7 @@ class TableRow: BaseCardElement {
     func setCells(_ value: [TableCell]) {
         self.cells = value
     }
-
+    
     /// Deserializes a `TableRow` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: ParseContext) throws -> TableRow {
         // Retrieve the id property using the expected key from AdaptiveCardSchemaKey.
@@ -108,7 +108,7 @@ class TableRow: BaseCardElement {
         
         return tableRow
     }
-
+    
     /// Deserializes a `TableRow` from a JSON string.
     static func deserialize(from jsonString: String, context: ParseContext) throws -> TableRow {
         guard let jsonData = jsonString.data(using: .utf8),
@@ -118,7 +118,7 @@ class TableRow: BaseCardElement {
         }
         return try deserialize(from: jsonDict, context: context)
     }
-
+    
     private enum CodingKeys: String, CodingKey {
         case style
         case horizontalCellContentAlignment
@@ -134,9 +134,9 @@ class TableRow: BaseCardElement {
             json["cells"] = try cells.map { try $0.serializeToJsonValue() }
         }
         
-        // Add style if not default
+        // Add style if not default with proper capitalization
         if style != .none {
-            json["style"] = style.rawValue.capitalized
+            json["style"] = style.rawValue  // Uses proper capitalization
         }
         
         // Add alignments if present
@@ -145,16 +145,6 @@ class TableRow: BaseCardElement {
         }
         if let vertical = verticalCellContentAlignment {
             json["verticalCellContentAlignment"] = vertical.rawValue.capitalized
-        }
-        
-        // Add cells if present
-        if !cells.isEmpty {
-            json["cells"] = try cells.map { try $0.serializeToJsonValue() }
-        }
-        
-        // Add style if not default, with proper capitalization
-        if style != .none {
-            json["style"] = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
         }
         
         return json

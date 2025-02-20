@@ -42,89 +42,48 @@ class TableCell: Container {
         
         // Encode style with proper capitalization if not .none
         if style != .none {
-            let styleString = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
+            let styleString = style.rawValue  // Use rawValue directly to preserve case
             try container.encode(styleString, forKey: .style)
         }
     }
     
     /// Updated initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
-        // (Our previous changes to check for an explicit "type" are still useful
-        // for ensuring we call the correct initializer; see previous solution.)
-        let baseContainer = try decoder.container(keyedBy: BaseCodingKeys.self)
-        if !baseContainer.contains(.type) {
-            // No explicit "type" → use the designated initializer.
-            super.init(items: [], layouts: [], rtl: nil, cardElementType: .tableCell)
-        } else {
-            try super.init(from: decoder)
-        }
+        // Call super first
+        try super.init(from: decoder)
         
+        // Then decode our own style explicitly
         let container = try decoder.container(keyedBy: CodingKeys.self)
         if let styleString = try container.decodeIfPresent(String.self, forKey: .style) {
-            style = ContainerStyle(rawValue: styleString.lowercased()) ?? .none
+            // Force the style to be set after super.init
+            self.style = ContainerStyle(rawValue: styleString.capitalized) ?? .none
+            print("TableCell.init - Explicitly setting style to: \(styleString.capitalized)")
         }
     }
-    
     /// Override to report .tableCell when not orphaned.
     override var elementTypeVal: CardElementType {
         return isOrphaned ? .unknown : .tableCell
     }
     /// Deserializes a `TableCell` from a JSON dictionary.
     static func deserialize(from json: [String: Any], context: ParseContext) throws -> TableCell {
-        // Retrieve the id property using the expected key.
         let idProperty = json[AdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
         let internalId = InternalId.next()
         
-        // Push the element into the parse context.
         context.pushElement(idJsonProperty: idProperty, internalId: internalId)
         
         // Convert the JSON dictionary to Data.
         let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
         let cell = try JSONDecoder().decode(TableCell.self, from: jsonData)
         
-        // Set RTL if provided (as before) …
+        // Explicitly set style if provided
+        if let styleString = json["style"] as? String {
+            cell.style = ContainerStyle(rawValue: styleString.capitalized) ?? .none
+            print("TableCell.deserialize - Explicitly setting style to: \(styleString.capitalized)")
+        }
+        
+        // Rest of your existing deserialization code...
         if let rtl = json[AdaptiveCardSchemaKey.rtl.rawValue] as? Bool {
             cell.setRtl(rtl)
-        }
-        
-        // Set style if provided in the JSON
-        if let styleString = json["style"] as? String {
-            cell.style = ContainerStyle(rawValue: styleString.lowercased()) ?? .none
-        }
-        
-        // Process layouts if provided.
-        if let layoutArray = json[AdaptiveCardSchemaKey.layouts.rawValue] as? [[String: Any]], !layoutArray.isEmpty {
-            var layouts: [Layout] = []
-            
-            for layoutJson in layoutArray {
-                // Attempt to decode a generic Layout from the JSON.
-                guard let layout = Layout.fromJSON(layoutJson) else {
-                    continue
-                }
-                
-                switch layout.layoutContainerType {
-                case .flow:
-                    // Use dictionary‑based deserialization for FlowLayout.
-                    let flowLayout = try FlowLayout.deserialize(from: layoutJson)
-                    layouts.append(Layout(fromFlowLayout: flowLayout))
-                case .areaGrid:
-                    // Dictionary‑based deserialization for AreaGridLayout.
-                    let areaGridLayout = AreaGridLayout.deserialize(from: layoutJson)
-                    if areaGridLayout.areas.isEmpty && areaGridLayout.columns.isEmpty {
-                        var stackLayout = Layout(fromAreaGridLayout: areaGridLayout)
-                        stackLayout.layoutContainerType = .stack
-                        layouts.append(stackLayout)
-                    } else if areaGridLayout.areas.isEmpty {
-                        let flowLayout = try FlowLayout.deserialize(from: layoutJson)
-                        layouts.append(Layout(fromFlowLayout: flowLayout))
-                    } else {
-                        layouts.append(Layout(fromAreaGridLayout: areaGridLayout))
-                    }
-                default:
-                    layouts.append(layout)
-                }
-            }
-            cell.setLayouts(layouts)
         }
         
         cell.additionalProperties = nil
@@ -142,6 +101,7 @@ class TableCell: Container {
         return try deserialize(from: jsonDict, context: context)
     }
     
+    // In TableCell
     override func serializeToJsonValue() throws -> [String: Any] {
         var json = try super.serializeToJsonValue()
         
@@ -156,8 +116,10 @@ class TableCell: Container {
         }
         
         // Add style with proper capitalization if not .none
+        print("TableCell serializeToJsonValue - current style: \(style)")
         if style != .none {
-            json["style"] = style.rawValue.prefix(1).uppercased() + style.rawValue.dropFirst()
+            json["style"] = style.rawValue  // Use rawValue to get capitalized version
+            print("TableCell serializeToJsonValue - set style to: \(style.rawValue)")
         }
         
         return json

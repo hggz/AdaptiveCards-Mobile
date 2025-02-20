@@ -599,8 +599,6 @@ extension ActionsOrientation {
     }
 }
 
-// MARK: - ChoiceSetStyle
-
 enum ChoiceSetStyle: String, Codable {
     case compact = "Compact"
     case expanded = "Expanded"
@@ -608,18 +606,22 @@ enum ChoiceSetStyle: String, Codable {
     
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let raw = try container.decode(String.self).lowercased()
-        switch raw {
-        case "compact":
-            self = .compact
-        case "expanded":
-            self = .expanded
+        let raw = try container.decode(String.self)
+        // Use case-insensitive comparison
+        switch raw.lowercased() {
+        case "compact": self = .compact
+        case "expanded": self = .expanded
+        case "filtered": self = .filtered
         default:
-            // If test never uses other styles, you can default or throw.
-            // If you want to fail gracefully, you can do:
-            // throw DecodingError.dataCorruptedError(in: container, debugDescription: "Unknown style: \(raw)")
+            // Default to compact as before
             self = .compact
         }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        // Use the rawValue which will preserve our defined casing
+        try container.encode(self.rawValue)
     }
 }
 
@@ -644,34 +646,54 @@ extension ChoiceSetStyle {
 // MARK: - ContainerStyle
 
 enum ContainerStyle: String, Codable {
-    case none, `default`, emphasis, good, attention, warning, accent
+    case none = "None"
+    case `default` = "Default"
+    case emphasis = "Emphasis"
+    case good = "Good"
+    case attention = "Attention"
+    case warning = "Warning"
+    case accent = "Accent"
+    
+    // Add explicit encode method
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue) // Always use the raw value with proper capitalization
+    }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        let raw = try container.decode(String.self).lowercased()
-        guard let value = ContainerStyle(rawValue: raw) else {
-            throw DecodingError.dataCorruptedError(in: container,
-                debugDescription: "Cannot initialize ContainerStyle from invalid String value \(raw)")
+        let raw = try container.decode(String.self)
+        // Handle both lowercase and proper case inputs
+        switch raw.lowercased() {
+        case "none": self = .none
+        case "default": self = .default
+        case "emphasis": self = .emphasis
+        case "good": self = .good
+        case "attention": self = .attention
+        case "warning": self = .warning
+        case "accent": self = .accent
+        default: self = .none
         }
-        self = value
     }
 }
 
 extension ContainerStyle {
     static func toString(_ value: ContainerStyle) -> String {
-        switch value {
-        case .none: return "None"
-        case .default: return "Default"
-        case .emphasis: return "Emphasis"
-        case .good: return "Good"
-        case .attention: return "Attention"
-        case .warning: return "Warning"
-        case .accent: return "Accent"
-        }
+        return value.rawValue  // Always return the properly capitalized raw value
     }
     
     static func fromString(_ value: String) -> ContainerStyle {
-        return ContainerStyle(rawValue: value.capitalized) ?? .none
+        // Case-insensitive comparison for input
+        switch value.lowercased() {
+        case "none": return .none
+        case "default": return .default
+        case "emphasis": return .emphasis
+        case "good": return .good
+        case "attention": return .attention
+        case "warning": return .warning
+        case "accent": return .accent
+        default: return .none
+        }
     }
 }
 

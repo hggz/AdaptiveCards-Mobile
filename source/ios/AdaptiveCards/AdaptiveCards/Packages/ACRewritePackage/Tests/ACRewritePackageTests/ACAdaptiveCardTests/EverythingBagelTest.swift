@@ -1079,18 +1079,91 @@ class EverythingBagelTests: XCTestCase {
         }
         
         XCTAssertEqual(parseResult.warnings.count, 0)
-        
         let everythingBagel = parseResult.adaptiveCard
         
+        // Convert both JSONs to dictionaries
+        let expectedData = EVERYTHING_JSON.data(using: .utf8)!
+        let actualData = try everythingBagel.serialize().data(using: .utf8)!
+        
+        let expectedDict = try JSONSerialization.jsonObject(with: expectedData, options: []) as! [String: Any]
+        let actualDict = try JSONSerialization.jsonObject(with: actualData, options: []) as! [String: Any]
+        
+        print("🔍 Comparing JSON structures...")
+        compareJsonStructures(expectedDict, actualDict)
+        
+        // Keep your existing validations
         validateTopLevelProperties(everythingBagel)
         validateBody(everythingBagel)
         validateToplevelActions(everythingBagel)
         validateFallbackCard(everythingBagel)
         
-        print("Expected: \(EVERYTHING_JSON)")
-        print("Actual: \(try everythingBagel.serialize())")
+        XCTAssertEqual(NSDictionary(dictionary: expectedDict), NSDictionary(dictionary: actualDict), "JSON structures don't match")
+    }
+
+    func compareJsonStructures(_ expected: [String: Any], _ actual: [String: Any], path: String = "") {
+        // Track all keys to find missing ones
+        var expectedKeys = Set(expected.keys)
+        var actualKeys = Set(actual.keys)
         
-        XCTAssertEqual(EVERYTHING_JSON, try everythingBagel.serialize())
+        // Check for missing keys in actual
+        let missingInActual = expectedKeys.subtracting(actualKeys)
+        for key in missingInActual {
+            print("❌ Missing in actual at \(path)/\(key): \(expected[key] ?? "nil")")
+        }
+        
+        // Check for extra keys in actual
+        let extraInActual = actualKeys.subtracting(expectedKeys)
+        for key in extraInActual {
+            print("⚠️ Extra in actual at \(path)/\(key): \(actual[key] ?? "nil")")
+        }
+        
+        // Compare values for shared keys
+        let sharedKeys = expectedKeys.intersection(actualKeys)
+        for key in sharedKeys {
+            let currentPath = path.isEmpty ? key : "\(path)/\(key)"
+            let expectedValue = expected[key]
+            let actualValue = actual[key]
+            
+            if let expectedDict = expectedValue as? [String: Any],
+               let actualDict = actualValue as? [String: Any] {
+                compareJsonStructures(expectedDict, actualDict, path: currentPath)
+            } else if let expectedArray = expectedValue as? [[String: Any]],
+                      let actualArray = actualValue as? [[String: Any]] {
+                if expectedArray.count != actualArray.count {
+                    print("❌ Array count mismatch at \(currentPath): expected \(expectedArray.count), got \(actualArray.count)")
+                }
+                for (index, (expectedItem, actualItem)) in zip(expectedArray, actualArray).enumerated() {
+                    compareJsonStructures(expectedItem, actualItem, path: "\(currentPath)[\(index)]")
+                }
+            } else if !areValuesSemanticallyEqual(expectedValue, actualValue) {
+                print("❌ Value mismatch at \(currentPath):")
+                print("   Expected: \(expectedValue ?? "nil")")
+                print("   Actual:   \(actualValue ?? "nil")")
+            }
+        }
+    }
+
+    func areValuesSemanticallyEqual(_ expected: Any?, _ actual: Any?) -> Bool {
+        // Handle nil cases
+        if expected == nil && actual == nil { return true }
+        if expected == nil || actual == nil { return false }
+        
+        // Handle numbers that might be represented differently
+        if let exp = expected as? NSNumber, let act = actual as? NSNumber {
+            return exp.isEqual(act)
+        }
+        
+        // Handle case-insensitive string comparisons for certain known properties
+        if let exp = expected as? String, let act = actual as? String {
+            let caseInsensitiveProperties = ["style", "type", "weight", "size", "color"]
+            // If the path contains these properties, do case-insensitive comparison
+            if caseInsensitiveProperties.contains(where: { exp.lowercased().contains($0.lowercased()) }) {
+                return exp.lowercased() == act.lowercased()
+            }
+        }
+        
+        // Default comparison
+        return (expected as AnyObject).isEqual(actual as AnyObject)
     }
     
     // NEW
