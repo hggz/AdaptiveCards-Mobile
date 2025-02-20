@@ -51,33 +51,43 @@ struct TextRun: Inline, Codable {
         additionalProperties.removeValue(forKey: "type")
         additionalProperties.removeValue(forKey: "text")
         additionalProperties.removeValue(forKey: "selectAction")
+        additionalProperties.removeValue(forKey: "color")
+        additionalProperties.removeValue(forKey: "size")
+        additionalProperties.removeValue(forKey: "weight")
         
-        let textSize = (json["textSize"] as? String).flatMap { TextSize(rawValue: $0) }
-        let textWeight = (json["textWeight"] as? String).flatMap { TextWeight(rawValue: $0) }
+        // Map properties using AdaptiveCardSchemaKey-style mapping
+        let textSize: TextSize?
+        if let sizeString = json["textSize"] as? String {
+            textSize = TextSize.fromString(sizeString)
+        } else if let sizeString = json["size"] as? String {
+            textSize = TextSize.fromString(sizeString)
+        } else {
+            textSize = nil
+        }
+        let textWeight = (json["weight"] as? String).flatMap { TextWeight(rawValue: $0) }
         let fontType = (json["fontType"] as? String).flatMap { FontType(rawValue: $0) }
-        let textColor = (json["textColor"] as? String).flatMap { ForegroundColor(rawValue: $0) }
+        let textColor = (json["color"] as? String).flatMap { ForegroundColor.fromString($0) }
         let isSubtle = json["isSubtle"] as? Bool
         let italic = json["italic"] as? Bool ?? false
         let strikethrough = json["strikethrough"] as? Bool ?? false
         let highlight = json["highlight"] as? Bool ?? false
         let underline = json["underline"] as? Bool ?? false
-        let language = json["language"] as? String
+        let language = json["lang"] as? String ?? "en" // Note: In C++ it uses "lang" key
         
         // Handle selectAction
         let selectAction: BaseActionElement?
-            if let actionData = json["selectAction"] {
-                if let dict = actionData as? [String: AnyCodable],
-                   let typeAnyCodable = dict["type"],
-                   let typeString = typeAnyCodable.value as? String {
-                    // Create a simple action dictionary with the extracted type
-                    let actionDict: [String: Any] = ["type": typeString]
-                    selectAction = try BaseActionElement.deserializeAction(from: actionDict)
-                } else {
-                    selectAction = nil
-                }
+        if let actionData = json["selectAction"] {
+            if let dict = actionData as? [String: AnyCodable],
+               let typeAnyCodable = dict["type"],
+               let typeString = typeAnyCodable.value as? String {
+                let actionDict: [String: Any] = ["type": typeString]
+                selectAction = try BaseActionElement.deserializeAction(from: actionDict)
             } else {
                 selectAction = nil
             }
+        } else {
+            selectAction = nil
+        }
         
         return TextRun(
             additionalProperties: additionalProperties.mapValues { AnyCodable($0) },
