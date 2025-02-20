@@ -125,8 +125,14 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             CardElementType.container.rawValue,
             CardElementType.column.rawValue,
             CardElementType.image.rawValue,
+            CardElementType.factSet.rawValue,
+            CardElementType.actionSet.rawValue,
+            CardElementType.richTextBlock.rawValue,
             CardElementType.imageSet.rawValue,
             CardElementType.textInput.rawValue,
+            CardElementType.numberInput.rawValue,
+            CardElementType.dateInput.rawValue,
+            CardElementType.timeInput.rawValue,
             CardElementType.choiceSetInput.rawValue,
             CardElementType.toggleInput.rawValue,
             CardElementType.media.rawValue,
@@ -149,12 +155,24 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(Container.self, from: data)
         case CardElementType.column.rawValue:
             return try decoder.decode(Column.self, from: data)
+//        case CardElementType.factSet.rawValue:
+//            return try decoder.decode(FactSet.self, from: data)
+//        case CardElementType.actionSet.rawValue:
+//            return try decoder.decode(ActionSet.self, from: data)
+//        case CardElementType.richTextBlock.rawValue:
+//            return try decoder.decode(RichTextBlock.self, from: data)
         case CardElementType.image.rawValue:
             return try decoder.decode(Image.self, from: data)
         case CardElementType.imageSet.rawValue:
             return try decoder.decode(ImageSet.self, from: data)
         case CardElementType.textInput.rawValue:
             return try decoder.decode(TextInput.self, from: data)
+        case CardElementType.numberInput.rawValue:
+            return try decoder.decode(NumberInput.self, from: data)
+//        case CardElementType.dateInput.rawValue:
+//            return try decoder.decode(DateInput.self, from: data)
+//        case CardElementType.timeInput.rawValue:
+//            return try decoder.decode(TimeInput.self, from: data)
         case CardElementType.choiceSetInput.rawValue:
             return try decoder.decode(ChoiceSetInput.self, from: data)
         case CardElementType.toggleInput.rawValue:

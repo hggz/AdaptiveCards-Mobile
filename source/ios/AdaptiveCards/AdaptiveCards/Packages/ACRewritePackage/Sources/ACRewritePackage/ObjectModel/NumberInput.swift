@@ -58,10 +58,34 @@ class NumberInput: BaseInputElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Handle optional properties with proper decoding
         self.placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
-        self.value = try container.decodeIfPresent(Double.self, forKey: .value)
-        self.min = try container.decodeIfPresent(Double.self, forKey: .min)
-        self.max = try container.decodeIfPresent(Double.self, forKey: .max)
+        
+        // For numeric values, we might need to handle both String and Number formats
+        if let valueDouble = try? container.decodeIfPresent(Double.self, forKey: .value) {
+            self.value = valueDouble
+        } else if let valueString = try? container.decodeIfPresent(String.self, forKey: .value),
+                  let valueDouble = Double(valueString) {
+            self.value = valueDouble
+        }
+        
+        // Same for min/max
+        if let minDouble = try? container.decodeIfPresent(Double.self, forKey: .min) {
+            self.min = minDouble
+        } else if let minString = try? container.decodeIfPresent(String.self, forKey: .min),
+                  let minDouble = Double(minString) {
+            self.min = minDouble
+        }
+        
+        if let maxDouble = try? container.decodeIfPresent(Double.self, forKey: .max) {
+            self.max = maxDouble
+        } else if let maxString = try? container.decodeIfPresent(String.self, forKey: .max),
+                  let maxDouble = Double(maxString) {
+            self.max = maxDouble
+        }
+        
+        // Decode base properties
         try super.init(from: decoder)
     }
     
