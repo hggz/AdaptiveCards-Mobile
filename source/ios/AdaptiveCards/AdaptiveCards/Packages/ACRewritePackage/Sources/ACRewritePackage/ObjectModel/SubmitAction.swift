@@ -4,12 +4,19 @@ import Foundation
 
 /// Represents a Submit Action in an Adaptive Card.
 class SubmitAction: BaseActionElement {
-    var dataJson: [String: Any]?
+    // Change type to Any? to handle both String and Dictionary
+    var dataJson: Any?
     var associatedInputs: AssociatedInputs
     var conditionallyEnabled: Bool
-
+    
+    // Set of known properties to filter out
+    private static let knownProperties: Set<String> = [
+        "data", "associatedInputs", "conditionallyEnabled",
+        "title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"
+    ]
+    
     /// Designated initializer.
-    init(dataJson: [String: Any]? = nil,
+    init(dataJson: Any? = nil,
          associatedInputs: AssociatedInputs = .auto,
          conditionallyEnabled: Bool = false,
          title: String? = nil,
@@ -23,43 +30,49 @@ class SubmitAction: BaseActionElement {
         self.dataJson = dataJson
         self.associatedInputs = associatedInputs
         self.conditionallyEnabled = conditionallyEnabled
-        // Call the designated initializer of BaseActionElement.
         super.init(type: .submit, id: id)
     }
-    
     /// Required initializer for Codable.
+    // In SubmitAction.swift, update the decoding logic:
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: SubmitActionCodingKeys.self)
         
-        if let dataDict = try container.decodeIfPresent([String: AnyCodable].self, forKey: .dataJson) {
+        if let dataString = try? container.decode(String.self, forKey: .dataJson) {
+            self.dataJson = dataString
+        } else if let dataDict = try? container.decode([String: AnyCodable].self, forKey: .dataJson) {
             self.dataJson = dataDict.mapValues { $0.value }
         } else {
             self.dataJson = nil
         }
+        
         self.associatedInputs = try container.decodeIfPresent(AssociatedInputs.self, forKey: .associatedInputs) ?? .auto
         self.conditionallyEnabled = try container.decodeIfPresent(Bool.self, forKey: .conditionallyEnabled) ?? false
         
         try super.init(from: decoder)
         
-        // Filter out known keys so that additionalProperties is empty if nothing extra was provided.
+        // Filter out known properties
         if var additional = self.additionalProperties {
-            let knownKeys: Set<String> = [
-                "data", "associatedInputs", "conditionallyEnabled",
-                "title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"
-            ]
-            additional = additional.filter { !knownKeys.contains($0.key) }
+            additional = additional.filter { !Self.knownProperties.contains($0.key) }
             self.additionalProperties = additional.isEmpty ? nil : additional
         }
     }
-
+    
     /// Encodes this action to an Encoder.
     override func encode(to encoder: Encoder) throws {
         try super.encode(to: encoder)
         var container = encoder.container(keyedBy: SubmitActionCodingKeys.self)
+        
+        // Handle encoding based on type
         if let dataJson = self.dataJson {
-            let encodableDict = dataJson.mapValues { AnyCodable($0) }
-            try container.encode(encodableDict, forKey: .dataJson)
+            if let stringData = dataJson as? String {
+                try container.encode(stringData, forKey: .dataJson)
+            } else if let dictData = dataJson as? [String: Any] {
+                let encodableDict = dictData.mapValues { AnyCodable($0) }
+                try container.encode(encodableDict, forKey: .dataJson)
+            }
         }
+        
         if associatedInputs != .auto {
             try container.encode(associatedInputs, forKey: .associatedInputs)
         }
@@ -75,13 +88,11 @@ class SubmitAction: BaseActionElement {
     
     /// Serializes the action into a JSON dictionary.
     override func serializeToJsonValue() throws -> [String: Any] {
-        // Get base properties
         var json = try super.serializeToJsonValue()
         
-        // Ensure we use the correct type
         json["type"] = "Action.Submit"
         
-        // Add SubmitAction-specific properties
+        // Handle dataJson serialization to maintain exact format
         if let dataJson = self.dataJson {
             json[AdaptiveCardSchemaKey.data.rawValue] = dataJson
         }
@@ -90,14 +101,20 @@ class SubmitAction: BaseActionElement {
             json[AdaptiveCardSchemaKey.associatedInputs.rawValue] = associatedInputs.rawValue
         }
         
-        json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] = conditionallyEnabled
+        if !title.isEmpty {
+            json["title"] = title
+        }
         
-        // Make sure title is included (this is from BaseActionElement)
-        json["title"] = title
+        // Include only non-empty additional properties
+        if let additionalProps = additionalProperties, !additionalProps.isEmpty {
+            for (key, value) in additionalProps {
+                json[key] = value.value
+            }
+        }
         
         return json
     }
-
+    
     // Remove or deprecate the old serializeToJson() method since we're using serializeToJsonValue now
     @available(*, deprecated, message: "Use serializeToJsonValue() instead")
     func serializeToJson() -> [String: Any] {
@@ -108,7 +125,7 @@ class SubmitAction: BaseActionElement {
             return [:]
         }
     }
-
+    
     // Update serialize() to use serializeToJsonValue
     func serialize() throws -> String {
         let json = try serializeToJsonValue()
@@ -119,33 +136,52 @@ class SubmitAction: BaseActionElement {
     /// Creates a SubmitAction from a JSON dictionary.
     /// (Renamed from “deserialize(from:)” to avoid conflicting with BaseActionElement’s extension.)
     static func make(from json: [String: Any]) throws -> SubmitAction {
-        let dataJson = json[AdaptiveCardSchemaKey.data.rawValue] as? [String: Any]
+        let dataJson: Any?
+        if let data = json[AdaptiveCardSchemaKey.data.rawValue] {
+            if let dataDict = data as? [String: Any] {
+                dataJson = dataDict
+            } else {
+                dataJson = data
+            }
+        } else {
+            dataJson = nil
+        }
+        
         let associatedInputsString = json[AdaptiveCardSchemaKey.associatedInputs.rawValue] as? String ?? "auto"
         let associatedInputs = AssociatedInputs(rawValue: associatedInputsString) ?? .auto
         let conditionallyEnabled = json[AdaptiveCardSchemaKey.conditionallyEnabled.rawValue] as? Bool ?? false
         
-        // Decode additional base action properties.
         let title = json["title"] as? String
         let iconUrl = json["iconUrl"] as? String
         let style = json["style"] as? String ?? "default"
         let tooltip = json["tooltip"] as? String
         let mode = (json["mode"] as? String).flatMap { Mode(rawValue: $0) } ?? .primary
         let isEnabled = json["isEnabled"] as? Bool ?? true
-        let roleString = json["actionRole"] as? String
-        let role: ActionRole = roleString.flatMap { ActionRole(rawValue: $0) } ?? .button
         let id = json["id"] as? String
         
-        return SubmitAction(dataJson: dataJson,
-                            associatedInputs: associatedInputs,
-                            conditionallyEnabled: conditionallyEnabled,
-                            title: title,
-                            iconUrl: iconUrl,
-                            style: style,
-                            tooltip: tooltip,
-                            mode: mode,
-                            isEnabled: isEnabled,
-                            role: role,
-                            id: id)
+        let action = SubmitAction(dataJson: dataJson,
+                                  associatedInputs: associatedInputs,
+                                  conditionallyEnabled: conditionallyEnabled,
+                                  title: title,
+                                  iconUrl: iconUrl,
+                                  style: style,
+                                  tooltip: tooltip,
+                                  mode: mode,
+                                  isEnabled: isEnabled,
+                                  id: id)
+        
+        // Filter and set additional properties
+        var additionalProps: [String: Any] = [:]
+        for (key, value) in json {
+            if !Self.knownProperties.contains(key) {
+                additionalProps[key] = value
+            }
+        }
+        if !additionalProps.isEmpty {
+            action.additionalProperties = additionalProps.mapValues { AnyCodable($0) }
+        }
+        
+        return action
     }
 }
 

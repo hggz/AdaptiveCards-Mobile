@@ -125,30 +125,31 @@ class StyledCollectionElement: BaseCardElement {
     
     
     // MARK: - Decodable
+    // In StyledCollectionElement class, modify the init(from:) method:
+
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // If "style" is missing, default to .none
+        // Decode all the other properties as before...
         self.style = try container.decodeIfPresent(ContainerStyle.self, forKey: .style) ?? .none
-        
-        // For verticalContentAlignment, it's optional. If there's no key, remain nil
         self.verticalContentAlignment = try container.decodeIfPresent(VerticalContentAlignment.self, forKey: .verticalContentAlignment)
-        
-        // If "bleedDirection" is missing, default to .bleedAll
         self.bleedDirection = try container.decodeIfPresent(ContainerBleedDirection.self, forKey: .bleedDirection) ?? .bleedAll
-        
-        // If "minHeight" is missing, default to 0
         self.minHeight = try container.decodeIfPresent(UInt.self, forKey: .minHeight) ?? 0
-        
-        // For these booleans, if missing, default to false
         self.hasPadding = try container.decodeIfPresent(Bool.self, forKey: .hasPadding) ?? false
         self.hasBleed = try (try container.decodeIfPresent(Bool.self, forKey: .hasBleed)) ??
                         (try container.decodeIfPresent(Bool.self, forKey: .bleed)) ?? false
         self.showBorder = try container.decodeIfPresent(Bool.self, forKey: .showBorder) ?? false
         self.roundedCorners = try container.decodeIfPresent(Bool.self, forKey: .roundedCorners) ?? false
-        
         self.backgroundImage = try container.decodeIfPresent(BackgroundImage.self, forKey: .backgroundImage)
-        self.selectAction = try container.decodeIfPresent(BaseActionElement.self, forKey: .selectAction)
+        
+        // Update this part to use deserializeAction
+        if let selectActionData = try container.decodeIfPresent([String: AnyCodable].self, forKey: .selectAction) {
+            let actionDict = selectActionData.mapValues { $0.value }
+            self.selectAction = try BaseActionElement.deserializeAction(from: actionDict)
+        } else {
+            self.selectAction = nil
+        }
+        
         try super.init(from: decoder)
     }
     

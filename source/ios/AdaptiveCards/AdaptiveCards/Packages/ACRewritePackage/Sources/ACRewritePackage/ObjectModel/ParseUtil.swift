@@ -13,6 +13,18 @@ struct ParseUtil {
     static func jsonToString(_ json: [String: AnyCodable]) throws -> String {
         return try jsonToString(json.mapValues { $0.value })
     }
+    
+    static func jsonToString(_ value: Any) throws -> String {
+        if let str = value as? String {
+            // If it's already a string, return it JSON-encoded
+            let data = try JSONSerialization.data(withJSONObject: str, options: .prettyPrinted)
+            return String(data: data, encoding: .utf8) ?? ""
+        } else {
+            // For dictionaries and other types, use standard JSON serialization
+            let data = try JSONSerialization.data(withJSONObject: value, options: .prettyPrinted)
+            return String(data: data, encoding: .utf8) ?? ""
+        }
+    }
 
     static func throwIfNotJsonObject(_ json: Any) throws {
         guard json is [String: Any] else {

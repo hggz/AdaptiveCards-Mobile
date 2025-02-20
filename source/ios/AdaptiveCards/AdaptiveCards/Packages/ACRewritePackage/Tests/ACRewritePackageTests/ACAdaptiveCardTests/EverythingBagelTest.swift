@@ -413,9 +413,9 @@ let EVERYTHING_BAGEL_JSON =
 // MARK: - Test Case
 
 class EverythingBagelTests: XCTestCase {
-
+    
     // MARK: - Helper Validators
-
+    
     private func validateBackgroundImage(_ backImage: BackgroundImage,
                                          mode: ImageFillMode,
                                          hAlignment: HorizontalAlignment,
@@ -425,7 +425,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(backImage.horizontalAlignment, hAlignment)
         XCTAssertEqual(backImage.verticalAlignment, vAlignment)
     }
-
+    
     private func validateRefresh(_ refresh: Refresh) {
         XCTAssertNotNil(refresh.action)
         // Compare the action’s typeString (a String) to the expected raw value.
@@ -434,7 +434,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(refresh.userIds.count, 1)
         XCTAssertEqual(refresh.userIds.first, "refresh_userIds_0")
     }
-
+    
     private func validateAuthentication(_ auth: Authentication) {
         XCTAssertEqual(auth.text, "authentication_text")
         XCTAssertEqual(auth.connectionName, "authentication_connectionName")
@@ -450,7 +450,7 @@ class EverythingBagelTests: XCTestCase {
             XCTAssertEqual(button.value, "authentication_buttons_0_value")
         }
     }
-
+    
     private func validateTopLevelProperties(_ card: AdaptiveCard) {
         if let bg = card.backgroundImage {
             validateBackgroundImage(bg, mode: .cover, hAlignment: .left, vAlignment: .top)
@@ -480,7 +480,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertFalse(card.rtl!)
         XCTAssertEqual(card.verticalContentAlignment, .top)
     }
-
+    
     private func validateTextBlock(_ textBlock: TextBlock,
                                    fontType: FontType?,
                                    style: TextStyle?,
@@ -504,7 +504,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertFalse(textBlock.separator == true)
         XCTAssertFalse(textBlock.wrap)
     }
-
+    
     private func validateImage(_ image: Image) {
         XCTAssertEqual(image.elementTypeVal, CardElementType.image)
         XCTAssertEqual(image.elementTypeString, CardElementType.image.rawValue)
@@ -529,7 +529,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Image selectAction is not OpenUrlAction")
         }
     }
-
+    
     private func validateColumnSet(_ columnSet: ColumnSet) {
         XCTAssertEqual(columnSet.elementTypeVal, CardElementType.columnSet)
         XCTAssertEqual(columnSet.elementTypeString, CardElementType.columnSet.rawValue)
@@ -597,7 +597,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Third column is invalid")
         }
     }
-
+    
     private func validateColumnSetContainer(_ container: Container) {
         XCTAssertEqual(container.elementTypeVal, CardElementType.container)
         XCTAssertEqual(container.elementTypeString, CardElementType.container.rawValue)
@@ -609,8 +609,17 @@ class EverythingBagelTests: XCTestCase {
         
         if let action = container.selectAction as? SubmitAction {
             XCTAssertEqual(action.title, "Container_Action.Submit")
-            let dataString = action.dataJson.flatMap { try? ParseUtil.jsonToString($0) } ?? ""
-            XCTAssertEqual(dataString, "\"Container_data\"\n")
+            
+            // Handle dataJson as String directly
+            if let dataValue = action.dataJson as? String {
+                XCTAssertEqual(dataValue, "Container_data")
+            } else if let dataDict = action.dataJson as? [String: Any] {
+                let dataString = try? ParseUtil.jsonToString(dataDict)
+                XCTAssertEqual(dataString, "\"Container_data\"\n")
+            } else {
+                XCTFail("dataJson is neither String nor Dictionary")
+            }
+            
             XCTAssertEqual(action.associatedInputs, .auto)
         } else {
             XCTFail("Container selectAction is not SubmitAction")
@@ -624,7 +633,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Container does not contain a ColumnSet")
         }
     }
-
+    
     private func validateFactSet(_ factSet: FactSet) {
         XCTAssertEqual(factSet.elementTypeVal, CardElementType.factSet)
         XCTAssertEqual(factSet.elementTypeString, CardElementType.factSet.rawValue)
@@ -647,7 +656,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Second fact is invalid")
         }
     }
-
+    
     private func validateImageSet(_ imageSet: ImageSet) {
         XCTAssertEqual(imageSet.elementTypeVal, CardElementType.imageSet)
         XCTAssertEqual(imageSet.elementTypeString, CardElementType.imageSet.rawValue)
@@ -666,7 +675,7 @@ class EverythingBagelTests: XCTestCase {
             }
         }
     }
-
+    
     private func validateInputText(_ textInput: TextInput) {
         XCTAssertEqual(textInput.elementTypeVal, CardElementType.textInput)
         XCTAssertEqual(textInput.elementTypeString, CardElementType.textInput.rawValue)
@@ -693,7 +702,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("TextInput inlineAction is not a SubmitAction")
         }
     }
-
+    
     private func validateInputNumber(_ numberInput: NumberInput) {
         XCTAssertEqual(numberInput.elementTypeVal, CardElementType.numberInput)
         XCTAssertEqual(numberInput.elementTypeString, CardElementType.numberInput.rawValue)
@@ -707,7 +716,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertTrue(numberInput.errorMessage?.isEmpty == true)
         XCTAssertEqual(numberInput.label, "Input.Number_label")
     }
-
+    
     private func validateInputDate(_ dateInput: DateInput) {
         XCTAssertEqual(dateInput.elementTypeVal, CardElementType.dateInput)
         XCTAssertEqual(dateInput.elementTypeString, CardElementType.dateInput.rawValue)
@@ -721,7 +730,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertTrue(dateInput.errorMessage?.isEmpty ?? true)
         XCTAssertEqual(dateInput.label, "Input.Date_label")
     }
-
+    
     private func validateInputTime(_ timeInput: TimeInput) {
         XCTAssertEqual(timeInput.elementTypeVal, CardElementType.timeInput)
         XCTAssertEqual(timeInput.elementTypeString, CardElementType.timeInput.rawValue)
@@ -734,7 +743,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(timeInput.errorMessage, "Input.Time.ErrorMessage")
         XCTAssertEqual(timeInput.label, "Input.Time_label")
     }
-
+    
     private func validateInputToggle(_ toggleInput: ToggleInput) {
         XCTAssertEqual(toggleInput.elementTypeVal, CardElementType.toggleInput)
         XCTAssertEqual(toggleInput.elementTypeString, CardElementType.toggleInput.rawValue)
@@ -748,7 +757,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertTrue(toggleInput.errorMessage?.isEmpty ?? true)
         XCTAssertEqual(toggleInput.label, "Input.Toggle_label")
     }
-
+    
     private func validateTextBlockInInput(_ textBlock: TextBlock) {
         XCTAssertEqual(textBlock.elementTypeVal, CardElementType.textBlock)
         XCTAssertEqual(textBlock.elementTypeString, CardElementType.textBlock.rawValue)
@@ -757,7 +766,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(textBlock.textWeight, TextWeight.bolder)
         XCTAssertEqual(textBlock.textSize, TextSize.large)
     }
-
+    
     private func validateInputChoiceSet(_ choiceSet: ChoiceSetInput) {
         XCTAssertEqual(choiceSet.elementTypeVal, CardElementType.choiceSetInput)
         XCTAssertEqual(choiceSet.elementTypeString, CardElementType.choiceSetInput.rawValue)
@@ -779,7 +788,7 @@ class EverythingBagelTests: XCTestCase {
         }
         XCTAssertEqual(choiceSet.label, "Input.ChoiceSet_label")
     }
-
+    
     private func validateInputContainer(_ container: Container) {
         XCTAssertEqual(container.id, "Container_id_inputs")
         XCTAssertNil(container.rtl)
@@ -829,7 +838,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected ChoiceSetInput in input container")
         }
     }
-
+    
     private func validateActionSet(_ actionSet: ActionSet) {
         let actions = actionSet.actions
         XCTAssertEqual(actions.count, 2)
@@ -851,7 +860,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected OpenUrlAction in ActionSet")
         }
     }
-
+    
     private func validateRichTextBlock(_ richTextBlock: RichTextBlock) {
         XCTAssertEqual(richTextBlock.elementTypeVal, CardElementType.richTextBlock)
         XCTAssertEqual(richTextBlock.elementTypeString, CardElementType.richTextBlock.rawValue)
@@ -897,7 +906,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected third inline in RichTextBlock to be a TextRun or String")
         }
     }
-
+    
     private func validateBody(_ card: AdaptiveCard) {
         let body = card.body
         XCTAssertEqual(body.count, 10)
@@ -963,7 +972,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected RichTextBlock as tenth element in body")
         }
     }
-
+    
     private func validateToplevelActions(_ card: AdaptiveCard) {
         let actions = card.actions
         XCTAssertEqual(actions.count, 3)
@@ -973,8 +982,15 @@ class EverythingBagelTests: XCTestCase {
             XCTAssertEqual(submitAction.iconUrl, "")
             XCTAssertEqual(submitAction.id, "Action.Submit_id")
             XCTAssertEqual(submitAction.title, "Action.Submit")
-            let submitDataString = try? ParseUtil.jsonToString(submitAction.dataJson ?? [:])
-            XCTAssertEqual(submitDataString, "{\"submitValue\":true}\n")
+            
+            // Instead of string comparison, validate the data structure
+            if let dataDict = submitAction.dataJson as? [String: Any] {
+                XCTAssertEqual(dataDict.count, 1)
+                XCTAssertEqual(dataDict["submitValue"] as? Bool, true)
+            } else {
+                XCTFail("submitAction.dataJson is not a dictionary")
+            }
+            
             XCTAssertEqual(submitAction.associatedInputs, .auto)
             XCTAssertEqual(submitAction.tooltip, "tooltip")
             XCTAssertTrue(submitAction.isEnabled)
@@ -1038,7 +1054,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected ShowCardAction as third top-level action")
         }
     }
-
+    
     private func validateFallbackCard(_ card: AdaptiveCard) {
         // If your AdaptiveCard type supports a makeFallbackTextCard method, use it.
         if let fallbackCard = card.makeFallbackTextCard(text: "fallback", language: "en", speak: "speak") {
@@ -1053,9 +1069,9 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("makeFallbackTextCard returned nil")
         }
     }
-
+    
     // MARK: - Test Method
-
+    
     func testEverythingBagel() throws {
         guard let parseResult = try? AdaptiveCard.deserializeFromString(EVERYTHING_BAGEL_JSON, version: "1.0") else {
             XCTFail("Failed to deserialize card")
@@ -1075,5 +1091,32 @@ class EverythingBagelTests: XCTestCase {
         print("Actual: \(try everythingBagel.serialize())")
         
         XCTAssertEqual(EVERYTHING_JSON, try everythingBagel.serialize())
+    }
+    
+    // NEW
+    func testSubmitActionDataHandling() throws {
+        // Test string data
+        let stringJson = """
+        {
+            "type": "Action.Submit",
+            "data": "Container_data"
+        }
+        """
+        let stringAction = try SubmitAction.make(from: ParseUtil.getJsonDictionary(from: stringJson))
+        XCTAssertEqual(stringAction.dataJson as? String, "Container_data")
+        
+        // Test dictionary data
+        let dictJson = """
+        {
+            "type": "Action.Submit",
+            "data": {"key": "value"}
+        }
+        """
+        let dictAction = try SubmitAction.make(from: ParseUtil.getJsonDictionary(from: dictJson))
+        if let dataDict = dictAction.dataJson as? [String: Any] {
+            XCTAssertEqual(dataDict["key"] as? String, "value")
+        } else {
+            XCTFail("dataJson is not a dictionary")
+        }
     }
 }
