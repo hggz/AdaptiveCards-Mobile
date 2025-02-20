@@ -159,8 +159,8 @@ class BaseCardElement: BaseElement, AdaptiveCardElementProtocol {
             return try decoder.decode(FactSet.self, from: data)
         case CardElementType.actionSet.rawValue:
             return try decoder.decode(ActionSet.self, from: data)
-//        case CardElementType.richTextBlock.rawValue:
-//            return try decoder.decode(RichTextBlock.self, from: data)
+        case CardElementType.richTextBlock.rawValue:
+            return try decoder.decode(RichTextBlock.self, from: data)
         case CardElementType.image.rawValue:
             return try decoder.decode(Image.self, from: data)
         case CardElementType.imageSet.rawValue:

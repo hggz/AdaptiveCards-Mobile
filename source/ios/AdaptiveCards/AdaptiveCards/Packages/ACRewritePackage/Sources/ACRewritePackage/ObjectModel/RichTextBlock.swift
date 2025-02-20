@@ -3,145 +3,116 @@ import Foundation
 /// Represents a rich text block with inline elements.
 class RichTextBlock: BaseCardElement {
     var horizontalAlignment: HorizontalAlignment?
-    var inlines: [Inline]
+    var inlines: [Any] // Changed to [Any] to support both TextRun and String
     
-    /// Designated initializer.
     init(id: String? = nil,
          horizontalAlignment: HorizontalAlignment? = nil,
-         inlines: [Inline] = [],
+         inlines: [Any] = [],
          spacing: Spacing? = nil,
          height: HeightType? = nil,
-         targetWidth: TargetWidthType? = nil,
          separator: Bool? = nil,
-         isVisible: Bool = true,
-         areaGridName: String? = nil) {
+         isVisible: Bool = true) {
         
         self.horizontalAlignment = horizontalAlignment
         self.inlines = inlines
-        // Pass the appropriate element type to the base initializer.
-        super.init(
-            type: .richTextBlock,
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName,
-            id: id
-        )
+        super.init(type: .richTextBlock,
+                   spacing: spacing,
+                   height: height,
+                   separator: separator,
+                   isVisible: isVisible,
+                   id: id)
     }
     
-    // MARK: - Codable
-    
-    private enum RichTextBlockCodingKeys: String, CodingKey {
+    private enum CodingKeys: String, CodingKey {
         case horizontalAlignment
         case inlines
     }
     
     required init(from decoder: Decoder) throws {
-        // Initialize subclass properties with default values before calling super.init.
-        self.inlines = []
-        self.horizontalAlignment = nil
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         
+        // Decode horizontalAlignment
+        if let alignmentString = try container.decodeIfPresent(String.self, forKey: .horizontalAlignment) {
+            self.horizontalAlignment = HorizontalAlignment(rawValue: alignmentString.lowercased())
+        } else {
+            self.horizontalAlignment = nil
+        }
+        
+        // Decode inlines array
+        var inlinesArray: [Any] = []
+        var inlinesContainer = try container.nestedUnkeyedContainer(forKey: .inlines)
+        
+        while !inlinesContainer.isAtEnd {
+            // Try to decode as a dictionary first (for TextRun)
+            if let inlineDict = try? inlinesContainer.decode([String: AnyCodable].self) {
+                let dict = inlineDict.mapValues { $0.value }
+                if let typeString = dict["type"] as? String, typeString == "TextRun",
+                   let textRun = try? TextRun.deserialize(from: dict) {
+                    inlinesArray.append(textRun)
+                }
+            } else if let stringValue = try? inlinesContainer.decode(String.self) {
+                // It's a plain string
+                inlinesArray.append(stringValue)
+            }
+        }
+        
+        self.inlines = inlinesArray
         try super.init(from: decoder)
-        
-        let container = try decoder.container(keyedBy: RichTextBlockCodingKeys.self)
-        
-        // Decode horizontalAlignment (stored as its raw string value)
-        if let alignmentRaw = try container.decodeIfPresent(String.self, forKey: .horizontalAlignment) {
-            self.horizontalAlignment = HorizontalAlignment(rawValue: alignmentRaw)
-        }
-        
-        // Decode inlines: inlines are stored as a JSON string.
-        let inlinesJSONString = try container.decode(String.self, forKey: .inlines)
-        guard let data = inlinesJSONString.data(using: .utf8),
-              let inlinesJSONArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]] else {
-            throw DecodingError.dataCorruptedError(forKey: .inlines,
-                                                   in: container,
-                                                   debugDescription: "Invalid inlines JSON")
-        }
-        self.inlines = try inlinesJSONArray.map { try deserializeInline(from: $0) }
     }
     
     override func encode(to encoder: Encoder) throws {
-        // First, let the BaseCardElement encode its own properties.
         try super.encode(to: encoder)
-        var container = encoder.container(keyedBy: RichTextBlockCodingKeys.self)
+        var container = encoder.container(keyedBy: CodingKeys.self)
         
-        // Encode horizontalAlignment as its raw value.
-        if let horizontalAlignment = horizontalAlignment {
-            try container.encode(horizontalAlignment.rawValue, forKey: .horizontalAlignment)
+        if let alignment = horizontalAlignment {
+            try container.encode(alignment.rawValue, forKey: .horizontalAlignment)
         }
         
-        // For inlines, convert each inline into a JSON dictionary and then into a JSON string.
-        let inlinesJSONArray = inlines.map { $0.serializeToJson() }
-        let data = try JSONSerialization.data(withJSONObject: inlinesJSONArray, options: [])
-        guard let jsonString = String(data: data, encoding: .utf8) else {
-            throw EncodingError.invalidValue(inlinesJSONArray,
-                                             EncodingError.Context(codingPath: container.codingPath,
-                                                                   debugDescription: "Unable to encode inlines as JSON string"))
+        var inlinesContainer = container.nestedUnkeyedContainer(forKey: .inlines)
+        for inline in inlines {
+            if let textRun = inline as? TextRun {
+                try inlinesContainer.encode(AnyCodable(textRun.serializeToJson()))
+            } else if let stringValue = inline as? String {
+                try inlinesContainer.encode(stringValue)
+            }
         }
-        try container.encode(jsonString, forKey: .inlines)
     }
     
-    // MARK: - JSON Serialization Helpers
-    
-    /// Converts the RichTextBlock object into a JSON dictionary.
-    func serializeToJson() -> [String: Any] {
-        var json = [String: Any]()
-        // Start with BaseCardElement’s JSON.
-        if let baseJson = try? self.serializeToJsonValue() {
-            json = baseJson
-        }
-        // Add RichTextBlock–specific keys.
-        if let horizontalAlignment = horizontalAlignment {
-            json["horizontalAlignment"] = horizontalAlignment.rawValue
-        }
-        let inlinesJSONArray = inlines.map { $0.serializeToJson() }
-        json["inlines"] = inlinesJSONArray
-        // Ensure the type is explicitly set.
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
         json["type"] = "RichTextBlock"
+        
+        if let alignment = horizontalAlignment {
+            json["horizontalAlignment"] = alignment.rawValue
+        }
+        
+        // Change the map to return Any instead of [String: Any]
+        json["inlines"] = inlines.map { inline -> Any in
+            if let textRun = inline as? TextRun {
+                return textRun.serializeToJson()
+            } else if let stringValue = inline as? String {
+                return stringValue
+            }
+            return [:]
+        }
+        
         return json
-    }
-    
-    /// Returns a JSON string representation.
-    func toJSONString() -> String {
-        do {
-            let data = try JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted)
-            return String(data: data, encoding: .utf8) ?? "{}"
-        } catch {
-            return "{}"
-        }
-    }
-    
-    // MARK: - Utility Deserialization
-    
-    /// Creates a RichTextBlock object from a JSON dictionary.
-    static func createFromJSON(_ json: [String: Any]) throws -> RichTextBlock {
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(RichTextBlock.self, from: data)
-    }
-    
-    /// Creates a RichTextBlock object from a JSON string.
-    static func createFromJSONString(_ jsonString: String) throws -> RichTextBlock {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(RichTextBlock.self, from: data)
     }
 }
 
-/// Parses RichTextBlock elements in an Adaptive Card.
-class RichTextBlockParser: BaseCardElementParser {
+struct RichTextBlockParser: BaseCardElementParser {
     func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
-        return try RichTextBlock.createFromJSON(value)
+        let data = try JSONSerialization.data(withJSONObject: value)
+        return try JSONDecoder().decode(RichTextBlock.self, from: data)
     }
     
     func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
-        return try RichTextBlock.createFromJSONString(value)
+        guard let data = value.data(using: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try JSONDecoder().decode(RichTextBlock.self, from: data)
     }
 }
-
 /// Helper function to dispatch inline deserialization based on the "type" field.
 func deserializeInline(from json: [String: Any]) throws -> Inline {
     guard let typeString = json["type"] as? String,

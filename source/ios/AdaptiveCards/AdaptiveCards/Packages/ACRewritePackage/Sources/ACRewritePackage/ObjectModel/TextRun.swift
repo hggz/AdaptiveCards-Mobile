@@ -20,12 +20,12 @@ struct TextRun: Inline, Codable {
     var unwrappedAdditionalProperties: [String: Any] {
         return additionalProperties.mapValues { $0.value }
     }
-
+    
     enum CodingKeys: String, CodingKey {
         case inlineType = "type"
         case text, textSize, textWeight, fontType, textColor, isSubtle, italic, strikethrough, highlight, underline, language, selectAction
     }
-
+    
     func serializeToJson() -> [String: Any] {
         var json = additionalProperties.mapValues { $0.value }
         json["type"] = inlineType.rawValue
@@ -43,14 +43,15 @@ struct TextRun: Inline, Codable {
         if let selectAction = selectAction { json["selectAction"] = selectAction.toJSON()}
         return json
     }
-
+    
     static func deserialize(from json: [String: Any]) throws -> TextRun? {
         guard let text = json["text"] as? String else { return nil }
-
+        
         var additionalProperties = json
         additionalProperties.removeValue(forKey: "type")
         additionalProperties.removeValue(forKey: "text")
-
+        additionalProperties.removeValue(forKey: "selectAction")
+        
         let textSize = (json["textSize"] as? String).flatMap { TextSize(rawValue: $0) }
         let textWeight = (json["textWeight"] as? String).flatMap { TextWeight(rawValue: $0) }
         let fontType = (json["fontType"] as? String).flatMap { FontType(rawValue: $0) }
@@ -61,8 +62,23 @@ struct TextRun: Inline, Codable {
         let highlight = json["highlight"] as? Bool ?? false
         let underline = json["underline"] as? Bool ?? false
         let language = json["language"] as? String
-        let selectAction = try (json["selectAction"] as? [String: Any]).flatMap { try BaseActionElement.deserializeAction(from: $0) }
-
+        
+        // Handle selectAction
+        let selectAction: BaseActionElement?
+            if let actionData = json["selectAction"] {
+                if let dict = actionData as? [String: AnyCodable],
+                   let typeAnyCodable = dict["type"],
+                   let typeString = typeAnyCodable.value as? String {
+                    // Create a simple action dictionary with the extracted type
+                    let actionDict: [String: Any] = ["type": typeString]
+                    selectAction = try BaseActionElement.deserializeAction(from: actionDict)
+                } else {
+                    selectAction = nil
+                }
+            } else {
+                selectAction = nil
+            }
+        
         return TextRun(
             additionalProperties: additionalProperties.mapValues { AnyCodable($0) },
             text: text,
