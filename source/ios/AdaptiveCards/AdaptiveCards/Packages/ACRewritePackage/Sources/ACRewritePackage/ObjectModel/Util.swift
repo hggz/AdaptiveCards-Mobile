@@ -115,3 +115,17 @@ private func shouldParseForExplicitDimension(_ input: String) -> Bool {
     guard !input.isEmpty else { return false }
     return input.first == "-" || input.first == "." || input.contains(where: { $0.isNumber }) && input.contains(where: { $0.isLetter || $0 == "." })
 }
+
+class WarningCollector {
+    static var warnings: [AdaptiveCardParseWarning] = []
+    
+    static func add(_ newWarnings: [AdaptiveCardParseWarning]) {
+        warnings.append(contentsOf: newWarnings)
+    }
+    
+    static func getAndClearWarnings() -> [AdaptiveCardParseWarning] {
+        let current = warnings
+        warnings = []
+        return current
+    }
+}

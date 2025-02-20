@@ -63,17 +63,17 @@ class Image: BaseCardElement {
         var dummyWarnings = [AdaptiveCardParseWarning]()
         self.backgroundColor = validateColor(rawColor, warnings: &dummyWarnings)
         
-        // Decode style and size using our custom enum decoders.
+        // Decode style and size.
         self.imageStyle = try container.decodeIfPresent(ImageStyle.self, forKey: .imageStyle) ?? .defaultImageStyle
         self.imageSize = try container.decodeIfPresent(ImageSize.self, forKey: .imageSize) ?? .none
         
-        // Decode pixelWidth/pixelHeight if present (they won’t be in our JSON)
+        // These keys might not be present in our JSON so we default to zero.
         self.pixelWidth = try container.decodeIfPresent(UInt.self, forKey: .pixelWidth) ?? 0
         self.pixelHeight = try container.decodeIfPresent(UInt.self, forKey: .pixelHeight) ?? 0
         self.altText = try container.decodeIfPresent(String.self, forKey: .altText) ?? ""
         self.hAlignment = try container.decodeIfPresent(HorizontalAlignment.self, forKey: .hAlignment)
         
-        // Manually decode selectAction using your custom action parser.
+        // Decode selectAction if present.
         if container.contains(.selectAction) {
             let actionDict = try container.decode([String: AnyCodable].self, forKey: .selectAction)
             let dict = actionDict.mapValues { $0.value }
@@ -84,7 +84,6 @@ class Image: BaseCardElement {
         
         try super.init(from: decoder)
         
-        // Ensure defaults if not provided.
         if self.height == nil {
             self.height = .auto
         }
@@ -92,18 +91,20 @@ class Image: BaseCardElement {
             self.spacing = .none
         }
         
-        // --- NEW CODE TO PARSE EXPLICIT DIMENSIONS ---
+        // Parse explicit dimension strings and collect warnings
         if let widthString = try? container.decode(String.self, forKey: .width) {
             var warnings = [AdaptiveCardParseWarning]()
             if let parsedWidth = parseSizeForPixelSize(widthString, warnings: &warnings) {
                 self.pixelWidth = parsedWidth
             }
+            WarningCollector.add(warnings)
         }
         if let heightString = try? container.decode(String.self, forKey: .height) {
             var warnings = [AdaptiveCardParseWarning]()
             if let parsedHeight = parseSizeForPixelSize(heightString, warnings: &warnings) {
                 self.pixelHeight = parsedHeight
             }
+            WarningCollector.add(warnings)
         }
     }
 

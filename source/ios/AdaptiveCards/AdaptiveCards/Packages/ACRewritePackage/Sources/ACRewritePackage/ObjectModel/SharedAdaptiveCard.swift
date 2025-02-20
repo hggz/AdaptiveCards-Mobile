@@ -469,24 +469,15 @@ public class AdaptiveCard: Codable {
     /// Returns a ParseResult that contains an AdaptiveCard.
     public static func deserializeFromString(_ jsonString: String,
                                              version: String) throws -> ParseResult {
-        // The "version" parameter in C++ is used to do "enforceVersion" checks,
-        // warnings, etc. For now, we simply parse the card and ignore "version"
-        // or you can wire it up if you want to replicate the behavior more closely.
         do {
-            // Reuse your existing Swift logic:
             let card = try AdaptiveCard.deserialize(from: jsonString)
-            
-            // If you'd like to replicate warnings from the C++ code,
-            // you'd collect them here. For now, we return an empty array.
-            return ParseResult(adaptiveCard: card, warnings: [])
+            let warnings = WarningCollector.getAndClearWarnings()
+            return ParseResult(adaptiveCard: card, warnings: warnings)
         } catch {
-            // The C++ code throws AdaptiveCardParseException on failure.
-            // In Swift, you can throw an error or
-            // translate it to a fatalError or custom exception type:
             throw error
         }
     }
-    
+
     /// Creates an AdaptiveCard that serves as a fallback, containing a single TextBlock with the provided text.
     func makeFallbackTextCard(text: String, language: String, speak: String) -> AdaptiveCard? {
         let fallbackTextBlock = TextBlock(
