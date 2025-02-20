@@ -313,7 +313,7 @@ struct EmphasisParser: MarkDownBlockParser {
                             continue
                         }
                     }
-                    // If there is no character after, fall through to process as a delimiter run.
+                    // If there is no character after, fall through so that the underscore is processed as a delimiter run.
                 }
                 
                 // For asterisks, use your existing literal check.
@@ -331,11 +331,18 @@ struct EmphasisParser: MarkDownBlockParser {
                 // Otherwise, consume the delimiter run normally.
                 let (delimStr, count) = consumeDelimiterRun(stream: &stream, delimiter: ch)
                 flushToken()
+                
+                // Look ahead to decide the run’s direction.
                 let nextChar = stream.peek()
                 let delimiterIsClosing = (nextChar?.isWhitespace ?? true) || (nextChar.map { isPunctuation($0) } ?? false)
                 var direction = delimiterIsClosing ? 1 : 0  // default determination
                 
                 if ch == "*" {
+                    // For asterisks: if the preceding character is whitespace, output literally.
+                    if let pre = preceding, pre.isWhitespace {
+                        currentToken.append(delimStr)
+                        continue
+                    }
                     let hasUnmatchedOpening = parsedResult.emphasisLookUpTable.contains { $0.type == .asterisk && $0.directionType == 0 }
                     if hasUnmatchedOpening {
                         direction = 1
@@ -344,11 +351,9 @@ struct EmphasisParser: MarkDownBlockParser {
                 if ch == "_" {
                     // For underscores, if there is a following character, and the preceding character is not alphanumeric, force opening.
                     if let nextChar = nextChar {
-                        if let pre = preceding {
-                            if !(pre.isLetter || pre.isNumber) {
-                                direction = 0
-                            }
-                        } else {
+                        if let pre = preceding, !(pre.isLetter || pre.isNumber) {
+                            direction = 0
+                        } else if preceding == nil {
                             direction = 0
                         }
                     }
@@ -648,7 +653,10 @@ class MarkDownParsedResult {
                     }
                 }
 
+                // Pair the tokens: generate tags and force the delimiter counts to zero.
                 isHTMLTagsAdded = currentLeftEmphasis.generateTags(with: currentEmphasis) || isHTMLTagsAdded
+                currentLeftEmphasis.numberOfUnusedDelimiters = 0
+                currentEmphasis.numberOfUnusedDelimiters = 0
 
                 if currentEmphasis.isDone() {
                     currentEmphasisIndex += 1
