@@ -1,57 +1,69 @@
 import Foundation
 
-/// Represents an ActionSet element in an Adaptive Card.
 class ActionSet: BaseCardElement {
     var actions: [BaseActionElement]
 
     // MARK: - Initializers
     init(actions: [BaseActionElement] = [], id: String? = nil) {
         self.actions = actions
-        // Initialize the BaseCardElement using the CardElementType.actionSet value.
         super.init(type: .actionSet, id: id)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case actions
     }
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        // Decode the type and verify that it is indeed "ActionSet".
-        let typeRaw = try container.decode(String.self, forKey: .type)
-        guard typeRaw == CardElementType.actionSet.rawValue else {
-            throw AdaptiveCardParseError.invalidType
+        
+        // Decode actions array
+        var actionsArray: [BaseActionElement] = []
+        var actionsContainer = try container.nestedUnkeyedContainer(forKey: .actions)
+        
+        while !actionsContainer.isAtEnd {
+            // Get the action as a dictionary first
+            let actionDict = try actionsContainer.decode([String: AnyCodable].self)
+            let dict = actionDict.mapValues { $0.value }
+            
+            // Use BaseActionElement's deserializeAction to get the correct type
+            let action = try BaseActionElement.deserializeAction(from: dict)
+            actionsArray.append(action)
         }
-        self.actions = try container.decodeIfPresent([BaseActionElement].self, forKey: .actions) ?? []
-        // Decode the rest of the properties from BaseCardElement.
+        
+        self.actions = actionsArray
         try super.init(from: decoder)
     }
     
     override func encode(to encoder: Encoder) throws {
-        // Encode the local properties.
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(CardElementType.actionSet.rawValue, forKey: .type)
         try container.encode(actions, forKey: .actions)
-        // Then encode the BaseCardElement properties.
         try super.encode(to: encoder)
     }
     
-    enum CodingKeys: String, CodingKey {
-        case type
-        case actions
+    override func serializeToJsonValue() throws -> [String: Any] {
+        var json = try super.serializeToJsonValue()
+        
+        json["type"] = "ActionSet"
+        
+        if !actions.isEmpty {
+            json["actions"] = try actions.map { try $0.serializeToJsonValue() }
+        }
+        
+        return json
     }
 }
 
-/// Parses ActionSet elements in an Adaptive Card.
+// Parser remains the same but uses decoder
 struct ActionSetParser: BaseCardElementParser {
-    func deserialize(context: ParseContext, value: [String : Any]) throws -> any AdaptiveCardElementProtocol {
-        guard let typeString = value["type"] as? String,
-              typeString == CardElementType.actionSet.rawValue else {
-            throw AdaptiveCardParseError.invalidType
-        }
-        // Parse actions using the provided parsing utilities.
-        let actions = try ParseUtil.getActionCollection(from: value, key: "actions")
-        return ActionSet(actions: actions)
+    func deserialize(context: ParseContext, value: [String: Any]) throws -> any AdaptiveCardElementProtocol {
+        let data = try JSONSerialization.data(withJSONObject: value)
+        return try JSONDecoder().decode(ActionSet.self, from: data)
     }
     
     func deserialize(fromString context: ParseContext, value: String) throws -> any AdaptiveCardElementProtocol {
-        let jsonDict = try ParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: context, value: jsonDict)
+        guard let data = value.data(using: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try JSONDecoder().decode(ActionSet.self, from: data)
     }
 }
