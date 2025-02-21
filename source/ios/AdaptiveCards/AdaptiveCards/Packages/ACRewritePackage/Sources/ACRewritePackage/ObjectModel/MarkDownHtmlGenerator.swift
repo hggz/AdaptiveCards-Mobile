@@ -74,7 +74,6 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
     
     func isMatch(_ emphasisToken: MarkDownEmphasisHtmlGenerator) -> Bool {
         if self.type == emphasisToken.type {
-            // If either token is “both” and the sum of delimiters is a multiple of 3, then no match.
             if (self.isLeftAndRightEmphasis() || emphasisToken.isLeftAndRightEmphasis()) &&
                 ((self.numberOfUnusedDelimiters + emphasisToken.numberOfUnusedDelimiters) % 3 == 0) {
                 return false
@@ -264,47 +263,53 @@ extension MarkDownBlockParser {
     }
 }
 
-// MARK: - EmphasisParser (Updated for literal delimiters)
+// MARK: - EmphasisParser
 
 class EmphasisParser: MarkDownBlockParser {
     var parsedResult = MarkDownParsedResult()
     private var currentToken: String = ""
-    // Holds the last processed character (if any)
     private var lookBehind: Character? = nil
+
+    /// Returns true if the delimiter is valid for emphasis.
+    private func isValidDelimiter(_ ch: Character, previous: Character?, next: Character?) -> Bool {
+        if ch == "_" {
+            // For underscore, if both adjacent are alnum, do not treat as emphasis.
+            if let pre = previous, let fol = next, pre.isAlnum && fol.isAlnum { return false }
+            if let fol = next, fol.isSpace { return false }
+        } else if ch == "*" {
+            // For asterisk, if the previous is alnum and next is punctuation, treat it as literal.
+            if let pre = previous, pre.isAlnum, let fol = next, fol.isPunctuation { return false }
+        }
+        return true
+    }
 
     func match(stream: inout StringIterator) {
         while let ch = stream.peek() {
             if ch == "\\" {
-                _ = stream.next() // consume backslash
+                _ = stream.next()
                 if let escaped = stream.next() {
                     currentToken.append(escaped)
                     lookBehind = escaped
                 }
             } else if ch == "*" || ch == "_" {
-                // Flush pending text.
                 flushToken()
                 let delimChar = ch
                 let (delimStr, count) = consumeDelimiterRun(stream: &stream, delimiter: delimChar)
-                // Examine context: character before and after.
                 let prev = lookBehind
                 let next = stream.peek()
                 let canOpen = (next != nil && !next!.isSpace) && (prev == nil || prev!.isSpace || prev!.isPunctuation)
                 let canClose = (prev != nil && !prev!.isSpace) && (next == nil || next!.isSpace || next!.isPunctuation)
-                // If neither valid for opening nor closing, output literal delimiter run.
-                if !canOpen && !canClose {
+                if !isValidDelimiter(delimChar, previous: prev, next: next) {
                     currentToken.append(delimStr)
                     lookBehind = delimStr.last
                     continue
                 }
-                // Otherwise, decide direction.
                 let direction: Int
                 if canClose && !canOpen {
                     direction = 1
                 } else if canOpen && !canClose {
                     direction = 0
                 } else {
-                    // Ambiguous: for underscore, if previous is alphanumeric, prefer closing;
-                    // for asterisk, default to opening.
                     if delimChar == "_" {
                         direction = (prev != nil && prev!.isAlnum) ? 1 : 0
                     } else {
@@ -368,6 +373,7 @@ class LinkParser: MarkDownBlockParser {
     func match(stream: inout StringIterator) {
         guard let ch = stream.next(), ch == LinkParserConstants.openingBracket else { return }
         var linkText = ""
+        // In link text, we do not process emphasis.
         while let c = stream.peek(), c != LinkParserConstants.closingBracket {
             linkText.append(stream.next()!)
         }
