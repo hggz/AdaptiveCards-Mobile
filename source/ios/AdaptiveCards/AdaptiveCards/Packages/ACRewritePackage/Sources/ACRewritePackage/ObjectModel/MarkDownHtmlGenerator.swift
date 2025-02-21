@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - Types and Enums
+
 enum DelimiterType {
     case initType, alphanumeric, punctuation, escape, whiteSpace, underscore, asterisk
 }
@@ -8,17 +10,15 @@ enum MarkDownBlockType {
     case containerBlock, unorderedList, orderedList
 }
 
+// MARK: - HTML Generator Classes
+
 class MarkDownHtmlGenerator {
-    var numberOfUnusedDelimiters: Int = 0
-    var directionType: Int = 0  // 0 for left, 1 for right
-    var type: DelimiterType = .initType
-    var tags: [String] = []
-    
     var token: String
     var isHead: Bool = false
     var isTail: Bool = false
+    var tags: [String] = []
     
-    init(token: String = "") {
+    init(token: String) {
         self.token = token
     }
     
@@ -30,10 +30,6 @@ class MarkDownHtmlGenerator {
         isTail = true
     }
     
-    func isNewLine() -> Bool {
-        return false
-    }
-    
     func generateHtmlString() -> String {
         fatalError("Must override in subclass")
     }
@@ -43,7 +39,6 @@ class MarkDownHtmlGenerator {
     }
 }
 
-// - MarkDownStringHtmlGenerator
 class MarkDownStringHtmlGenerator: MarkDownHtmlGenerator {
     override func generateHtmlString() -> String {
         var result = token
@@ -53,27 +48,26 @@ class MarkDownStringHtmlGenerator: MarkDownHtmlGenerator {
     }
 }
 
-// - MarkDownNewLineHtmlGenerator
 class MarkDownNewLineHtmlGenerator: MarkDownStringHtmlGenerator {
-    override func isNewLine() -> Bool {
-        return true
+    override func generateHtmlString() -> String {
+        return super.generateHtmlString()
     }
 }
 
-// - MarkDownEmphasisHtmlGenerator
 class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
-    
-    // Remove duplicate property declarations; we use the ones inherited from MarkDownHtmlGenerator.
+    var numberOfUnusedDelimiters: Int
+    var directionType: Int = 1  // 0 = left; 1 = right
+    var type: DelimiterType
     
     init(token: String, sizeOfEmphasisDelimiterRun: Int, type: DelimiterType, tags: [String] = []) {
-        super.init(token: token)
         self.numberOfUnusedDelimiters = sizeOfEmphasisDelimiterRun
         self.type = type
+        super.init(token: token)
         self.tags = tags
     }
     
-    func isRightEmphasis() -> Bool { return false }
-    func isLeftEmphasis() -> Bool { return false }
+    func isRightEmphasis() -> Bool { return directionType == 1 }
+    func isLeftEmphasis() -> Bool { return directionType == 0 }
     func isLeftAndRightEmphasis() -> Bool { return false }
     
     func pushItalicTag() {
@@ -85,9 +79,14 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
     }
     
     func isMatch(_ emphasisToken: MarkDownEmphasisHtmlGenerator) -> Bool {
-        return self.type == emphasisToken.type &&
-          !((self.isLeftAndRightEmphasis() || emphasisToken.isLeftAndRightEmphasis()) &&
-            ((self.numberOfUnusedDelimiters + emphasisToken.numberOfUnusedDelimiters) % 3 == 0))
+        if self.type == emphasisToken.type {
+            if (self.isLeftAndRightEmphasis() || emphasisToken.isLeftAndRightEmphasis()) &&
+               ((self.numberOfUnusedDelimiters + emphasisToken.numberOfUnusedDelimiters) % 3 == 0) {
+                return false
+            }
+            return true
+        }
+        return false
     }
     
     func adjustEmphasisCounts(leftOver: Int, rightToken: MarkDownEmphasisHtmlGenerator) -> Int {
@@ -108,22 +107,19 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
         let leftOver = self.numberOfUnusedDelimiters - token.numberOfUnusedDelimiters
         let delimiterCount = adjustEmphasisCounts(leftOver: leftOver, rightToken: token)
         let hasHtmlTags = delimiterCount > 0
-        
         if delimiterCount % 2 != 0 {
             self.pushItalicTag()
             token.pushItalicTag()
         }
-        
         for _ in 0..<(delimiterCount / 2) {
             self.pushBoldTag()
             token.pushBoldTag()
         }
-        
         return hasHtmlTags
     }
     
     func changeDirectionToLeft() {
-        self.directionType = -1
+        self.directionType = 0
     }
     
     func isSameType(_ other: MarkDownEmphasisHtmlGenerator) -> Bool {
@@ -133,22 +129,55 @@ class MarkDownEmphasisHtmlGenerator: MarkDownHtmlGenerator {
     func isDone() -> Bool {
         return self.numberOfUnusedDelimiters == 0
     }
+    
+    override func generateHtmlString() -> String {
+        var html = ""
+        if isHead { html += "<p>" }
+        html += tags.joined()
+        if numberOfUnusedDelimiters > 0 {
+            html += String(token.suffix(numberOfUnusedDelimiters))
+        }
+        if isTail { html += "</p>" }
+        return html
+    }
 }
 
-// - MarkDownLeftEmphasisHtmlGenerator
 class MarkDownLeftEmphasisHtmlGenerator: MarkDownEmphasisHtmlGenerator {
     override func isLeftEmphasis() -> Bool { return true }
     
     override func generateHtmlString() -> String {
         var html = ""
         if isHead { html += "<p>" }
-        if numberOfUnusedDelimiters == 0 {
-            html += tags.joined()
-        } else {
-            html += token + tags.joined()
+        if numberOfUnusedDelimiters > 0 {
+            html += String(token.suffix(numberOfUnusedDelimiters))
+        }
+        html += tags.reversed().joined()
+        if isTail { html += "</p>" }
+        return html
+    }
+}
+
+class MarkDownRightEmphasisHtmlGenerator: MarkDownEmphasisHtmlGenerator {
+    override func isRightEmphasis() -> Bool { return directionType == 1 }
+    override func isLeftEmphasis() -> Bool { return directionType == 0 }
+    
+    override func generateHtmlString() -> String {
+        var html = ""
+        if isHead { html += "<p>" }
+        html += tags.joined()
+        if numberOfUnusedDelimiters > 0 {
+            html += String(token.suffix(numberOfUnusedDelimiters))
         }
         if isTail { html += "</p>" }
         return html
+    }
+    
+    override func pushItalicTag() {
+        tags.append("</em>")
+    }
+    
+    override func pushBoldTag() {
+        tags.append("</strong>")
     }
 }
 
@@ -164,35 +193,6 @@ class MarkDownLeftAndRightEmphasisHtmlGenerator: MarkDownRightEmphasisHtmlGenera
     }
 }
 
-// - MarkDownRightEmphasisHtmlGenerator
-class MarkDownRightEmphasisHtmlGenerator: MarkDownEmphasisHtmlGenerator {
-    override func isRightEmphasis() -> Bool { return directionType == 1 }
-    override func isLeftEmphasis() -> Bool { return directionType == 0 }
-    
-    override func pushItalicTag() {
-        tags.append("</em>")
-    }
-    
-    override func pushBoldTag() {
-        tags.append("</strong>")
-    }
-    
-    override func generateHtmlString() -> String {
-        var html = ""
-        if isHead { html += "<p>" }
-        // If fully paired, don’t output the original delimiter characters.
-        if numberOfUnusedDelimiters == 0 {
-            html += tags.joined()
-        } else {
-            // Otherwise, output any leftover (if not fully paired) along with tags.
-            html += tags.joined() + token
-        }
-        if isTail { html += "</p>" }
-        return html
-    }
-}
-
-// - MarkDownListHtmlGenerator
 class MarkDownListHtmlGenerator: MarkDownStringHtmlGenerator {
     override func generateHtmlString() -> String {
         var result = token
@@ -206,7 +206,6 @@ class MarkDownListHtmlGenerator: MarkDownStringHtmlGenerator {
     }
 }
 
-// - MarkDownOrderedListHtmlGenerator
 class MarkDownOrderedListHtmlGenerator: MarkDownStringHtmlGenerator {
     var numberString: String
     
@@ -227,29 +226,241 @@ class MarkDownOrderedListHtmlGenerator: MarkDownStringHtmlGenerator {
     }
 }
 
-// MARK: - Protocol & Extension
+class MarkDownAnchorHtmlGenerator: MarkDownHtmlGenerator {
+    var href: String
+    var linkText: String
+    
+    init(linkText: String, href: String) {
+        self.linkText = linkText
+        self.href = href
+        super.init(token: "")
+    }
+    
+    override func generateHtmlString() -> String {
+        var html = ""
+        if isHead { html += "<p>" }
+        html += "<a href=\"\(href)\">\(linkText)</a>"
+        if isTail { html += "</p>" }
+        return html
+    }
+}
+
+// MARK: - Parsed Result
+
+class MarkDownParsedResult {
+    var codeGenTokens: [MarkDownHtmlGenerator] = []
+    var emphasisLookUpTable: [MarkDownEmphasisHtmlGenerator] = []
+    private var isHTMLTagsAdded: Bool = false
+    private var isCaptured: Bool = false
+    
+    func translate() {
+        matchLeftAndRightEmphasises()
+    }
+    
+    func addBlockTags() {
+        codeGenTokens.first?.makeItHead()
+        codeGenTokens.last?.makeItTail()
+    }
+    
+    private func markTags(_ x: MarkDownHtmlGenerator) {
+        if let lastToken = codeGenTokens.last, lastToken.getBlockType() != x.getBlockType() {
+            if lastToken is MarkDownNewLineHtmlGenerator {
+                codeGenTokens.removeLast()
+            }
+            if !codeGenTokens.isEmpty {
+                codeGenTokens.last?.makeItTail()
+            }
+            x.makeItHead()
+        }
+    }
+    
+    func appendParseResult(_ other: MarkDownParsedResult) {
+        if !codeGenTokens.isEmpty, !other.codeGenTokens.isEmpty {
+            markTags(other.codeGenTokens.first!)
+        }
+        codeGenTokens.append(contentsOf: other.codeGenTokens)
+        emphasisLookUpTable.append(contentsOf: other.emphasisLookUpTable)
+        isHTMLTagsAdded = isHTMLTagsAdded || other.hasHtmlTags()
+        isCaptured = other.isCaptured
+    }
+    
+    func appendToTokens(_ token: MarkDownHtmlGenerator) {
+        if !codeGenTokens.isEmpty {
+            markTags(token)
+        }
+        codeGenTokens.append(token)
+    }
+    
+    func appendToLookUpTable(_ token: MarkDownEmphasisHtmlGenerator) {
+        emphasisLookUpTable.append(token)
+    }
+    
+    func popFront() {
+        if !codeGenTokens.isEmpty {
+            codeGenTokens.removeFirst()
+        }
+    }
+    
+    func popBack() {
+        if !codeGenTokens.isEmpty {
+            codeGenTokens.removeLast()
+        }
+    }
+    
+    func clear() {
+        codeGenTokens.removeAll()
+        emphasisLookUpTable.removeAll()
+    }
+    
+    func addNewTokenToParsedResult(_ ch: Character) {
+        let token = MarkDownStringHtmlGenerator(token: String(ch))
+        appendToTokens(token)
+    }
+    
+    func addNewTokenToParsedResult(_ word: String) {
+        let token = MarkDownStringHtmlGenerator(token: word)
+        appendToTokens(token)
+    }
+    
+    func addNewLineTokenToParsedResult(_ ch: Character) {
+        let token = MarkDownNewLineHtmlGenerator(token: String(ch))
+        appendToTokens(token)
+    }
+    
+    func generateHtmlString() -> String {
+        return codeGenTokens.map { $0.generateHtmlString() }.joined()
+    }
+    
+    private func matchLeftAndRightEmphasises() {
+        var leftEmphasisToExplore: [MarkDownEmphasisHtmlGenerator] = []
+        var currentEmphasisIndex = 0
+        
+        while currentEmphasisIndex < emphasisLookUpTable.count {
+            let currentEmphasis = emphasisLookUpTable[currentEmphasisIndex]
+            
+            if currentEmphasis.isLeftEmphasis() ||
+               (currentEmphasis.isLeftAndRightEmphasis() && leftEmphasisToExplore.isEmpty) {
+                if currentEmphasis.isLeftAndRightEmphasis() && currentEmphasis.isRightEmphasis() {
+                    currentEmphasis.changeDirectionToLeft()
+                }
+                leftEmphasisToExplore.append(currentEmphasis)
+                currentEmphasisIndex += 1
+            } else if !leftEmphasisToExplore.isEmpty {
+                let currentLeftEmphasis = leftEmphasisToExplore.removeLast()
+                
+                if !currentLeftEmphasis.isMatch(currentEmphasis) {
+                    var isFound = false
+                    var storedLeftTokens: [MarkDownEmphasisHtmlGenerator] = []
+                    
+                    while !leftEmphasisToExplore.isEmpty && !isFound {
+                        let leftToken = leftEmphasisToExplore.removeLast()
+                        if leftToken.isMatch(currentEmphasis) {
+                            isFound = true
+                            leftEmphasisToExplore.append(leftToken)
+                        } else {
+                            storedLeftTokens.append(leftToken)
+                        }
+                    }
+                    
+                    if !isFound, let lastLeft = leftEmphasisToExplore.last, lastLeft.isSameType(currentEmphasis) {
+                        currentEmphasis.changeDirectionToLeft()
+                    } else {
+                        for token in storedLeftTokens.reversed() {
+                            leftEmphasisToExplore.append(token)
+                        }
+                        currentEmphasisIndex += 1
+                        continue
+                    }
+                }
+                
+                isHTMLTagsAdded = currentLeftEmphasis.generateTags(with: currentEmphasis) || isHTMLTagsAdded
+                currentLeftEmphasis.numberOfUnusedDelimiters = 0
+                currentEmphasis.numberOfUnusedDelimiters = 0
+                
+                if currentEmphasis.isDone() {
+                    currentEmphasisIndex += 1
+                }
+            } else {
+                currentEmphasisIndex += 1
+            }
+        }
+    }
+    
+    func hasHtmlTags() -> Bool {
+        return isHTMLTagsAdded
+    }
+    
+    func foundHtmlTags() {
+        isHTMLTagsAdded = true
+    }
+    
+    func getIsCaptured() -> Bool {
+        return isCaptured
+    }
+    
+    func setIsCaptured(_ val: Bool) {
+        isCaptured = val
+    }
+    
+    func lastPlainTextCharacter() -> Character? {
+        for token in codeGenTokens.reversed() {
+            if let stringToken = token as? MarkDownStringHtmlGenerator, !stringToken.token.isEmpty {
+                return stringToken.token.last
+            }
+        }
+        return nil
+    }
+}
+
+// MARK: - String Iterator
+
+struct StringIterator {
+    let text: [Character]
+    var index: Int = 0
+    
+    init(_ text: String) {
+        self.text = Array(text)
+    }
+    
+    mutating func next() -> Character? {
+        guard index < text.count else { return nil }
+        let ch = text[index]
+        index += 1
+        return ch
+    }
+    
+    func peek() -> Character? {
+        return index < text.count ? text[index] : nil
+    }
+    
+    mutating func putBack() {
+        if index > 0 { index -= 1 }
+    }
+}
+
+// MARK: - Block Parsing Protocol and Implementations
 
 protocol MarkDownBlockParser {
-    mutating func match(stream: inout StringIterator)
-    mutating func parseBlock(stream: inout StringIterator)
-    var parsedResult: MarkDownParsedResult { get }
+    var parsedResult: MarkDownParsedResult { get set }
+    func match(stream: inout StringIterator)
 }
 
 extension MarkDownBlockParser {
     mutating func parseBlock(stream: inout StringIterator) {
         guard let peekChar = stream.peek() else { return }
-        
         switch peekChar {
         case "[":
-            let linkParser = LinkParser()  // now using 'let' since LinkParser is a class
+            let linkParser = LinkParser()
             linkParser.match(stream: &stream)
             parsedResult.appendParseResult(linkParser.parsedResult)
         case "]", ")":
-            parsedResult.addNewTokenToParsedResult(peekChar)
-            _ = stream.next()
+            if let ch = stream.next() {
+                parsedResult.addNewTokenToParsedResult(ch)
+            }
         case "\n", "\r":
-            parsedResult.addNewLineTokenToParsedResult(peekChar)
-            _ = stream.next()
+            if let ch = stream.next() {
+                parsedResult.addNewLineTokenToParsedResult(ch)
+            }
         case "-", "+", "*":
             let listParser = ListParser()
             listParser.match(stream: &stream)
@@ -259,106 +470,68 @@ extension MarkDownBlockParser {
             orderedListParser.match(stream: &stream)
             parsedResult.appendParseResult(orderedListParser.parsedResult)
         default:
-            parseTextAndEmphasis(stream: &stream)
+            var emphasisParser = EmphasisParser()
+            emphasisParser.match(stream: &stream)
+            parsedResult.appendParseResult(emphasisParser.getParsedResult())
         }
-    }
-    
-    mutating func parseTextAndEmphasis(stream: inout StringIterator) {
-        var emphasisParser = EmphasisParser()
-        emphasisParser.match(stream: &stream)
-        parsedResult.appendParseResult(emphasisParser.getParsedResult())
     }
 }
 
-// MARK: - Delimiter Type
-
-// MARK: - Emphasis Parser
-
-struct EmphasisParser: MarkDownBlockParser {
+class EmphasisParser: MarkDownBlockParser {
     var parsedResult = MarkDownParsedResult()
     private var currentToken: String = ""
     
-    // MARK: - Conformance to MarkDownBlockParser
-    mutating func match(stream: inout StringIterator) {
-        self.parseBlock(stream: &stream)
+    func match(stream: inout StringIterator) {
+        parseBlock(stream: &stream)
     }
     
-    mutating func parseBlock(stream: inout StringIterator) {
+    func parseBlock(stream: inout StringIterator) {
         while let ch = stream.peek() {
             if isMarkDownDelimiter(ch) {
-                // Compute the preceding character once and keep it in scope.
-                var preceding: Character? = currentToken.last
-                if preceding == nil {
-                    preceding = parsedResult.lastPlainTextCharacter()
-                }
-                
+                let preceding = currentToken.last ?? parsedResult.lastPlainTextCharacter()
                 if ch == "_" {
-                    // Create a temporary copy to peek at the character immediately following the underscore.
                     var tempStream = stream
-                    _ = tempStream.next() // consume underscore in the copy
+                    _ = tempStream.next()
                     if let after = tempStream.peek() {
-                        // (1) If the underscore is in an intra-word context (preceded and followed by a letter/number), output it literally.
                         if let pre = preceding, (pre.isLetter || pre.isNumber), (after.isLetter || after.isNumber) {
                             currentToken.append(stream.next()!)
                             continue
                         }
-                        // (2) If the preceding character is alphanumeric and the character after is punctuation, output it literally.
                         if let pre = preceding, (pre.isLetter || pre.isNumber), isPunctuation(after) {
                             currentToken.append(stream.next()!)
                             continue
                         }
-                        // (3) If the character following the underscore is whitespace, output it literally.
                         if after.isWhitespace {
                             currentToken.append(stream.next()!)
                             continue
                         }
                     }
-                    // If there is no character after, fall through so that the underscore is processed as a delimiter run.
                 }
-                
-                // For asterisks, use your existing literal check.
                 if ch == "*" {
                     if let last = currentToken.last, last.isLetter || last.isNumber {
                         var tempStream = stream
-                        _ = tempStream.next() // consume one asterisk in copy
+                        _ = tempStream.next()
                         if let after = tempStream.peek(), isPunctuation(after) {
                             currentToken.append(stream.next()!)
                             continue
                         }
                     }
                 }
-                
-                // Otherwise, consume the delimiter run normally.
                 let (delimStr, count) = consumeDelimiterRun(stream: &stream, delimiter: ch)
                 flushToken()
-                
-                // Look ahead to decide the run’s direction.
                 let nextChar = stream.peek()
-                var direction: Int
+                var direction: Int = 0
                 if preceding == nil {
-                    // If there is no character before the delimiter run, force opening.
                     direction = 0
                 } else {
                     let pre = preceding!
-                    // A delimiter run is considered left-flanking if the character following it is not a whitespace
-                    // and either there is no character before it or the character before it is a space or punctuation.
                     let leftFlanking = (nextChar != nil && !nextChar!.isWhitespace) &&
-                                       (pre.isWhitespace || isPunctuation(pre))
-                    // It is considered right-flanking if the character preceding it is not a whitespace
-                    // and either there is no character after it or the character after it is a space or punctuation.
+                        (pre.isWhitespace || isPunctuation(pre))
                     let rightFlanking = (!pre.isWhitespace) &&
-                                        ((nextChar == nil) || nextChar!.isWhitespace || (nextChar != nil && isPunctuation(nextChar!)))
+                        ((nextChar == nil) || nextChar!.isWhitespace || (nextChar != nil && isPunctuation(nextChar!)))
                     if leftFlanking && rightFlanking {
-                        // When both, decide based on the nature of the adjacent characters.
-                        if isPunctuation(pre) && (nextChar == nil || !isPunctuation(nextChar!)) {
-                            direction = 0
-                        } else if (!isPunctuation(pre)) && (nextChar != nil && isPunctuation(nextChar!)) {
-                            direction = 1
-                        } else {
-                            // If ambiguous, use any unmatched opening delimiter.
-                            let hasUnmatchedOpening = parsedResult.emphasisLookUpTable.contains { $0.type == (ch == "*" ? .asterisk : .underscore) && $0.directionType == 0 }
-                            direction = hasUnmatchedOpening ? 1 : 0
-                        }
+                        let hasUnmatchedOpening = parsedResult.emphasisLookUpTable.contains { $0.type == (ch == "*" ? .asterisk : .underscore) && $0.directionType == 0 }
+                        direction = hasUnmatchedOpening ? 1 : 0
                     } else if leftFlanking {
                         direction = 0
                     } else if rightFlanking {
@@ -368,7 +541,6 @@ struct EmphasisParser: MarkDownBlockParser {
                     }
                 }
                 if ch == "*" {
-                    // For asterisks: if the preceding character is whitespace, output literally.
                     if let pre = preceding, pre.isWhitespace {
                         currentToken.append(delimStr)
                         continue
@@ -379,7 +551,6 @@ struct EmphasisParser: MarkDownBlockParser {
                     }
                 }
                 if ch == "_" {
-                    // For underscores, if there is a following character and the preceding character is not alphanumeric, force opening.
                     if let nextChar = nextChar {
                         if let pre = preceding, !(pre.isLetter || pre.isNumber) {
                             direction = 0
@@ -388,12 +559,7 @@ struct EmphasisParser: MarkDownBlockParser {
                         }
                     }
                 }
-                
-                var emphasisToken = MarkDownLeftAndRightEmphasisHtmlGenerator(
-                    token: delimStr,
-                    sizeOfEmphasisDelimiterRun: count,
-                    type: (ch == "*") ? .asterisk : .underscore
-                )
+                var emphasisToken = MarkDownLeftAndRightEmphasisHtmlGenerator(token: delimStr, sizeOfEmphasisDelimiterRun: count, type: (ch == "*" ? .asterisk : .underscore))
                 emphasisToken.directionType = direction
                 parsedResult.appendToLookUpTable(emphasisToken)
                 parsedResult.appendToTokens(emphasisToken)
@@ -405,8 +571,8 @@ struct EmphasisParser: MarkDownBlockParser {
         }
         flushToken()
     }
-
-    private mutating func flushToken() {
+    
+    private func flushToken() {
         if !currentToken.isEmpty {
             parsedResult.addNewTokenToParsedResult(currentToken)
             currentToken = ""
@@ -421,7 +587,7 @@ struct EmphasisParser: MarkDownBlockParser {
         return String(char).rangeOfCharacter(from: .punctuationCharacters) != nil
     }
     
-    private mutating func consumeDelimiterRun(stream: inout StringIterator, delimiter: Character) -> (String, Int) {
+    private func consumeDelimiterRun(stream: inout StringIterator, delimiter: Character) -> (String, Int) {
         var delimStr = ""
         var count = 0
         while let ch = stream.peek(), ch == delimiter {
@@ -437,101 +603,10 @@ struct EmphasisParser: MarkDownBlockParser {
     }
 }
 
-// MARK: - String Iterator
-
-struct StringIterator {
-    private let text: [Character]
-    private var index: Int = 0
-    
-    init(_ text: String) {
-        self.text = Array(text)
-    }
-    
-    mutating func next() -> Character? {
-        guard index < text.count else { return nil }
-        defer { index += 1 }
-        return text[index]
-    }
-    
-    func peek() -> Character? {
-        return index < text.count ? text[index] : nil
-    }
-}
-
-// MARK: - Stub Implementations for LinkParser, ListParser, OrderedListParser
-
-// These stub implementations provide minimal behavior so that the overall parser compiles.
-// You can expand these implementations to provide full Markdown parsing functionality later.
-
-class ListParser: MarkDownBlockParser {
-    var parsedResult = MarkDownParsedResult()
-    
-    func match(stream: inout StringIterator) {
-        guard let marker = stream.next(), marker == "-" || marker == "+" || marker == "*" else { return }
-        if let ch = stream.peek(), ch == " " { _ = stream.next() }
-        var listText = ""
-        while let c = stream.peek(), c != "\n", c != "\r" {
-            listText.append(stream.next()!)
-        }
-        let listToken = MarkDownListHtmlGenerator(token: "<li>" + listText + "</li>")
-        listToken.makeItHead()
-        listToken.makeItTail()
-        parsedResult.appendToTokens(listToken)
-    }
-    
-    func parseBlock(stream: inout StringIterator) {
-        match(stream: &stream)
-    }
-}
-
-class MarkDownAnchorHtmlGenerator: MarkDownHtmlGenerator {
-    var href: String
-    var linkText: String
-    
-    init(linkText: String, href: String) {
-        self.linkText = linkText
-        self.href = href
-        super.init(token: "")
-    }
-    
-    override func generateHtmlString() -> String {
-        return "<a href=\"\(href)\">\(linkText)</a>"
-    }
-}
-
-class OrderedListParser: MarkDownBlockParser {
-    var parsedResult = MarkDownParsedResult()
-    
-    func match(stream: inout StringIterator) {
-        var numberString = ""
-        while let ch = stream.peek(), ch.isNumber {
-            numberString.append(stream.next()!)
-        }
-        if let dot = stream.next(), dot == "." {
-            if let ch = stream.peek(), ch == " " { _ = stream.next() }
-            var listText = ""
-            while let c = stream.peek(), c != "\n", c != "\r" {
-                listText.append(stream.next()!)
-            }
-            let orderedToken = MarkDownOrderedListHtmlGenerator(token: "<li>" + listText + "</li>", numberString: numberString)
-            orderedToken.makeItHead()
-            orderedToken.makeItTail()
-            parsedResult.appendToTokens(orderedToken)
-        } else {
-            parsedResult.addNewTokenToParsedResult(numberString)
-        }
-    }
-    
-    func parseBlock(stream: inout StringIterator) {
-        match(stream: &stream)
-    }
-}
-
 class LinkParser: MarkDownBlockParser {
     var parsedResult = MarkDownParsedResult()
     
     func match(stream: inout StringIterator) {
-        // Assume stream.peek() is '['.
         guard let ch = stream.next(), ch == "[" else { return }
         var linkText = ""
         while let c = stream.peek(), c != "]" {
@@ -539,8 +614,8 @@ class LinkParser: MarkDownBlockParser {
         }
         _ = stream.next() // consume ']'
         guard let openParen = stream.next(), openParen == "(" else {
-           parsedResult.addNewTokenToParsedResult("[" + linkText)
-           return
+            parsedResult.addNewTokenToParsedResult("[" + linkText)
+            return
         }
         var url = ""
         while let c = stream.peek(), c != ")" {
@@ -551,242 +626,201 @@ class LinkParser: MarkDownBlockParser {
         let anchorToken = MarkDownAnchorHtmlGenerator(linkText: linkText, href: url)
         parsedResult.appendToTokens(anchorToken)
     }
+}
+
+class ListParser: MarkDownBlockParser {
+    var parsedResult = MarkDownParsedResult()
     
-    func parseBlock(stream: inout StringIterator) {
-        match(stream: &stream)
+    func match(stream: inout StringIterator) {
+        // Check validity: marker must be followed by a space.
+        guard let marker = stream.next() else { return }
+        if stream.peek() != " " {
+            // Not a valid list marker: put marker back and use emphasis parser.
+            stream.putBack()
+            var emphasisParser = EmphasisParser()
+            emphasisParser.match(stream: &stream)
+            parsedResult.appendParseResult(emphasisParser.getParsedResult())
+            return
+        }
+        // Consume the space.
+        _ = stream.next()
+        
+        var items: [String] = []
+        repeat {
+            var listText = ""
+            while let c = stream.peek(), c != "\n", c != "\r" {
+                listText.append(stream.next()!)
+            }
+            items.append("<li>" + listText + "</li>")
+            while let c = stream.peek(), c == "\n" || c == "\r" {
+                _ = stream.next()
+            }
+        } while stream.peek() == marker
+
+        let combined = items.joined()
+        let listToken = MarkDownListHtmlGenerator(token: combined)
+        listToken.makeItHead()
+        listToken.makeItTail()
+        parsedResult.appendToTokens(listToken)
     }
 }
 
-class MarkDownParsedResult {
-    private var codeGenTokens: [MarkDownHtmlGenerator] = []
-    public var emphasisLookUpTable: [MarkDownEmphasisHtmlGenerator] = []
-    private var isHTMLTagsAdded: Bool = false
-    private var isCaptured: Bool = false
-
-    init() {}
-
-    func translate() {
-        matchLeftAndRightEmphasises()
-    }
-
-    func addBlockTags() {
-        codeGenTokens.first?.makeItHead()
-        codeGenTokens.last?.makeItTail()
-    }
-
-    private func markTags(_ x: MarkDownHtmlGenerator) {
-        if let lastToken = codeGenTokens.last, lastToken.getBlockType() != x.getBlockType() {
-            if lastToken.isNewLine() {
-                codeGenTokens.removeLast()
+class OrderedListParser: MarkDownBlockParser {
+    var parsedResult = MarkDownParsedResult()
+    
+    func match(stream: inout StringIterator) {
+        // Save current index to roll back if not valid.
+        let startIndex = stream.index
+        var numberString = ""
+        while let c = stream.peek(), c.isNumber {
+            numberString.append(stream.next()!)
+        }
+        guard let dot = stream.peek(), dot == "." else {
+            // Not a valid ordered list marker; roll back.
+            stream.index = startIndex
+            var emphasisParser = EmphasisParser()
+            emphasisParser.match(stream: &stream)
+            parsedResult.appendParseResult(emphasisParser.getParsedResult())
+            return
+        }
+        _ = stream.next() // consume '.'
+        if let space = stream.peek(), space == " " {
+            _ = stream.next() // consume space
+        }
+        let startNumber = numberString
+        var items: [String] = []
+        repeat {
+            var listText = ""
+            while let c = stream.peek(), c != "\n", c != "\r" {
+                listText.append(stream.next()!)
             }
-
-            if !codeGenTokens.isEmpty {
-                codeGenTokens.last?.makeItTail()
+            items.append("<li>" + listText + "</li>")
+            while let c = stream.peek(), c == "\n" || c == "\r" {
+                _ = stream.next()
             }
-            x.makeItHead()
-        }
-    }
-
-    func appendParseResult(_ other: MarkDownParsedResult) {
-        if !codeGenTokens.isEmpty, !other.codeGenTokens.isEmpty {
-            markTags(other.codeGenTokens.first!)
-        }
-        codeGenTokens.append(contentsOf: other.codeGenTokens)
-        emphasisLookUpTable.append(contentsOf: other.emphasisLookUpTable)
-        isHTMLTagsAdded = isHTMLTagsAdded || other.hasHtmlTags()
-        isCaptured = other.isCaptured
-    }
-
-    func appendToTokens(_ token: MarkDownHtmlGenerator) {
-        if !codeGenTokens.isEmpty {
-            markTags(token)
-        }
-        codeGenTokens.append(token)
-    }
-
-    func appendToLookUpTable(_ token: MarkDownEmphasisHtmlGenerator) {
-        emphasisLookUpTable.append(token)
-    }
-
-    func popFront() {
-        if !codeGenTokens.isEmpty {
-            codeGenTokens.removeFirst()
-        }
-    }
-
-    func popBack() {
-        if !codeGenTokens.isEmpty {
-            codeGenTokens.removeLast()
-        }
-    }
-
-    func clear() {
-        codeGenTokens.removeAll()
-        emphasisLookUpTable.removeAll()
-    }
-
-    func addNewTokenToParsedResult(_ ch: Character) {
-        let token = MarkDownStringHtmlGenerator(token: String(ch))
-        appendToTokens(token)
-    }
-
-    func addNewTokenToParsedResult(_ word: String) {
-        let token = MarkDownStringHtmlGenerator(token: word)
-        appendToTokens(token)
-    }
-
-    func addNewLineTokenToParsedResult(_ ch: Character) {
-        let token = MarkDownNewLineHtmlGenerator(token: String(ch))
-        appendToTokens(token)
-    }
-
-    func generateHtmlString() -> String {
-        return codeGenTokens.map { $0.generateHtmlString() }.joined()
-    }
-
-    private func matchLeftAndRightEmphasises() {
-        var leftEmphasisToExplore: [MarkDownEmphasisHtmlGenerator] = []
-        var currentEmphasisIndex = 0
-
-        while currentEmphasisIndex < emphasisLookUpTable.count {
-            let currentEmphasis = emphasisLookUpTable[currentEmphasisIndex]
-
-            if currentEmphasis.isLeftEmphasis() || (currentEmphasis.isLeftAndRightEmphasis() && leftEmphasisToExplore.isEmpty) {
-                if currentEmphasis.isLeftAndRightEmphasis(), currentEmphasis.isRightEmphasis() {
-                    currentEmphasis.changeDirectionToLeft()
-                }
-                leftEmphasisToExplore.append(currentEmphasis)
-                currentEmphasisIndex += 1
-            } else if !leftEmphasisToExplore.isEmpty {
-                let currentLeftEmphasis = leftEmphasisToExplore.removeLast()
-
-                if !currentLeftEmphasis.isMatch(currentEmphasis) {
-                    var isFound = false
-                    var storedLeftTokens: [MarkDownEmphasisHtmlGenerator] = []
-
-                    while !leftEmphasisToExplore.isEmpty && !isFound {
-                        let leftToken = leftEmphasisToExplore.removeLast()
-                        if leftToken.isMatch(currentEmphasis) {
-                            isFound = true
-                            leftEmphasisToExplore.append(leftToken)
-                        } else {
-                            storedLeftTokens.append(leftToken)
-                        }
-                    }
-
-                    if !isFound, let lastLeft = leftEmphasisToExplore.last, lastLeft.isSameType(currentEmphasis) {
-                        currentEmphasis.changeDirectionToLeft()
-                    } else {
-                        storedLeftTokens.reversed().forEach { leftEmphasisToExplore.append($0) }
-                        currentEmphasisIndex += 1
-                        continue
-                    }
-                }
-
-                // Pair the tokens: generate tags and force the delimiter counts to zero.
-                isHTMLTagsAdded = currentLeftEmphasis.generateTags(with: currentEmphasis) || isHTMLTagsAdded
-                currentLeftEmphasis.numberOfUnusedDelimiters = 0
-                currentEmphasis.numberOfUnusedDelimiters = 0
-
-                if currentEmphasis.isDone() {
-                    currentEmphasisIndex += 1
-                }
-
-                if currentLeftEmphasis.isDone() {
-                    _ = leftEmphasisToExplore.popLast()
-                }
+            // Check for another list item marker.
+            var tempIndex = stream.index
+            var nextNumber = ""
+            while let c = stream.peek(), c.isNumber {
+                nextNumber.append(stream.next()!)
+            }
+            if let dot = stream.peek(), dot == "." {
+                // valid next item marker; restore stream and continue.
+                stream.index = tempIndex
             } else {
-                currentEmphasisIndex += 1
+                // no more valid markers.
+                stream.index = tempIndex
+                break
             }
-        }
-    }
-
-    func hasHtmlTags() -> Bool {
-        return isHTMLTagsAdded
-    }
-
-    func foundHtmlTags() {
-        isHTMLTagsAdded = true
-    }
-
-    func getIsCaptured() -> Bool {
-        return isCaptured
-    }
-
-    func setIsCaptured(_ val: Bool) {
-        isCaptured = val
+        } while true
+        
+        let combined = items.joined()
+        let orderedToken = MarkDownOrderedListHtmlGenerator(token: combined, numberString: startNumber)
+        orderedToken.makeItHead()
+        orderedToken.makeItTail()
+        parsedResult.appendToTokens(orderedToken)
     }
 }
 
-extension MarkDownParsedResult {
-    func lastPlainTextCharacter() -> Character? {
-        for token in codeGenTokens.reversed() {
-            if let stringToken = token as? MarkDownStringHtmlGenerator, !stringToken.token.isEmpty {
-                return stringToken.token.last
-            }
-        }
-        return nil
-    }
-}
+// MARK: - Main Parser
 
 class MarkDownParser {
     private let text: String
     private var parsedResult = MarkDownParsedResult()
-    private var hasHTMLTag = false
-    private var isEscaped = false
-
+    private var hasHTMLTag: Bool = false
+    private var isEscaped: Bool = false
+    
     init(_ text: String) {
         self.text = text
     }
-
-    /// Transforms Markdown string to HTML
-    func transformToHtml() -> String { // ✅ Made mutating
-        guard !text.isEmpty else {
+    
+    /// Transforms Markdown string to HTML.
+    func transformToHtml() -> String {
+        if text.isEmpty {
             return "<p></p>"
         }
-
-        // Begin parsing HTML blocks
         parseBlock()
-
-        // Process further what is parsed before outputting HTML string
         parsedResult.translate()
-
-        // Add block tags such as <p> <ul>
         parsedResult.addBlockTags()
-
         hasHTMLTag = parsedResult.hasHtmlTags()
         return parsedResult.generateHtmlString()
     }
-
-    /// Returns the raw text
+    
     func getRawText() -> String {
         return text
     }
-
-    /// Checks if the text contains HTML tags
+    
     func hasHtmlTags() -> Bool {
         return hasHTMLTag
     }
-
-    /// Checks if the text is escaped
+    
     func isEscapedText() -> Bool {
         return isEscaped
     }
-
-    /// Parses Markdown blocks
+    
     private func parseBlock() {
         let escapedText = escapeText()
         var stream = StringIterator(escapedText)
-        var parser = EmphasisParser()
-        parser.parseBlock(stream: &stream)
-        parsedResult.appendParseResult(parser.getParsedResult())
+        // We'll track if we are at the beginning of a new block.
+        var atStartOfLine = true
+        
+        while let ch = stream.peek() {
+            if ch == "\n" || ch == "\r" {
+                // Always output newline tokens.
+                if let newline = stream.next() {
+                    parsedResult.addNewLineTokenToParsedResult(newline)
+                }
+                atStartOfLine = true
+            } else if atStartOfLine {
+                // Look ahead to decide if this is a list marker or an ordered list.
+                if ch == "-" || ch == "+" || ch == "*" {
+                    var temp = stream
+                    let marker = temp.next()!
+                    if let next = temp.peek(), next == " " {
+                        let listParser = ListParser()
+                        listParser.match(stream: &stream)
+                        parsedResult.appendParseResult(listParser.parsedResult)
+                        atStartOfLine = true
+                        continue
+                    }
+                } else if ch.isNumber {
+                    var temp = stream
+                    var numberString = ""
+                    while let c = temp.peek(), c.isNumber {
+                        numberString.append(temp.next()!)
+                    }
+                    if let next = temp.peek(), next == "." {
+                        let orderedListParser = OrderedListParser()
+                        orderedListParser.match(stream: &stream)
+                        parsedResult.appendParseResult(orderedListParser.parsedResult)
+                        atStartOfLine = true
+                        continue
+                    }
+                }
+                // Otherwise, treat as regular text/emphasis.
+                var emphasisParser = EmphasisParser()
+                emphasisParser.match(stream: &stream)
+                parsedResult.appendParseResult(emphasisParser.getParsedResult())
+                atStartOfLine = false
+            } else {
+                // Not at start-of-line; use emphasis parsing.
+                var emphasisParser = EmphasisParser()
+                emphasisParser.match(stream: &stream)
+                parsedResult.appendParseResult(emphasisParser.getParsedResult())
+                // If the generated token ends with a newline, we are at start-of-line.
+                if let lastToken = parsedResult.codeGenTokens.last?.generateHtmlString().last,
+                   lastToken == "\n" || lastToken == "\r" {
+                    atStartOfLine = true
+                } else {
+                    atStartOfLine = false
+                }
+            }
+        }
     }
-
-    /// Escapes special HTML characters in the Markdown text
+    
     private func escapeText() -> String {
         var escaped = ""
         var nonEscapedCounts = 0
-
         for char in text {
             switch char {
             case "<":
@@ -802,7 +836,6 @@ class MarkDownParser {
                 nonEscapedCounts += 1
             }
         }
-
         isEscaped = (nonEscapedCounts != text.count)
         return escaped
     }
