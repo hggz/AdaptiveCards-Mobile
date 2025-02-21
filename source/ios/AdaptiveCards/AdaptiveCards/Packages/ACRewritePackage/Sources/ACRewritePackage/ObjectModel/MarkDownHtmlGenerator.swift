@@ -334,15 +334,39 @@ struct EmphasisParser: MarkDownBlockParser {
                 
                 // Look ahead to decide the run’s direction.
                 let nextChar = stream.peek()
-                // If there is no preceding character, force left-flanking.
                 var direction: Int
                 if preceding == nil {
+                    // If there is no character before the delimiter run, force opening.
                     direction = 0
                 } else {
-                    let delimiterIsClosing = (nextChar?.isWhitespace ?? true) || (nextChar.map { isPunctuation($0) } ?? false)
-                    direction = delimiterIsClosing ? 1 : 0
+                    let pre = preceding!
+                    // A delimiter run is considered left-flanking if the character following it is not a whitespace
+                    // and either there is no character before it or the character before it is a space or punctuation.
+                    let leftFlanking = (nextChar != nil && !nextChar!.isWhitespace) &&
+                                       (pre.isWhitespace || isPunctuation(pre))
+                    // It is considered right-flanking if the character preceding it is not a whitespace
+                    // and either there is no character after it or the character after it is a space or punctuation.
+                    let rightFlanking = (!pre.isWhitespace) &&
+                                        ((nextChar == nil) || nextChar!.isWhitespace || (nextChar != nil && isPunctuation(nextChar!)))
+                    if leftFlanking && rightFlanking {
+                        // When both, decide based on the nature of the adjacent characters.
+                        if isPunctuation(pre) && (nextChar == nil || !isPunctuation(nextChar!)) {
+                            direction = 0
+                        } else if (!isPunctuation(pre)) && (nextChar != nil && isPunctuation(nextChar!)) {
+                            direction = 1
+                        } else {
+                            // If ambiguous, use any unmatched opening delimiter.
+                            let hasUnmatchedOpening = parsedResult.emphasisLookUpTable.contains { $0.type == (ch == "*" ? .asterisk : .underscore) && $0.directionType == 0 }
+                            direction = hasUnmatchedOpening ? 1 : 0
+                        }
+                    } else if leftFlanking {
+                        direction = 0
+                    } else if rightFlanking {
+                        direction = 1
+                    } else {
+                        direction = 0
+                    }
                 }
-                
                 if ch == "*" {
                     // For asterisks: if the preceding character is whitespace, output literally.
                     if let pre = preceding, pre.isWhitespace {
