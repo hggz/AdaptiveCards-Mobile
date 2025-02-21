@@ -334,8 +334,14 @@ struct EmphasisParser: MarkDownBlockParser {
                 
                 // Look ahead to decide the run’s direction.
                 let nextChar = stream.peek()
-                let delimiterIsClosing = (nextChar?.isWhitespace ?? true) || (nextChar.map { isPunctuation($0) } ?? false)
-                var direction = delimiterIsClosing ? 1 : 0  // default determination
+                // If there is no preceding character, force left-flanking.
+                var direction: Int
+                if preceding == nil {
+                    direction = 0
+                } else {
+                    let delimiterIsClosing = (nextChar?.isWhitespace ?? true) || (nextChar.map { isPunctuation($0) } ?? false)
+                    direction = delimiterIsClosing ? 1 : 0
+                }
                 
                 if ch == "*" {
                     // For asterisks: if the preceding character is whitespace, output literally.
@@ -349,7 +355,7 @@ struct EmphasisParser: MarkDownBlockParser {
                     }
                 }
                 if ch == "_" {
-                    // For underscores, if there is a following character, and the preceding character is not alphanumeric, force opening.
+                    // For underscores, if there is a following character and the preceding character is not alphanumeric, force opening.
                     if let nextChar = nextChar {
                         if let pre = preceding, !(pre.isLetter || pre.isNumber) {
                             direction = 0
