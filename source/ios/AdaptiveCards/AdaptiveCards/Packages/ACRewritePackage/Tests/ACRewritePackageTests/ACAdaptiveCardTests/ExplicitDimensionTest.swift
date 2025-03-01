@@ -19,9 +19,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let image = card.body.first as? Image else {
+              let image = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -44,9 +44,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let image = card.body.first as? Image else {
+              let image = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -69,9 +69,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let _ = card.body.first as? Image else {
+              let _ = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -96,9 +96,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let _ = card.body.first as? Image else {
+              let _ = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -123,9 +123,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let image = card.body.first as? Image else {
+              let image = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -149,9 +149,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let _ = card.body.first as? Image else {
+              let _ = card.body.first as? SwiftImage else {
             XCTFail("Image element not parsed")
             return
         }
@@ -302,9 +302,9 @@ class ExplicitDimensionTest: XCTestCase {
         ]
         
         for payload in payloads {
-            let parseResult = try? AdaptiveCard.deserializeFromString(payload, version: "1.1")
+            let parseResult = try? SwiftAdaptiveCard.deserializeFromString(payload, version: "1.1")
             guard let card = parseResult?.adaptiveCard,
-                  let image = card.body.first as? Image else {
+                  let image = card.body.first as? SwiftImage else {
                 XCTFail("Image element not parsed")
                 continue
             }
@@ -342,9 +342,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         guard let card = parseResult?.adaptiveCard,
-              let columnSet = card.body.first as? ColumnSet,
+              let columnSet = card.body.first as? SwiftColumnSet,
               let column = columnSet.columns.first else {
             XCTFail("ColumnSet/Column not parsed")
             return
@@ -373,9 +373,9 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         guard let card = parseResult?.adaptiveCard,
-              let container = card.body.first as? Container else {
+              let container = card.body.first as? SwiftContainer else {
             XCTFail("Container not parsed")
             return
         }
@@ -397,7 +397,7 @@ class ExplicitDimensionTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         guard let card = parseResult?.adaptiveCard else {
             XCTFail("AdaptiveCard not parsed")
             return
@@ -437,9 +437,9 @@ class ExplicitDimensionForColumnTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let columnSet = card.body.first as? ColumnSet,
+              let columnSet = card.body.first as? SwiftColumnSet,
               let column = columnSet.columns.first else {
             XCTFail("ColumnSet/Column not parsed")
             return
@@ -467,9 +467,9 @@ class ExplicitDimensionForColumnTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let columnSet = card.body.first as? ColumnSet,
+              let columnSet = card.body.first as? SwiftColumnSet,
               let column = columnSet.columns.first else {
             XCTFail("ColumnSet/Column not parsed")
             return
@@ -499,9 +499,9 @@ class ExplicitDimensionForColumnTest: XCTestCase {
           ]
         }
         """
-        let parseResult = try? AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try? SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let card = parseResult?.adaptiveCard,
-              let columnSet = card.body.first as? ColumnSet,
+              let columnSet = card.body.first as? SwiftColumnSet,
               let column = columnSet.columns.first else {
             XCTFail("ColumnSet/Column not parsed")
             return

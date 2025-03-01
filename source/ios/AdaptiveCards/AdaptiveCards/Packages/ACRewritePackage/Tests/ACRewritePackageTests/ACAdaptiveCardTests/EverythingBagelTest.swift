@@ -416,26 +416,26 @@ class EverythingBagelTests: XCTestCase {
     
     // MARK: - Helper Validators
     
-    private func validateBackgroundImage(_ backImage: BackgroundImage,
-                                         mode: ImageFillMode,
-                                         hAlignment: HorizontalAlignment,
-                                         vAlignment: VerticalAlignment) {
+    private func validateBackgroundImage(_ backImage: SwiftBackgroundImage,
+                                         mode: SwiftImageFillMode,
+                                         hAlignment: SwiftHorizontalAlignment,
+                                         vAlignment: SwiftVerticalAlignment) {
         XCTAssertEqual(backImage.url, "https://adaptivecards.io/content/cats/1.png")
         XCTAssertEqual(backImage.fillMode, mode)
         XCTAssertEqual(backImage.horizontalAlignment, hAlignment)
         XCTAssertEqual(backImage.verticalAlignment, vAlignment)
     }
     
-    private func validateRefresh(_ refresh: Refresh) {
+    private func validateRefresh(_ refresh: SwiftRefresh) {
         XCTAssertNotNil(refresh.action)
         // Compare the action’s typeString (a String) to the expected raw value.
-        XCTAssertEqual(refresh.action?.typeString, ActionType.execute.rawValue)
+        XCTAssertEqual(refresh.action?.typeString, SwiftActionType.execute.rawValue)
         XCTAssertEqual(refresh.action?.id, "refresh_action_id")
         XCTAssertEqual(refresh.userIds.count, 1)
         XCTAssertEqual(refresh.userIds.first, "refresh_userIds_0")
     }
     
-    private func validateAuthentication(_ auth: Authentication) {
+    private func validateAuthentication(_ auth: SwiftAuthentication) {
         XCTAssertEqual(auth.text, "authentication_text")
         XCTAssertEqual(auth.connectionName, "authentication_connectionName")
         XCTAssertNotNil(auth.tokenExchangeResource)
@@ -451,7 +451,7 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateTopLevelProperties(_ card: AdaptiveCard) {
+    private func validateTopLevelProperties(_ card: SwiftAdaptiveCard) {
         if let bg = card.backgroundImage {
             validateBackgroundImage(bg, mode: .cover, hAlignment: .left, vAlignment: .top)
         } else {
@@ -468,7 +468,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Missing authentication")
         }
         // Use elementTypeVal (a computed property returning CardElementType)
-        XCTAssertEqual(card.elementTypeVal, CardElementType.adaptiveCard)
+        XCTAssertEqual(card.elementTypeVal, SwiftCardElementType.adaptiveCard)
         XCTAssertEqual(card.fallbackText, "fallbackText")
         XCTAssertEqual(card.height, .auto)
         XCTAssertEqual(card.language, "en")
@@ -482,11 +482,11 @@ class EverythingBagelTests: XCTestCase {
     }
     
     private func validateTextBlock(_ textBlock: TextBlock,
-                                   fontType: FontType?,
-                                   style: TextStyle?,
+                                   fontType: SwiftFontType?,
+                                   style: SwiftTextStyle?,
                                    id: String) {
-        XCTAssertEqual(textBlock.elementTypeVal, CardElementType.textBlock)
-        XCTAssertEqual(textBlock.elementTypeString, CardElementType.textBlock.rawValue)
+        XCTAssertEqual(textBlock.elementTypeVal, SwiftCardElementType.textBlock)
+        XCTAssertEqual(textBlock.elementTypeString, SwiftCardElementType.textBlock.rawValue)
         XCTAssertEqual(textBlock.id, id)
         XCTAssertEqual(textBlock.text, "TextBlock_text")
         XCTAssertEqual(textBlock.textStyle, style)
@@ -496,8 +496,8 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(textBlock.maxLines, 1)
         XCTAssertEqual(textBlock.language, "en")
         // Assume default values for textSize and textWeight have been renamed:
-        XCTAssertEqual(textBlock.textSize, TextSize.defaultSize)
-        XCTAssertEqual(textBlock.textWeight, TextWeight.defaultWeight)
+        XCTAssertEqual(textBlock.textSize, SwiftTextSize.defaultSize)
+        XCTAssertEqual(textBlock.textWeight, SwiftTextWeight.defaultWeight)
         XCTAssertEqual(textBlock.fontType, fontType)
         XCTAssertNotNil(textBlock.isSubtle)
         XCTAssertFalse(textBlock.isSubtle!)
@@ -505,45 +505,45 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertFalse(textBlock.wrap)
     }
     
-    private func validateImage(_ image: Image) {
-        XCTAssertEqual(image.elementTypeVal, CardElementType.image)
-        XCTAssertEqual(image.elementTypeString, CardElementType.image.rawValue)
+    private func validateImage(_ image: SwiftImage) {
+        XCTAssertEqual(image.elementTypeVal, SwiftCardElementType.image)
+        XCTAssertEqual(image.elementTypeString, SwiftCardElementType.image.rawValue)
         XCTAssertEqual(image.id, "Image_id")
         XCTAssertEqual(image.altText, "Image_altText")
         XCTAssertEqual(image.url, "https://adaptivecards.io/content/cats/1.png")
         XCTAssertEqual(image.backgroundColor, "")
         XCTAssertEqual(image.imageStyle, .person)
-        XCTAssertEqual(image.spacing, Spacing.none)
+        XCTAssertEqual(image.spacing, SwiftSpacing.none)
         XCTAssertEqual(image.height, .auto)
-        XCTAssertEqual(image.hAlignment, HorizontalAlignment.center)
+        XCTAssertEqual(image.hAlignment, SwiftHorizontalAlignment.center)
         XCTAssertEqual(image.imageSize, .auto)
         XCTAssertTrue(image.separator == true)
         XCTAssertFalse(image.isVisible)
         
-        if let imageAction = image.selectAction as? OpenUrlAction {
+        if let imageAction = image.selectAction as? SwiftOpenUrlAction {
             XCTAssertEqual(imageAction.title, "Image_Action.OpenUrl")
             XCTAssertEqual(imageAction.url, "https://adaptivecards.io/")
-            XCTAssertEqual(imageAction.typeString, ActionType.openUrl.rawValue)
+            XCTAssertEqual(imageAction.typeString, SwiftActionType.openUrl.rawValue)
             XCTAssertTrue(imageAction.isEnabled)
         } else {
             XCTFail("Image selectAction is not OpenUrlAction")
         }
     }
     
-    private func validateColumnSet(_ columnSet: ColumnSet) {
-        XCTAssertEqual(columnSet.elementTypeVal, CardElementType.columnSet)
-        XCTAssertEqual(columnSet.elementTypeString, CardElementType.columnSet.rawValue)
+    private func validateColumnSet(_ columnSet: SwiftColumnSet) {
+        XCTAssertEqual(columnSet.elementTypeVal, SwiftCardElementType.columnSet)
+        XCTAssertEqual(columnSet.elementTypeString, SwiftCardElementType.columnSet.rawValue)
         XCTAssertEqual(columnSet.id, "ColumnSet_id")
-        XCTAssertEqual(columnSet.spacing, Spacing.large)
+        XCTAssertEqual(columnSet.spacing, SwiftSpacing.large)
         XCTAssertTrue(columnSet.separator == true)
         
         let columns = columnSet.columns
         XCTAssertEqual(columns.count, 3)
         
         // First column.
-        if let firstColumn = columns[0] as? Column {
-            XCTAssertEqual(firstColumn.elementTypeVal, CardElementType.column)
-            XCTAssertEqual(firstColumn.elementTypeString, CardElementType.column.rawValue)
+        if let firstColumn = columns[0] as? SwiftColumn {
+            XCTAssertEqual(firstColumn.elementTypeVal, SwiftCardElementType.column)
+            XCTAssertEqual(firstColumn.elementTypeString, SwiftCardElementType.column.rawValue)
             XCTAssertEqual(firstColumn.id, "Column_id1")
             XCTAssertEqual(firstColumn.width, "auto")
             XCTAssertEqual(firstColumn.pixelWidth, 0)
@@ -553,7 +553,7 @@ class EverythingBagelTests: XCTestCase {
             
             let items = firstColumn.items
             XCTAssertEqual(items.count, 1)
-            if let imageItem = items.first as? Image {
+            if let imageItem = items.first as? SwiftImage {
                 XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/1.png")
             }
         } else {
@@ -561,7 +561,7 @@ class EverythingBagelTests: XCTestCase {
         }
         
         // Second column.
-        if let secondColumn = columns[1] as? Column {
+        if let secondColumn = columns[1] as? SwiftColumn {
             XCTAssertEqual(secondColumn.id, "Column_id2")
             XCTAssertEqual(secondColumn.width, "20px")
             XCTAssertEqual(secondColumn.pixelWidth, 20)
@@ -570,7 +570,7 @@ class EverythingBagelTests: XCTestCase {
             
             let items = secondColumn.items
             XCTAssertEqual(items.count, 1)
-            if let imageItem = items.first as? Image {
+            if let imageItem = items.first as? SwiftImage {
                 XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/2.png")
             }
         } else {
@@ -578,7 +578,7 @@ class EverythingBagelTests: XCTestCase {
         }
         
         // Third column.
-        if let thirdColumn = columns[2] as? Column {
+        if let thirdColumn = columns[2] as? SwiftColumn {
             XCTAssertEqual(thirdColumn.id, "Column_id3")
             XCTAssertEqual(thirdColumn.width, "stretch")
             XCTAssertEqual(thirdColumn.pixelWidth, 0)
@@ -586,7 +586,7 @@ class EverythingBagelTests: XCTestCase {
             
             let items = thirdColumn.items
             XCTAssertEqual(items.count, 2)
-            if let imageItem = items[0] as? Image {
+            if let imageItem = items[0] as? SwiftImage {
                 XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/3.png")
             }
             if let textBlockItem = items[1] as? TextBlock {
@@ -598,23 +598,23 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateColumnSetContainer(_ container: Container) {
-        XCTAssertEqual(container.elementTypeVal, CardElementType.container)
-        XCTAssertEqual(container.elementTypeString, CardElementType.container.rawValue)
+    private func validateColumnSetContainer(_ container: SwiftContainer) {
+        XCTAssertEqual(container.elementTypeVal, SwiftCardElementType.container)
+        XCTAssertEqual(container.elementTypeString, SwiftCardElementType.container.rawValue)
         XCTAssertEqual(container.id, "Container_id")
-        XCTAssertEqual(container.spacing, Spacing.medium)
+        XCTAssertEqual(container.spacing, SwiftSpacing.medium)
         XCTAssertEqual(container.style, .default)
         XCTAssertNotNil(container.rtl)
         XCTAssertTrue(container.rtl!)
         
-        if let action = container.selectAction as? SubmitAction {
+        if let action = container.selectAction as? SwiftSubmitAction {
             XCTAssertEqual(action.title, "Container_Action.Submit")
             
             // Handle dataJson as String directly
             if let dataValue = action.dataJson as? String {
                 XCTAssertEqual(dataValue, "Container_data")
             } else if let dataDict = action.dataJson as? [String: Any] {
-                let dataString = try? ParseUtil.jsonToString(dataDict)
+                let dataString = try? SwiftParseUtil.jsonToString(dataDict)
                 XCTAssertEqual(dataString, "\"Container_data\"\n")
             } else {
                 XCTFail("dataJson is neither String nor Dictionary")
@@ -627,29 +627,29 @@ class EverythingBagelTests: XCTestCase {
         
         let items = container.items
         XCTAssertEqual(items.count, 1)
-        if let columnSet = items.first as? ColumnSet {
+        if let columnSet = items.first as? SwiftColumnSet {
             validateColumnSet(columnSet)
         } else {
             XCTFail("Container does not contain a ColumnSet")
         }
     }
     
-    private func validateFactSet(_ factSet: FactSet) {
-        XCTAssertEqual(factSet.elementTypeVal, CardElementType.factSet)
-        XCTAssertEqual(factSet.elementTypeString, CardElementType.factSet.rawValue)
+    private func validateFactSet(_ factSet: SwiftFactSet) {
+        XCTAssertEqual(factSet.elementTypeVal, SwiftCardElementType.factSet)
+        XCTAssertEqual(factSet.elementTypeString, SwiftCardElementType.factSet.rawValue)
         XCTAssertEqual(factSet.id, "FactSet_id")
         
         let facts = factSet.facts
         XCTAssertEqual(facts.count, 2)
         
-        if let fact = facts[0] as? Fact {
+        if let fact = facts[0] as? SwiftFact {
             XCTAssertEqual(fact.title, "Topping")
             XCTAssertEqual(fact.value, "poppyseeds")
         } else {
             XCTFail("First fact is invalid")
         }
         
-        if let fact = facts[1] as? Fact {
+        if let fact = facts[1] as? SwiftFact {
             XCTAssertEqual(fact.title, "Topping")
             XCTAssertEqual(fact.value, "onion flakes")
         } else {
@@ -657,17 +657,17 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateImageSet(_ imageSet: ImageSet) {
-        XCTAssertEqual(imageSet.elementTypeVal, CardElementType.imageSet)
-        XCTAssertEqual(imageSet.elementTypeString, CardElementType.imageSet.rawValue)
+    private func validateImageSet(_ imageSet: SwiftImageSet) {
+        XCTAssertEqual(imageSet.elementTypeVal, SwiftCardElementType.imageSet)
+        XCTAssertEqual(imageSet.elementTypeString, SwiftCardElementType.imageSet.rawValue)
         XCTAssertEqual(imageSet.id, "ImageSet_id")
         XCTAssertEqual(imageSet.imageSize, .auto)
         
         let images = imageSet.images
         XCTAssertEqual(images.count, 3)
         for (index, image) in images.enumerated() {
-            if let currImage = image as? Image {
-                XCTAssertEqual(currImage.elementTypeVal, CardElementType.image)
+            if let currImage = image as? SwiftImage {
+                XCTAssertEqual(currImage.elementTypeVal, SwiftCardElementType.image)
                 let expectedUrl = "https://adaptivecards.io/content/cats/\(index + 1).png"
                 XCTAssertEqual(currImage.url, expectedUrl)
             } else {
@@ -676,16 +676,16 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateInputText(_ textInput: TextInput) {
-        XCTAssertEqual(textInput.elementTypeVal, CardElementType.textInput)
-        XCTAssertEqual(textInput.elementTypeString, CardElementType.textInput.rawValue)
+    private func validateInputText(_ textInput: SwiftTextInput) {
+        XCTAssertEqual(textInput.elementTypeVal, SwiftCardElementType.textInput)
+        XCTAssertEqual(textInput.elementTypeString, SwiftCardElementType.textInput.rawValue)
         XCTAssertEqual(textInput.id, "Input.Text_id")
         
         XCTAssertFalse(textInput.isMultiline)
         XCTAssertFalse(textInput.isRequired)
         XCTAssertEqual(textInput.maxLength, 10)
         XCTAssertEqual(textInput.placeholder, "Input.Text_placeholder")
-        XCTAssertEqual(textInput.spacing, Spacing.small)
+        XCTAssertEqual(textInput.spacing, SwiftSpacing.small)
         XCTAssertEqual(textInput.style, .text)
         XCTAssertEqual(textInput.value, "Input.Text_value")
         XCTAssertTrue(textInput.errorMessage?.isEmpty ?? true)
@@ -693,7 +693,7 @@ class EverythingBagelTests: XCTestCase {
         
         XCTAssertEqual(textInput.label, "Input.Text_label")
         
-        if let inlineAction = textInput.inlineAction as? SubmitAction {
+        if let inlineAction = textInput.inlineAction as? SwiftSubmitAction {
             XCTAssertEqual(inlineAction.title, "Input.Text_Action.Submit")
             XCTAssertEqual(inlineAction.iconUrl, "https://adaptivecards.io/content/cats/1.png")
             XCTAssertEqual(inlineAction.associatedInputs, .auto)
@@ -703,9 +703,9 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateInputNumber(_ numberInput: NumberInput) {
-        XCTAssertEqual(numberInput.elementTypeVal, CardElementType.numberInput)
-        XCTAssertEqual(numberInput.elementTypeString, CardElementType.numberInput.rawValue)
+    private func validateInputNumber(_ numberInput: SwiftNumberInput) {
+        XCTAssertEqual(numberInput.elementTypeVal, SwiftCardElementType.numberInput)
+        XCTAssertEqual(numberInput.elementTypeString, SwiftCardElementType.numberInput.rawValue)
         XCTAssertEqual(numberInput.id, "Input.Number_id")
         
         XCTAssertTrue(numberInput.isRequired)
@@ -717,9 +717,9 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(numberInput.label, "Input.Number_label")
     }
     
-    private func validateInputDate(_ dateInput: DateInput) {
-        XCTAssertEqual(dateInput.elementTypeVal, CardElementType.dateInput)
-        XCTAssertEqual(dateInput.elementTypeString, CardElementType.dateInput.rawValue)
+    private func validateInputDate(_ dateInput: SwiftDateInput) {
+        XCTAssertEqual(dateInput.elementTypeVal, SwiftCardElementType.dateInput)
+        XCTAssertEqual(dateInput.elementTypeString, SwiftCardElementType.dateInput.rawValue)
         XCTAssertEqual(dateInput.id, "Input.Date_id")
         
         XCTAssertEqual(dateInput.max, "1/1/2020")
@@ -731,9 +731,9 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(dateInput.label, "Input.Date_label")
     }
     
-    private func validateInputTime(_ timeInput: TimeInput) {
-        XCTAssertEqual(timeInput.elementTypeVal, CardElementType.timeInput)
-        XCTAssertEqual(timeInput.elementTypeString, CardElementType.timeInput.rawValue)
+    private func validateInputTime(_ timeInput: SwiftTimeInput) {
+        XCTAssertEqual(timeInput.elementTypeVal, SwiftCardElementType.timeInput)
+        XCTAssertEqual(timeInput.elementTypeString, SwiftCardElementType.timeInput.rawValue)
         XCTAssertEqual(timeInput.id, "Input.Time_id")
         
         XCTAssertEqual(timeInput.min, "10:00")
@@ -744,9 +744,9 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(timeInput.label, "Input.Time_label")
     }
     
-    private func validateInputToggle(_ toggleInput: ToggleInput) {
-        XCTAssertEqual(toggleInput.elementTypeVal, CardElementType.toggleInput)
-        XCTAssertEqual(toggleInput.elementTypeString, CardElementType.toggleInput.rawValue)
+    private func validateInputToggle(_ toggleInput: SwiftToggleInput) {
+        XCTAssertEqual(toggleInput.elementTypeVal, SwiftCardElementType.toggleInput)
+        XCTAssertEqual(toggleInput.elementTypeString, SwiftCardElementType.toggleInput.rawValue)
         XCTAssertEqual(toggleInput.id, "Input.Toggle_id")
         
         XCTAssertEqual(toggleInput.title, "Input.Toggle_title")
@@ -759,17 +759,17 @@ class EverythingBagelTests: XCTestCase {
     }
     
     private func validateTextBlockInInput(_ textBlock: TextBlock) {
-        XCTAssertEqual(textBlock.elementTypeVal, CardElementType.textBlock)
-        XCTAssertEqual(textBlock.elementTypeString, CardElementType.textBlock.rawValue)
+        XCTAssertEqual(textBlock.elementTypeVal, SwiftCardElementType.textBlock)
+        XCTAssertEqual(textBlock.elementTypeString, SwiftCardElementType.textBlock.rawValue)
         XCTAssertEqual(textBlock.id, "")
         XCTAssertEqual(textBlock.text, "Everybody's got choices")
-        XCTAssertEqual(textBlock.textWeight, TextWeight.bolder)
-        XCTAssertEqual(textBlock.textSize, TextSize.large)
+        XCTAssertEqual(textBlock.textWeight, SwiftTextWeight.bolder)
+        XCTAssertEqual(textBlock.textSize, SwiftTextSize.large)
     }
     
-    private func validateInputChoiceSet(_ choiceSet: ChoiceSetInput) {
-        XCTAssertEqual(choiceSet.elementTypeVal, CardElementType.choiceSetInput)
-        XCTAssertEqual(choiceSet.elementTypeString, CardElementType.choiceSetInput.rawValue)
+    private func validateInputChoiceSet(_ choiceSet: SwiftChoiceSetInput) {
+        XCTAssertEqual(choiceSet.elementTypeVal, SwiftCardElementType.choiceSetInput)
+        XCTAssertEqual(choiceSet.elementTypeString, SwiftCardElementType.choiceSetInput.rawValue)
         XCTAssertEqual(choiceSet.id, "Input.ChoiceSet_id")
         XCTAssertEqual(choiceSet.choiceSetStyle, .compact)
         XCTAssertEqual(choiceSet.value, "Input.Choice2,Input.Choice4")
@@ -789,38 +789,38 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(choiceSet.label, "Input.ChoiceSet_label")
     }
     
-    private func validateInputContainer(_ container: Container) {
+    private func validateInputContainer(_ container: SwiftContainer) {
         XCTAssertEqual(container.id, "Container_id_inputs")
         XCTAssertNil(container.rtl)
         
         let items = container.items
         XCTAssertEqual(items.count, 7)
         
-        if let textInput = items[0] as? TextInput {
+        if let textInput = items[0] as? SwiftTextInput {
             validateInputText(textInput)
         } else {
             XCTFail("Expected TextInput in input container")
         }
         
-        if let numberInput = items[1] as? NumberInput {
+        if let numberInput = items[1] as? SwiftNumberInput {
             validateInputNumber(numberInput)
         } else {
             XCTFail("Expected NumberInput in input container")
         }
         
-        if let dateInput = items[2] as? DateInput {
+        if let dateInput = items[2] as? SwiftDateInput {
             validateInputDate(dateInput)
         } else {
             XCTFail("Expected DateInput in input container")
         }
         
-        if let timeInput = items[3] as? TimeInput {
+        if let timeInput = items[3] as? SwiftTimeInput {
             validateInputTime(timeInput)
         } else {
             XCTFail("Expected TimeInput in input container")
         }
         
-        if let toggleInput = items[4] as? ToggleInput {
+        if let toggleInput = items[4] as? SwiftToggleInput {
             validateInputToggle(toggleInput)
         } else {
             XCTFail("Expected ToggleInput in input container")
@@ -832,18 +832,18 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected TextBlock in input container")
         }
         
-        if let choiceSet = items[6] as? ChoiceSetInput {
+        if let choiceSet = items[6] as? SwiftChoiceSetInput {
             validateInputChoiceSet(choiceSet)
         } else {
             XCTFail("Expected ChoiceSetInput in input container")
         }
     }
     
-    private func validateActionSet(_ actionSet: ActionSet) {
+    private func validateActionSet(_ actionSet: SwiftActionSet) {
         let actions = actionSet.actions
         XCTAssertEqual(actions.count, 2)
         
-        if let submitAction = actions.first as? SubmitAction {
+        if let submitAction = actions.first as? SwiftSubmitAction {
             XCTAssertEqual(submitAction.id, "ActionSet.Action.Submit_id")
             XCTAssertEqual(submitAction.associatedInputs, .none)
             XCTAssertEqual(submitAction.tooltip, "tooltip")
@@ -852,7 +852,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected SubmitAction in ActionSet")
         }
         
-        if let openUrlAction = actions.last as? OpenUrlAction {
+        if let openUrlAction = actions.last as? SwiftOpenUrlAction {
             XCTAssertEqual(openUrlAction.id, "ActionSet.Action.OpenUrl_id")
             XCTAssertEqual(openUrlAction.tooltip, "tooltip")
             XCTAssertTrue(openUrlAction.isEnabled)
@@ -861,21 +861,21 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateRichTextBlock(_ richTextBlock: RichTextBlock) {
-        XCTAssertEqual(richTextBlock.elementTypeVal, CardElementType.richTextBlock)
-        XCTAssertEqual(richTextBlock.elementTypeString, CardElementType.richTextBlock.rawValue)
+    private func validateRichTextBlock(_ richTextBlock: SwiftRichTextBlock) {
+        XCTAssertEqual(richTextBlock.elementTypeVal, SwiftCardElementType.richTextBlock)
+        XCTAssertEqual(richTextBlock.elementTypeString, SwiftCardElementType.richTextBlock.rawValue)
         XCTAssertEqual(richTextBlock.id, "RichTextBlock_id")
         XCTAssertEqual(richTextBlock.horizontalAlignment, .right)
         
         let inlines = richTextBlock.inlines
         XCTAssertEqual(inlines.count, 3)
         
-        if let inlineTextElement = inlines[0] as? TextRun {
+        if let inlineTextElement = inlines[0] as? SwiftTextRun {
             XCTAssertEqual(inlineTextElement.text, "This is a text run")
             XCTAssertEqual(inlineTextElement.textColor, .dark)
             XCTAssertEqual(inlineTextElement.language, "en")
-            XCTAssertEqual(inlineTextElement.textSize, TextSize.large)
-            XCTAssertEqual(inlineTextElement.textWeight, TextWeight.bolder)
+            XCTAssertEqual(inlineTextElement.textSize, SwiftTextSize.large)
+            XCTAssertEqual(inlineTextElement.textWeight, SwiftTextWeight.bolder)
             XCTAssertEqual(inlineTextElement.fontType, .monospace)
             XCTAssertNotNil(inlineTextElement.isSubtle)
             XCTAssertTrue(inlineTextElement.isSubtle!)
@@ -887,9 +887,9 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected TextRun as first inline in RichTextBlock")
         }
         
-        if let inlineTextElement = inlines[1] as? TextRun {
-            if let selectAction = inlineTextElement.selectAction as? SubmitAction {
-                XCTAssertEqual(selectAction.typeString, ActionType.submit.rawValue)
+        if let inlineTextElement = inlines[1] as? SwiftTextRun {
+            if let selectAction = inlineTextElement.selectAction as? SwiftSubmitAction {
+                XCTAssertEqual(selectAction.typeString, SwiftActionType.submit.rawValue)
                 XCTAssertEqual(selectAction.associatedInputs, .auto)
             } else {
                 XCTFail("Expected inline text selectAction to be SubmitAction")
@@ -898,7 +898,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected TextRun as second inline in RichTextBlock")
         }
         
-        if let inlineTextElement = inlines[2] as? TextRun {
+        if let inlineTextElement = inlines[2] as? SwiftTextRun {
             XCTAssertEqual(inlineTextElement.text, "This is a text run specified as a string")
         } else if let text = inlines[2] as? String {
             XCTAssertEqual(text, "This is a text run specified as a string")
@@ -907,7 +907,7 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateBody(_ card: AdaptiveCard) {
+    private func validateBody(_ card: SwiftAdaptiveCard) {
         let body = card.body
         XCTAssertEqual(body.count, 10)
         
@@ -930,55 +930,55 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected TextBlock as third element in body")
         }
         
-        if let image = body[3] as? Image {
+        if let image = body[3] as? SwiftImage {
             validateImage(image)
         } else {
             XCTFail("Expected Image as fourth element in body")
         }
         
-        if let container = body[4] as? Container {
+        if let container = body[4] as? SwiftContainer {
             validateColumnSetContainer(container)
         } else {
             XCTFail("Expected Container as fifth element in body")
         }
         
-        if let factSet = body[5] as? FactSet {
+        if let factSet = body[5] as? SwiftFactSet {
             validateFactSet(factSet)
         } else {
             XCTFail("Expected FactSet as sixth element in body")
         }
         
-        if let imageSet = body[6] as? ImageSet {
+        if let imageSet = body[6] as? SwiftImageSet {
             validateImageSet(imageSet)
         } else {
             XCTFail("Expected ImageSet as seventh element in body")
         }
         
-        if let inputContainer = body[7] as? Container {
+        if let inputContainer = body[7] as? SwiftContainer {
             validateInputContainer(inputContainer)
         } else {
             XCTFail("Expected input Container as eighth element in body")
         }
         
-        if let actionSet = body[8] as? ActionSet {
+        if let actionSet = body[8] as? SwiftActionSet {
             validateActionSet(actionSet)
         } else {
             XCTFail("Expected ActionSet as ninth element in body")
         }
         
-        if let richTextBlock = body[9] as? RichTextBlock {
+        if let richTextBlock = body[9] as? SwiftRichTextBlock {
             validateRichTextBlock(richTextBlock)
         } else {
             XCTFail("Expected RichTextBlock as tenth element in body")
         }
     }
     
-    private func validateToplevelActions(_ card: AdaptiveCard) {
+    private func validateToplevelActions(_ card: SwiftAdaptiveCard) {
         let actions = card.actions
         XCTAssertEqual(actions.count, 3)
         
-        if let submitAction = actions[0] as? SubmitAction {
-            XCTAssertEqual(submitAction.typeString, ActionType.submit.rawValue)
+        if let submitAction = actions[0] as? SwiftSubmitAction {
+            XCTAssertEqual(submitAction.typeString, SwiftActionType.submit.rawValue)
             XCTAssertEqual(submitAction.iconUrl, "")
             XCTAssertEqual(submitAction.id, "Action.Submit_id")
             XCTAssertEqual(submitAction.title, "Action.Submit")
@@ -999,14 +999,14 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected SubmitAction as first top-level action")
         }
         
-        if let executeAction = actions[1] as? ExecuteAction {
-            XCTAssertEqual(executeAction.typeString, ActionType.execute.rawValue)
+        if let executeAction = actions[1] as? SwiftExecuteAction {
+            XCTAssertEqual(executeAction.typeString, SwiftActionType.execute.rawValue)
             XCTAssertEqual(executeAction.iconUrl, "")
             XCTAssertEqual(executeAction.id, "Action.Execute_id")
             XCTAssertEqual(executeAction.title, "Action.Execute_title")
             XCTAssertEqual(executeAction.verb, "Action.Execute_verb")
             let executePlain = executeAction.dataJson?.mapValues { $0.value } ?? [:]
-            let executeDataString = try? ParseUtil.jsonToString(executePlain)
+            let executeDataString = try? SwiftParseUtil.jsonToString(executePlain)
             XCTAssertEqual(executeDataString, "{\"Action.Execute_data_keyA\":\"Action.Execute_data_valueA\"}\n")
             XCTAssertEqual(executeAction.associatedInputs, .none)
             XCTAssertFalse(executeAction.isEnabled)
@@ -1015,18 +1015,18 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected ExecuteAction as second top-level action")
         }
         
-        if let showCardAction = actions[2] as? ShowCardAction {
-            XCTAssertEqual(showCardAction.typeString, ActionType.showCard.rawValue)
+        if let showCardAction = actions[2] as? SwiftShowCardAction {
+            XCTAssertEqual(showCardAction.typeString, SwiftActionType.showCard.rawValue)
             XCTAssertEqual(showCardAction.iconUrl, "")
             XCTAssertEqual(showCardAction.id, "Action.ShowCard_id")
             XCTAssertEqual(showCardAction.title, "Action.ShowCard")
             XCTAssertEqual(showCardAction.tooltip, "tooltip")
             XCTAssertTrue(showCardAction.isEnabled)
             XCTAssertTrue(showCardAction.additionalProperties?.isEmpty ?? true)
-            if let subCard = showCardAction.card as? AdaptiveCard {
+            if let subCard = showCardAction.card as? SwiftAdaptiveCard {
                 XCTAssertEqual(subCard.actions.count, 0)
                 validateBackgroundImage(subCard.backgroundImage!, mode: .repeat, hAlignment: .right, vAlignment: .center)
-                XCTAssertEqual(subCard.elementTypeVal, CardElementType.adaptiveCard)
+                XCTAssertEqual(subCard.elementTypeVal, SwiftCardElementType.adaptiveCard)
                 XCTAssertEqual(subCard.fallbackText, "")
                 XCTAssertEqual(subCard.height, .auto)
                 XCTAssertEqual(subCard.language, "en")
@@ -1055,7 +1055,7 @@ class EverythingBagelTests: XCTestCase {
         }
     }
     
-    private func validateFallbackCard(_ card: AdaptiveCard) {
+    private func validateFallbackCard(_ card: SwiftAdaptiveCard) {
         // If your AdaptiveCard type supports a makeFallbackTextCard method, use it.
         if let fallbackCard = card.makeFallbackTextCard(text: "fallback", language: "en", speak: "speak") {
             if let fallbackTextBlock = fallbackCard.body.first as? TextBlock {
@@ -1073,7 +1073,7 @@ class EverythingBagelTests: XCTestCase {
     // MARK: - Test Method
     
     func testEverythingBagel() throws {
-        guard let parseResult = try? AdaptiveCard.deserializeFromString(EVERYTHING_BAGEL_JSON, version: "1.0") else {
+        guard let parseResult = try? SwiftAdaptiveCard.deserializeFromString(EVERYTHING_BAGEL_JSON, version: "1.0") else {
             XCTFail("Failed to deserialize card")
             return
         }
@@ -1176,7 +1176,7 @@ class EverythingBagelTests: XCTestCase {
             "data": "Container_data"
         }
         """
-        let stringAction = try SubmitAction.make(from: ParseUtil.getJsonDictionary(from: stringJson))
+        let stringAction = try SwiftSubmitAction.make(from: SwiftParseUtil.getJsonDictionary(from: stringJson))
         XCTAssertEqual(stringAction.dataJson as? String, "Container_data")
         
         // Test dictionary data
@@ -1186,7 +1186,7 @@ class EverythingBagelTests: XCTestCase {
             "data": {"key": "value"}
         }
         """
-        let dictAction = try SubmitAction.make(from: ParseUtil.getJsonDictionary(from: dictJson))
+        let dictAction = try SwiftSubmitAction.make(from: SwiftParseUtil.getJsonDictionary(from: dictJson))
         if let dataDict = dictAction.dataJson as? [String: Any] {
             XCTAssertEqual(dataDict["key"] as? String, "value")
         } else {

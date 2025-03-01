@@ -1,0 +1,134 @@
+import Foundation
+
+/// Represents the context during parsing of an Adaptive Card, tracking hierarchy and element state.
+class SwiftParseContext {
+    var elementParserRegistration: SwiftElementParserRegistration?
+    var actionParserRegistration: ActionParserRegistration?
+    var warnings: [SwiftAdaptiveCardParseWarning] = []
+    
+    /// Keeps track of seen elements to detect ID collisions.
+    private var elementIds: [String: SwiftInternalId] = [:]
+    
+    /// Stack used during parsing to track the hierarchy of elements.
+    private var idStack: [(id: String, internalId: SwiftInternalId, isFallback: Bool)] = []
+    
+    /// Tracks container styles as they are nested.
+    public var parentalContainerStyles: [SwiftContainerStyle] = []
+    
+    /// Tracks padding elements in the parse hierarchy.
+    private var parentalPadding: [SwiftInternalId] = []
+    
+    /// Tracks bleed direction during parsing.
+    private var parentalBleedDirection: [SwiftContainerBleedDirection] = []
+    
+    /// Determines if fallback to an ancestor element is possible.
+    var canFallbackToAncestor: Bool = false
+    
+    /// The language setting for parsing.
+    var language: String?
+
+    // MARK: - Initializers
+    
+    init() {
+        // Create default element parser registration with built-in parsers
+        self.elementParserRegistration = SwiftElementParserRegistration()
+    }
+    
+    init(elementParserRegistration: SwiftElementParserRegistration?, actionParserRegistration: ActionParserRegistration?) {
+        self.elementParserRegistration = elementParserRegistration
+        self.actionParserRegistration = actionParserRegistration
+    }
+    
+    // MARK: - Hierarchy Management
+    
+    /// Push an element onto the parsing stack.
+    func pushElement(idJsonProperty: String, internalId: SwiftInternalId, isFallback: Bool = false) {
+        idStack.append((id: idJsonProperty, internalId: internalId, isFallback: isFallback))
+    }
+    
+    /// Pop the last element off the parsing stack.
+    func popElement() {
+        _ = idStack.popLast()
+    }
+    
+    /// Retrieve the nearest valid fallback ID in the hierarchy.
+    func getNearestFallbackId(skipId: SwiftInternalId) -> SwiftInternalId? {
+        return idStack.reversed().first { $0.internalId != skipId }?.internalId
+    }
+    
+    // MARK: - Style and Context Management
+    
+    func setLanguage(_ value: String) {
+        language = value
+    }
+    
+    func getLanguage() -> String? {
+        return language
+    }
+    
+    func setParentalContainerStyle(_ style: SwiftContainerStyle) {
+        parentalContainerStyles.append(style)
+    }
+    
+    func getParentalContainerStyle() -> SwiftContainerStyle? {
+        return parentalContainerStyles.last
+    }
+    
+    func saveContextForStyledCollectionElement(_ element: SwiftStyledCollectionElement) {
+        print("Saving context for element with style: \(element.style)")
+        parentalContainerStyles.append(element.style)
+        
+        // Only add to padding parents if this element has padding
+        if element.hasPadding {
+            print("Adding padding parent with ID: \(element.internalId)")
+            parentalPadding.append(element.internalId)
+        }
+        
+        if element.hasBleed && element.hasPadding {
+            parentalBleedDirection.append(.bleedAll)
+        } else {
+            parentalBleedDirection.append(.bleedRestricted)
+        }
+        
+        print("Current padding parents: \(parentalPadding)")
+    }
+    
+    /// Returns the most recently pushed container style, or nil if none exists.
+    var parentalContainerStyle: SwiftContainerStyle? {
+        return self.parentalContainerStyles.last
+    }
+    
+    func restoreContextForStyledCollectionElement(_ current: SwiftStyledCollectionElement) {
+            _ = parentalPadding.popLast()
+            _ = parentalContainerStyles.popLast()
+            _ = parentalBleedDirection.popLast()
+        }
+        
+    func pushBleedDirection(_ direction: SwiftContainerBleedDirection) {
+        parentalBleedDirection.append(direction)
+    }
+    
+    func popBleedDirection() {
+        _ = parentalBleedDirection.popLast()
+    }
+    
+    var bleedDirection: SwiftContainerBleedDirection {
+        return parentalBleedDirection.last ?? .bleedAll
+    }
+    
+    func paddingParentInternalId() -> SwiftInternalId? {
+        return parentalPadding.last
+    }
+    
+    // Add a helper method to check if a style requires padding
+    func doesStyleRequirePadding(_ style: SwiftContainerStyle) -> Bool {
+        guard let parentStyle = parentalContainerStyle else {
+            return false
+        }
+        return style != .none && style != parentStyle
+    }
+    
+    func printStyleStack() {
+        print("Current style stack: \(parentalContainerStyles)")
+    }
+}

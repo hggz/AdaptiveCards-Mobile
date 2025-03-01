@@ -42,8 +42,8 @@ final class ParseUtilTests: XCTestCase {
     // MARK: - Tests
     
     func testGetJsonValueFromString() throws {
-        XCTAssertThrowsError(try ParseUtil.getJsonValueFromString("definitely not json"))
-        let jsonValue = try ParseUtil.getJsonValueFromString("{ \"foo\": \"bar\" }")
+        XCTAssertThrowsError(try SwiftParseUtil.getJsonValueFromString("definitely not json"))
+        let jsonValue = try SwiftParseUtil.getJsonValueFromString("{ \"foo\": \"bar\" }")
         guard let foo = jsonValue["foo"] as? String else {
             XCTFail("Expected \"foo\" to be a String")
             return
@@ -54,55 +54,55 @@ final class ParseUtilTests: XCTestCase {
     func testThrowIfNotJsonObject() throws {
         // For a non-object value (here NSNull), we expect an error.
         let notAnObject: Any = NSNull()
-        XCTAssertThrowsError(try ParseUtil.throwIfNotJsonObject(notAnObject))
+        XCTAssertThrowsError(try SwiftParseUtil.throwIfNotJsonObject(notAnObject))
         
         let validValue = try getValidJsonObject()
-        XCTAssertNoThrow(try ParseUtil.throwIfNotJsonObject(validValue))
+        XCTAssertNoThrow(try SwiftParseUtil.throwIfNotJsonObject(validValue))
     }
     
     func testExpectKeyAndValueType() throws {
         let value = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.expectKeyAndValueType(value, nil, callback: emptyFn))
-        XCTAssertThrowsError(try ParseUtil.expectKeyAndValueType(value, "steve", callback: emptyFn))
-        XCTAssertNoThrow(try ParseUtil.expectKeyAndValueType(value, "foo", callback: emptyFn))
-        XCTAssertThrowsError(try ParseUtil.expectKeyAndValueType(value, "FOO", callback: emptyFn))
-        XCTAssertThrowsError(try ParseUtil.expectKeyAndValueType(value, "foo", callback: alwaysThrowsFn))
+        XCTAssertThrowsError(try SwiftParseUtil.expectKeyAndValueType(value, nil, callback: emptyFn))
+        XCTAssertThrowsError(try SwiftParseUtil.expectKeyAndValueType(value, "steve", callback: emptyFn))
+        XCTAssertNoThrow(try SwiftParseUtil.expectKeyAndValueType(value, "foo", callback: emptyFn))
+        XCTAssertThrowsError(try SwiftParseUtil.expectKeyAndValueType(value, "FOO", callback: emptyFn))
+        XCTAssertThrowsError(try SwiftParseUtil.expectKeyAndValueType(value, "foo", callback: alwaysThrowsFn))
     }
     
     func testGetTypeAsString() throws {
         let value = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getTypeAsString(from: value))
-        XCTAssertEqual(ParseUtil.tryGetTypeAsString(from: value), "")
+        XCTAssertThrowsError(try SwiftParseUtil.getTypeAsString(from: value))
+        XCTAssertEqual(SwiftParseUtil.tryGetTypeAsString(from: value), "")
         
         let typeName = "someType"
         let typedValue = try getJsonObjectWithType(typeName)
-        let typeAsString = try ParseUtil.getTypeAsString(from: typedValue)
+        let typeAsString = try SwiftParseUtil.getTypeAsString(from: typedValue)
         XCTAssertEqual(typeAsString, typeName)
-        XCTAssertEqual(ParseUtil.tryGetTypeAsString(from: typedValue), typeName)
+        XCTAssertEqual(SwiftParseUtil.tryGetTypeAsString(from: typedValue), typeName)
     }
     
     func testExpectTypeString() throws {
         let missingType = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.expectTypeString(missingType, expected: .adaptiveCard))
+        XCTAssertThrowsError(try SwiftParseUtil.expectTypeString(missingType, expected: .adaptiveCard))
         
         let invalidType = try getJsonObjectWithType("InvalidType")
-        XCTAssertThrowsError(try ParseUtil.expectTypeString(invalidType, expected: .adaptiveCard))
+        XCTAssertThrowsError(try SwiftParseUtil.expectTypeString(invalidType, expected: .adaptiveCard))
         
         let validType = try getJsonObjectWithType("AdaptiveCard")
         // Expect failure if the expected type is not met.
-        XCTAssertThrowsError(try ParseUtil.expectTypeString(validType, expected: .custom))
-        XCTAssertNoThrow(try ParseUtil.expectTypeString(validType, expected: .adaptiveCard))
+        XCTAssertThrowsError(try SwiftParseUtil.expectTypeString(validType, expected: .custom))
+        XCTAssertNoThrow(try SwiftParseUtil.expectTypeString(validType, expected: .adaptiveCard))
     }
     
     func testExtractJsonValue() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.extractJsonValue(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.extractJsonValue(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
-        let propertyValue = try ParseUtil.extractJsonValue(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: false)
+        let propertyValue = try SwiftParseUtil.extractJsonValue(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: false)
         XCTAssertNil(propertyValue)
         
         let jsonObjWithAccent = try getJsonObjectWithAccent("true")
-        let accentValue = try ParseUtil.extractJsonValue(from: jsonObjWithAccent, key: AdaptiveCardSchemaKey.accent.rawValue, required: true)
+        let accentValue = try SwiftParseUtil.extractJsonValue(from: jsonObjWithAccent, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true)
         guard let boolVal = accentValue as? Bool else {
             XCTFail("Expected accent value to be Bool")
             return
@@ -112,113 +112,113 @@ final class ParseUtilTests: XCTestCase {
     
     func testGetArray() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getArray(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getArray(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
-        let emptyRet = try ParseUtil.getArray(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: false)
+        let emptyRet = try SwiftParseUtil.getArray(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: false)
         // If no array is found, we now return an empty array (per our implementation) rather than nil.
         XCTAssertTrue(emptyRet.isEmpty)
         
         let jsonObjWithAccentString = try getJsonObjectWithAccent("true")
-        XCTAssertThrowsError(try ParseUtil.getArray(from: jsonObjWithAccentString, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getArray(from: jsonObjWithAccentString, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
         let jsonObjWithAccentObject = try getJsonObjectWithAccent("{}")
-        XCTAssertThrowsError(try ParseUtil.getArray(from: jsonObjWithAccentObject, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getArray(from: jsonObjWithAccentObject, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
         let jsonObjWithAccentEmptyArray = try getJsonObjectWithAccent("[]")
-        XCTAssertThrowsError(try ParseUtil.getArray(from: jsonObjWithAccentEmptyArray, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getArray(from: jsonObjWithAccentEmptyArray, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
         let jsonObjWithAccentArray = try getJsonObjectWithAccent("[\"thing1\", \"thing2\"]")
-        let arrayRet = try ParseUtil.getArray(from: jsonObjWithAccentArray, key: AdaptiveCardSchemaKey.accent.rawValue, required: true)
+        let arrayRet = try SwiftParseUtil.getArray(from: jsonObjWithAccentArray, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true)
         XCTAssertEqual(arrayRet[0]["0"] as? String ?? "thing1", "thing1") // Adjust as needed based on implementation
         // Alternatively, if your getArray returns an array of dictionaries, adjust the test accordingly.
     }
     
     func testGetBool() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getBool(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getBool(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true))
         
-        let defaultBool = try ParseUtil.getBool(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: false)
+        let defaultBool = try SwiftParseUtil.getBool(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: false)
         XCTAssertFalse(defaultBool)
         
         let jsonObjWithAccent = try getJsonObjectWithAccent("true")
-        let boolVal = try ParseUtil.getBool(from: jsonObjWithAccent, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true)
+        let boolVal = try SwiftParseUtil.getBool(from: jsonObjWithAccent, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true)
         XCTAssertTrue(boolVal)
         
         let jsonObjWithAccentArray = try getJsonObjectWithAccent("[\"thing1\", \"thing2\"]")
-        XCTAssertThrowsError(try ParseUtil.getBool(from: jsonObjWithAccentArray, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getBool(from: jsonObjWithAccentArray, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: false, required: true))
     }
     
     func testGetInt() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getInt(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getInt(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
         
-        let defaultInt = try ParseUtil.getInt(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
+        let defaultInt = try SwiftParseUtil.getInt(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
         XCTAssertEqual(defaultInt, 0)
         
         let jsonObjWithInvalidType = try getJsonObjectWithAccent("\"Invalid\"")
-        XCTAssertThrowsError(try ParseUtil.getInt(from: jsonObjWithInvalidType, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getInt(from: jsonObjWithInvalidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
         
         let jsonObjWithValidType = try getJsonObjectWithAccent("1")
-        let actualValue = try ParseUtil.getInt(from: jsonObjWithValidType, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
+        let actualValue = try SwiftParseUtil.getInt(from: jsonObjWithValidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
         XCTAssertEqual(actualValue, 1)
     }
     
     func testGetOptionalInt() throws {
         let jsonObj = try getValidJsonObject()
-        let defaultValue = ParseUtil.getOptionalInt(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue)
+        let defaultValue = SwiftParseUtil.getOptionalInt(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue)
         XCTAssertNil(defaultValue)
         
         let jsonObjWithValidType = try getJsonObjectWithAccent("1")
-        let actualValue = ParseUtil.getOptionalInt(from: jsonObjWithValidType, key: AdaptiveCardSchemaKey.accent.rawValue)
+        let actualValue = SwiftParseUtil.getOptionalInt(from: jsonObjWithValidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue)
         XCTAssertEqual(actualValue, 1)
     }
     
     func testGetUInt() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getUInt(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getUInt(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
         
-        let defaultUInt = try ParseUtil.getUInt(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
+        let defaultUInt = try SwiftParseUtil.getUInt(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
         XCTAssertEqual(defaultUInt, 0)
         
         let jsonObjWithInvalidType = try getJsonObjectWithAccent("\"Invalid\"")
-        XCTAssertThrowsError(try ParseUtil.getUInt(from: jsonObjWithInvalidType, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getUInt(from: jsonObjWithInvalidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
         
         let jsonObjWithNegativeNumber = try getJsonObjectWithAccent("-1")
-        XCTAssertThrowsError(try ParseUtil.getUInt(from: jsonObjWithNegativeNumber, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getUInt(from: jsonObjWithNegativeNumber, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: true))
         
         let jsonObjWithValidType = try getJsonObjectWithAccent("1")
-        let actualUInt = try ParseUtil.getUInt(from: jsonObjWithValidType, key: AdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
+        let actualUInt = try SwiftParseUtil.getUInt(from: jsonObjWithValidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, defaultValue: 0, required: false)
         XCTAssertEqual(actualUInt, 1)
     }
     
     func testGetString() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getString(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getString(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
-        let stringValue = try ParseUtil.getString(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: false)
+        let stringValue = try SwiftParseUtil.getString(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: false)
         XCTAssertEqual(stringValue, "")
         
         let jsonObjWithIntType = try getJsonObjectWithAccent("1")
-        XCTAssertThrowsError(try ParseUtil.getString(from: jsonObjWithIntType, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getString(from: jsonObjWithIntType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
         let jsonObjWithValidType = try getJsonObjectWithAccent("\"Valid\"")
-        let actualString = try ParseUtil.getString(from: jsonObjWithValidType, key: AdaptiveCardSchemaKey.accent.rawValue, required: true)
+        let actualString = try SwiftParseUtil.getString(from: jsonObjWithValidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true)
         XCTAssertEqual(actualString, "Valid")
     }
     
     func testGetJsonString() throws {
         let jsonObj = try getValidJsonObject()
-        XCTAssertThrowsError(try ParseUtil.getJsonString(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: true))
+        XCTAssertThrowsError(try SwiftParseUtil.getJsonString(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true))
         
-        let defaultJsonString = try ParseUtil.getJsonString(from: jsonObj, key: AdaptiveCardSchemaKey.accent.rawValue, required: false)
+        let defaultJsonString = try SwiftParseUtil.getJsonString(from: jsonObj, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: false)
         XCTAssertEqual(defaultJsonString, "")
         
         let jsonObjWithIntType = try getJsonObjectWithAccent("1")
-        let intString = try ParseUtil.getJsonString(from: jsonObjWithIntType, key: AdaptiveCardSchemaKey.accent.rawValue, required: false)
+        let intString = try SwiftParseUtil.getJsonString(from: jsonObjWithIntType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: false)
         XCTAssertEqual(intString, "1\n")
         
         let jsonObjWithValidType = try getJsonObjectWithAccent("\"Valid\"")
-        let actualJsonString = try ParseUtil.getJsonString(from: jsonObjWithValidType, key: AdaptiveCardSchemaKey.accent.rawValue, required: true)
+        let actualJsonString = try SwiftParseUtil.getJsonString(from: jsonObjWithValidType, key: SwiftAdaptiveCardSchemaKey.accent.rawValue, required: true)
         XCTAssertEqual(actualJsonString, "\"Valid\"\n")
     }
 }

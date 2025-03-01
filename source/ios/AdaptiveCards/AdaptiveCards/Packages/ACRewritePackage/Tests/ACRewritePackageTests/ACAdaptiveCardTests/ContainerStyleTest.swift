@@ -23,13 +23,13 @@ class ContainerStyleTests: XCTestCase {
             "version": "1.2"
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
-        guard let container = card.body.first as? Container else {
+        guard let container = card.body.first as? SwiftContainer else {
             XCTFail("Failed to parse AdaptiveCard or Container")
             return
         }
-        XCTAssertEqual(container.style, ContainerStyle.emphasis)
+        XCTAssertEqual(container.style, SwiftContainerStyle.emphasis)
     }
 
     func testHaveValidPaddingFlagSet() throws {
@@ -52,10 +52,10 @@ class ContainerStyleTests: XCTestCase {
             "version": "1.2"
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
-        guard let parentContainer = card.body.first as? Container,
-              let childContainer = parentContainer.items.last as? Container else {
+        guard let parentContainer = card.body.first as? SwiftContainer,
+              let childContainer = parentContainer.items.last as? SwiftContainer else {
             XCTFail("Failed to parse parent or child container")
             return
         }
@@ -136,37 +136,37 @@ class ContainerStyleTests: XCTestCase {
             ]
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
-        guard let columnSet = card.body.first as? ColumnSet else {
+        guard let columnSet = card.body.first as? SwiftColumnSet else {
             XCTFail("Failed to parse ColumnSet")
             return
         }
         let columns = columnSet.columns
         guard columns.count >= 3,
-              let column1 = columns[0] as? Column,
-              let column2 = columns[2] as? Column else {
+              let column1 = columns[0] as? SwiftColumn,
+              let column2 = columns[2] as? SwiftColumn else {
             XCTFail("Expected three columns")
             return
         }
-        XCTAssertEqual(column1.style, ContainerStyle.none)
-        XCTAssertEqual(column2.style, ContainerStyle.emphasis)
+        XCTAssertEqual(column1.style, SwiftContainerStyle.none)
+        XCTAssertEqual(column2.style, SwiftContainerStyle.emphasis)
         
         let items = column2.items
         guard items.count >= 4,
-              let container1 = items[1] as? Container,
-              let container2 = items[2] as? Container,
-              let container3 = items[3] as? Container else {
+              let container1 = items[1] as? SwiftContainer,
+              let container2 = items[2] as? SwiftContainer,
+              let container3 = items[3] as? SwiftContainer else {
             XCTFail("Expected containers in the third column")
             return
         }
-        XCTAssertEqual(container1.style, ContainerStyle.none)
+        XCTAssertEqual(container1.style, SwiftContainerStyle.none)
         XCTAssertFalse(container1.padding)
         
-        XCTAssertEqual(container2.style, ContainerStyle.`default`)
+        XCTAssertEqual(container2.style, SwiftContainerStyle.`default`)
         XCTAssertTrue(container2.padding)
         
-        XCTAssertEqual(container3.style, ContainerStyle.emphasis)
+        XCTAssertEqual(container3.style, SwiftContainerStyle.emphasis)
         XCTAssertFalse(container3.padding)
     }
 
@@ -212,11 +212,11 @@ class ContainerStyleTests: XCTestCase {
             }
             """
         ]
-        var containers: [Container] = []
+        var containers: [SwiftContainer] = []
         for json in jsonStrings {
-            let parseResult = try AdaptiveCard.deserializeFromString(json, version: "1.2")
+            let parseResult = try SwiftAdaptiveCard.deserializeFromString(json, version: "1.2")
             let card = parseResult.adaptiveCard
-            guard let container = card.body.first as? Container else {
+            guard let container = card.body.first as? SwiftContainer else {
                 XCTFail("Failed to parse container")
                 continue
             }
@@ -284,12 +284,12 @@ class ContainerStyleTests: XCTestCase {
             """
         ]
         for json in jsonStrings {
-            let parseResult = try AdaptiveCard.deserializeFromString(json, version: "1.2")
-            let expectedValue = ParseUtil.getJsonValue(from: json)
-            let expectedString = try ParseUtil.jsonToString(expectedValue)
+            let parseResult = try SwiftAdaptiveCard.deserializeFromString(json, version: "1.2")
+            let expectedValue = SwiftParseUtil.getJsonValue(from: json)
+            let expectedString = try SwiftParseUtil.jsonToString(expectedValue)
             let card = parseResult.adaptiveCard
             let serializedCard = try card.serializeToJsonValue()
-            let serializedCardAsString = try ParseUtil.jsonToString(serializedCard)
+            let serializedCardAsString = try SwiftParseUtil.jsonToString(serializedCard)
             XCTAssertEqual(expectedString, serializedCardAsString)
             // Removing direct dictionary comparison since [String: Any] is not Equatable.
             // XCTAssertEqual(expectedValue, serializedCard)
@@ -351,36 +351,36 @@ class ContainerStyleTests: XCTestCase {
             ]
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
-        guard let columnSet = card.body.first as? ColumnSet,
-              let column1 = columnSet.columns.first as? Column else {
+        guard let columnSet = card.body.first as? SwiftColumnSet,
+              let column1 = columnSet.columns.first as? SwiftColumn else {
             XCTFail("Failed to parse required elements")
             return
         }
-        XCTAssertEqual(column1.style, ContainerStyle.emphasis)
+        XCTAssertEqual(column1.style, SwiftContainerStyle.emphasis)
         
-        guard let container1 = column1.items.last as? Container else {
+        guard let container1 = column1.items.last as? SwiftContainer else {
             XCTFail("Container1 not found")
             return
         }
-        XCTAssertEqual(container1.style, ContainerStyle.`default`)
+        XCTAssertEqual(container1.style, SwiftContainerStyle.`default`)
         XCTAssertFalse(container1.canBleed)
         
-        guard let container2 = container1.items.last as? Container else {
+        guard let container2 = container1.items.last as? SwiftContainer else {
             XCTFail("Container2 not found")
             return
         }
         XCTAssertEqual(container2.id, "4")
-        XCTAssertEqual(container2.style, ContainerStyle.`default`)
+        XCTAssertEqual(container2.style, SwiftContainerStyle.`default`)
         XCTAssertFalse(container2.canBleed)
         
-        guard let container3 = container2.items.last as? Container else {
+        guard let container3 = container2.items.last as? SwiftContainer else {
             XCTFail("Container3 not found")
             return
         }
         XCTAssertEqual(container3.id, "5")
-        XCTAssertEqual(container3.style, ContainerStyle.emphasis)
+        XCTAssertEqual(container3.style, SwiftContainerStyle.emphasis)
         XCTAssertTrue(container3.canBleed)
         // Verify that container3 reports container1’s internal id as its parental id.
         XCTAssertEqual(container1.internalId, container3.parentalId)
@@ -476,54 +476,54 @@ class ContainerStyleTests: XCTestCase {
             "actions": [ ]
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
-        guard let columnSet = card.body.first as? ColumnSet else {
+        guard let columnSet = card.body.first as? SwiftColumnSet else {
             XCTFail("Failed to parse ColumnSet")
             return
         }
-        XCTAssertEqual(columnSet.style, ContainerStyle.emphasis)
+        XCTAssertEqual(columnSet.style, SwiftContainerStyle.emphasis)
         
         let columns = columnSet.columns
         guard columns.count >= 3,
-              let column1 = columns[0] as? Column,
-              let column2 = columns[1] as? Column,
-              let column3 = columns[2] as? Column else {
+              let column1 = columns[0] as? SwiftColumn,
+              let column2 = columns[1] as? SwiftColumn,
+              let column3 = columns[2] as? SwiftColumn else {
             XCTFail("Not enough columns")
             return
         }
         
-        XCTAssertEqual(column1.style, ContainerStyle.`default`)
-        let expectedDirectionColumn1: ContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedUp]
+        XCTAssertEqual(column1.style, SwiftContainerStyle.`default`)
+        let expectedDirectionColumn1: SwiftContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedUp]
         XCTAssertEqual(column1.bleedDirection, expectedDirectionColumn1)
         
-        guard let container = column1.items.last as? Container else {
+        guard let container = column1.items.last as? SwiftContainer else {
             XCTFail("Container in column1 not found")
             return
         }
-        let expectedDirectionContainer: ContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
+        let expectedDirectionContainer: SwiftContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
         XCTAssertEqual(container.bleedDirection, expectedDirectionContainer)
         XCTAssertEqual(column1.internalId, container.parentalId)
         
-        XCTAssertEqual(column2.style, ContainerStyle.`default`)
+        XCTAssertEqual(column2.style, SwiftContainerStyle.`default`)
         XCTAssertTrue(column2.padding)
-        let expectedDirectionColumn2: ContainerBleedDirection = [.bleedDown, .bleedUp]
+        let expectedDirectionColumn2: SwiftContainerBleedDirection = [.bleedDown, .bleedUp]
         XCTAssertEqual(column2.bleedDirection, expectedDirectionColumn2)
-        guard let container2 = column2.items.last as? Container else {
+        guard let container2 = column2.items.last as? SwiftContainer else {
             XCTFail("Container in column2 not found")
             return
         }
-        let expectedDirectionContainer2: ContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
+        let expectedDirectionContainer2: SwiftContainerBleedDirection = [.bleedDown, .bleedLeft, .bleedRight]
         XCTAssertEqual(container2.bleedDirection, expectedDirectionContainer2)
         
-        XCTAssertEqual(column3.style, ContainerStyle.`default`)
-        let expectedDirectionColumn3: ContainerBleedDirection = [.bleedDown, .bleedRight, .bleedUp]
+        XCTAssertEqual(column3.style, SwiftContainerStyle.`default`)
+        let expectedDirectionColumn3: SwiftContainerBleedDirection = [.bleedDown, .bleedRight, .bleedUp]
         XCTAssertEqual(column3.bleedDirection, expectedDirectionColumn3)
-        guard let container3 = column3.items.last as? Container else {
+        guard let container3 = column3.items.last as? SwiftContainer else {
             XCTFail("Container in column3 not found")
             return
         }
-        let expectedDirectionContainer3: ContainerBleedDirection = [.bleedDown, .bleedRight, .bleedLeft]
+        let expectedDirectionContainer3: SwiftContainerBleedDirection = [.bleedDown, .bleedRight, .bleedLeft]
         XCTAssertEqual(container3.bleedDirection, expectedDirectionContainer3)
         XCTAssertEqual(column3.internalId, container3.parentalId)
     }
@@ -960,16 +960,16 @@ class ContainerStyleTests: XCTestCase {
             ]
         }
         """
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.2")
         let card = parseResult.adaptiveCard
         guard card.body.count >= 2,
-              let secondColumnSet = card.body[1] as? ColumnSet,
-              let firstColumn = secondColumnSet.columns.first as? Column else {
+              let secondColumnSet = card.body[1] as? SwiftColumnSet,
+              let firstColumn = secondColumnSet.columns.first as? SwiftColumn else {
             XCTFail("Failed to parse second ColumnSet or its first column")
             return
         }
         XCTAssertTrue(firstColumn.canBleed)
-        let expectedDirection: ContainerBleedDirection = [.bleedDown, .bleedLeft]
+        let expectedDirection: SwiftContainerBleedDirection = [.bleedDown, .bleedLeft]
         XCTAssertEqual(firstColumn.bleedDirection, expectedDirection)
     }
 }

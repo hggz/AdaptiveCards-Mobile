@@ -8,15 +8,13 @@ public class AdaptiveCardParser: NSObject {
     public static func parse(payload: String) -> AdaptiveCardParseResult {
         let result = AdaptiveCardParseResult()
 
-        // Create a placeholder AdaptiveCardModel
-        let card = AdaptiveCardModel()
-        card.refresh = "StubRefresh"
-        card.authentication = "StubAuthentication"
-
-        // Populate the result
-        result.card = card
-        // result.errors = ...
-        // result.warnings = ...
+        
+        guard let parseResult = try? SwiftAdaptiveCard.deserializeFromString(payload, version: "1.0") else {
+            return result
+        }
+        
+//        result.card = parseResult.adaptiveCard
+//        result.warnings = parseResult.
 
         return result
     }

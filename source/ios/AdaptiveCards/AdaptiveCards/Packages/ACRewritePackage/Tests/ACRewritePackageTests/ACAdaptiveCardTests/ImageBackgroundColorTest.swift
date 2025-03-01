@@ -19,7 +19,7 @@ final class ImageBackgroundColorTest: XCTestCase {
         """
         
         // Mimic: ParseResult parseResult = AdaptiveCard::DeserializeFromString(...)
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
         
         guard let elem = card.body.first else {
@@ -28,7 +28,7 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         
         // "std::static_pointer_cast<Image>(elem)" => "elem as? Image"
-        guard let image = elem as? Image else {
+        guard let image = elem as? SwiftImage else {
             XCTFail("Expected the first element to be an Image")
             return
         }
@@ -53,9 +53,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }
@@ -78,9 +78,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }
@@ -105,9 +105,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }
@@ -130,9 +130,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }
@@ -157,9 +157,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }
@@ -182,9 +182,9 @@ final class ImageBackgroundColorTest: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         let card = parseResult.adaptiveCard
-        guard let image = card.body.first as? Image else {
+        guard let image = card.body.first as? SwiftImage else {
             XCTFail("Expected an Image element")
             return
         }

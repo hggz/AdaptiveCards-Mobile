@@ -5,7 +5,7 @@ final class ElementTests: XCTestCase {
 
     func testColumnPixelWidth() throws {
         // 1) Create a fresh Column instance
-        let columnTest = Column()
+        let columnTest = SwiftColumn()
         
         // 2) Verify default width/pixelWidth/serialized JSON
         XCTAssertEqual(columnTest.pixelWidth, 0, "Default pixelWidth should be 0")

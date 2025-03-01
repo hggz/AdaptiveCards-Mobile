@@ -36,8 +36,8 @@ class EnumTests: XCTestCase {
     func testActionAlignment() {
         // Expected: ActionAlignment.Center -> "Center"
         assertEnumConversion(
-            toString: ActionAlignment.toString,
-            fromString: ActionAlignment.fromString,
+            toString: SwiftActionAlignment.toString,
+            fromString: SwiftActionAlignment.fromString,
             value: .center,
             expectedString: "Center"
         )
@@ -46,8 +46,8 @@ class EnumTests: XCTestCase {
     func testActionMode() {
         // Expected: ActionMode.Popup -> "Popup"
         assertEnumConversion(
-            toString: ActionMode.toString,
-            fromString: ActionMode.fromString,
+            toString: SwiftActionMode.toString,
+            fromString: SwiftActionMode.fromString,
             value: .popup,
             expectedString: "Popup"
         )
@@ -56,8 +56,8 @@ class EnumTests: XCTestCase {
     func testActionsOrientation() {
         // Expected: ActionsOrientation.Vertical -> "Vertical"
         assertEnumConversion(
-            toString: ActionsOrientation.toString,
-            fromString: ActionsOrientation.fromString,
+            toString: SwiftActionsOrientation.toString,
+            fromString: SwiftActionsOrientation.fromString,
             value: .vertical,
             expectedString: "Vertical"
         )
@@ -66,8 +66,8 @@ class EnumTests: XCTestCase {
     func testActionType() {
         // Expected: ActionType.OpenUrl -> "Action.OpenUrl"
         assertEnumConversion(
-            toString: ActionType.toString,
-            fromString: ActionType.fromString,
+            toString: SwiftActionType.toString,
+            fromString: SwiftActionType.fromString,
             value: .openUrl,
             expectedString: "Action.OpenUrl"
         )
@@ -76,8 +76,8 @@ class EnumTests: XCTestCase {
     func testAdaptiveCardSchemaKey() {
         // Expected: AdaptiveCardSchemaKey.Accent -> "accent"
         assertEnumConversion(
-            toString: AdaptiveCardSchemaKey.toString,
-            fromString: AdaptiveCardSchemaKey.fromString,
+            toString: SwiftAdaptiveCardSchemaKey.toString,
+            fromString: SwiftAdaptiveCardSchemaKey.fromString,
             value: .accent,
             expectedString: "accent"
         )
@@ -86,8 +86,8 @@ class EnumTests: XCTestCase {
     func testCardElementType() {
         // Expected: CardElementType.AdaptiveCard -> "AdaptiveCard"
         assertEnumConversion(
-            toString: CardElementType.toString,
-            fromString: CardElementType.fromString,
+            toString: SwiftCardElementType.toString,
+            fromString: SwiftCardElementType.fromString,
             value: .adaptiveCard,
             expectedString: "AdaptiveCard"
         )
@@ -96,8 +96,8 @@ class EnumTests: XCTestCase {
     func testChoiceSetStyle() {
         // Expected: ChoiceSetStyle.Filtered -> "Filtered"
         assertEnumConversion(
-            toString: ChoiceSetStyle.toString,
-            fromString: ChoiceSetStyle.fromString,
+            toString: SwiftChoiceSetStyle.toString,
+            fromString: SwiftChoiceSetStyle.fromString,
             value: .filtered,
             expectedString: "Filtered"
         )
@@ -106,8 +106,8 @@ class EnumTests: XCTestCase {
     func testContainerStyle() {
         // Expected: ContainerStyle.Emphasis -> "Emphasis"
         assertEnumConversion(
-            toString: ContainerStyle.toString,
-            fromString: ContainerStyle.fromString,
+            toString: SwiftContainerStyle.toString,
+            fromString: SwiftContainerStyle.fromString,
             value: .emphasis,
             expectedString: "Emphasis"
         )
@@ -116,8 +116,8 @@ class EnumTests: XCTestCase {
     func testFontType() {
         // Expected: FontType.Monospace -> "Monospace"
         assertEnumConversion(
-            toString: FontType.toString,
-            fromString: FontType.fromString,
+            toString: SwiftFontType.toString,
+            fromString: SwiftFontType.fromString,
             value: .monospace,
             expectedString: "Monospace"
         )
@@ -126,8 +126,8 @@ class EnumTests: XCTestCase {
     func testForegroundColor() {
         // Expected: ForegroundColor.Accent -> "Accent"
         assertEnumConversion(
-            toString: ForegroundColor.toString,
-            fromString: ForegroundColor.fromString,
+            toString: SwiftForegroundColor.toString,
+            fromString: SwiftForegroundColor.fromString,
             value: .accent,
             expectedString: "Accent"
         )
@@ -136,8 +136,8 @@ class EnumTests: XCTestCase {
     func testHeightType() {
         // Expected: HeightType.Auto -> "Auto"
         assertEnumConversion(
-            toString: HeightType.toString,
-            fromString: HeightType.fromString,
+            toString: SwiftHeightType.toString,
+            fromString: SwiftHeightType.fromString,
             value: .auto,
             expectedString: "Auto"
         )
@@ -146,8 +146,8 @@ class EnumTests: XCTestCase {
     func testHorizontalAlignment() {
         // Expected: HorizontalAlignment.Center -> "center" (note lowercase expected)
         assertEnumConversion(
-            toString: HorizontalAlignment.toString,
-            fromString: HorizontalAlignment.fromString,
+            toString: SwiftHorizontalAlignment.toString,
+            fromString: SwiftHorizontalAlignment.fromString,
             value: .center,
             expectedString: "center"
         )
@@ -156,8 +156,8 @@ class EnumTests: XCTestCase {
     func testIconPlacement() {
         // Expected: IconPlacement.LeftOfTitle -> "LeftOfTitle"
         assertEnumConversion(
-            toString: IconPlacement.toString,
-            fromString: IconPlacement.fromString,
+            toString: SwiftIconPlacement.toString,
+            fromString: SwiftIconPlacement.fromString,
             value: .leftOfTitle,
             expectedString: "LeftOfTitle"
         )
@@ -166,8 +166,8 @@ class EnumTests: XCTestCase {
     func testImageSize() {
         // Expected: ImageSize.Large -> "Large"
         assertEnumConversion(
-            toString: ImageSize.toString,
-            fromString: ImageSize.fromString,
+            toString: SwiftImageSize.toString,
+            fromString: SwiftImageSize.fromString,
             value: .large,
             expectedString: "Large"
         )
@@ -176,8 +176,8 @@ class EnumTests: XCTestCase {
     func testImageStyle() {
         // Expected: ImageStyle.Person -> "person"
         assertEnumConversion(
-            toString: ImageStyle.toString,
-            fromString: ImageStyle.fromString,
+            toString: SwiftImageStyle.toString,
+            fromString: SwiftImageStyle.fromString,
             value: .person,
             expectedString: "person"
         )
@@ -186,8 +186,8 @@ class EnumTests: XCTestCase {
     func testSeparatorThickness() {
         // Expected: SeparatorThickness.Thick -> "thick"
         assertEnumConversion(
-            toString: SeparatorThickness.toString,
-            fromString: SeparatorThickness.fromString,
+            toString: SwiftSeparatorThickness.toString,
+            fromString: SwiftSeparatorThickness.fromString,
             value: .thick,
             expectedString: "thick"
         )
@@ -196,8 +196,8 @@ class EnumTests: XCTestCase {
     func testSpacing() {
         // Expected: Spacing.None -> "none"
         assertEnumConversion(
-            toString: Spacing.toString,
-            fromString: Spacing.fromString,
+            toString: SwiftSpacing.toString,
+            fromString: SwiftSpacing.fromString,
             value: .none,
             expectedString: "none"
         )
@@ -206,8 +206,8 @@ class EnumTests: XCTestCase {
     func testTextInputStyle() {
         // Expected: TextInputStyle.Password -> "Password"
         assertEnumConversion(
-            toString: TextInputStyle.toString,
-            fromString: TextInputStyle.fromString,
+            toString: SwiftTextInputStyle.toString,
+            fromString: SwiftTextInputStyle.fromString,
             value: .password,
             expectedString: "Password"
         )
@@ -217,8 +217,8 @@ class EnumTests: XCTestCase {
         // Expected: TextSize.Large -> "Large"
         // Additional reverse mapping: "Normal" should return .default
         assertEnumConversionWithReverse(
-            toString: TextSize.toString,
-            fromString: TextSize.fromString,
+            toString: SwiftTextSize.toString,
+            fromString: SwiftTextSize.fromString,
             value: .large,
             expectedString: "Large",
             reverseMap: ["Normal": .defaultSize]
@@ -229,8 +229,8 @@ class EnumTests: XCTestCase {
         // Expected: TextWeight.Bolder -> "Bolder"
         // Additional reverse mapping: "Normal" should return .defaultWeight
         assertEnumConversionWithReverse(
-            toString: TextWeight.toString,
-            fromString: TextWeight.fromString,
+            toString: SwiftTextWeight.toString,
+            fromString: SwiftTextWeight.fromString,
             value: .bolder,
             expectedString: "Bolder",
             reverseMap: ["Normal": .defaultWeight]
@@ -240,8 +240,8 @@ class EnumTests: XCTestCase {
     func testVerticalContentAlignment() {
         // Expected: VerticalContentAlignment.Center -> "Center"
         assertEnumConversion(
-            toString: VerticalContentAlignment.toString,
-            fromString: VerticalContentAlignment.fromString,
+            toString: SwiftVerticalContentAlignment.toString,
+            fromString: SwiftVerticalContentAlignment.fromString,
             value: .center,
             expectedString: "Center"
         )

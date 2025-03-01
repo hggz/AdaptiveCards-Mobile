@@ -18,7 +18,7 @@ class UnknownElementParsing: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let element = parseResult.adaptiveCard.body.first else {
             XCTFail("No element found in adaptive card body")
             return
@@ -26,13 +26,13 @@ class UnknownElementParsing: XCTestCase {
         
         XCTAssertEqual(element.typeString, "Random")
         
-        guard let delegate = element as? UnknownElement else {
+        guard let delegate = element as? SwiftUnknownElement else {
             XCTFail("Element is not an UnknownElement")
             return
         }
         
         let value = delegate.additionalProperties ?? [:]
-        let jsonString = try ParseUtil.jsonToString(value)
+        let jsonString = try SwiftParseUtil.jsonToString(value)
         let expected = "{\"payload\":\"You can even draw attention to certain text with color\",\"type\":\"Random\"}\n"
         XCTAssertEqual(expected, jsonString)
     }
@@ -59,19 +59,19 @@ class UnknownElementParsing: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let element = parseResult.adaptiveCard.body.first else {
             XCTFail("No element found in adaptive card body")
             return
         }
         
-        guard let delegate = element as? UnknownElement else {
+        guard let delegate = element as? SwiftUnknownElement else {
             XCTFail("Element is not an UnknownElement")
             return
         }
         
         let value = delegate.additionalProperties ?? [:]
-        let jsonString = try ParseUtil.jsonToString(value)
+        let jsonString = try SwiftParseUtil.jsonToString(value)
         let expected = "{\"payload\":\"You can even draw attention to certain text with color\",\"type\":\"Unknown\"}\n"
         XCTAssertEqual(expected, jsonString)
     }
@@ -105,7 +105,7 @@ class UnknownElementParsing: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let element = parseResult.adaptiveCard.body.first else {
             XCTFail("No element found in adaptive card body")
             return
@@ -113,13 +113,13 @@ class UnknownElementParsing: XCTestCase {
         
         XCTAssertEqual(element.typeString, "RadioButton")
         
-        guard let delegate = element as? UnknownElement else {
+        guard let delegate = element as? SwiftUnknownElement else {
             XCTFail("Element is not an UnknownElement")
             return
         }
         
         let value = delegate.additionalProperties ?? [:]
-        let jsonString = try ParseUtil.jsonToString(value)
+        let jsonString = try SwiftParseUtil.jsonToString(value)
         let expected = "{\"payload\":[{\"testloadone\":\"You can even draw attention to certain text with color\"},{\"testloadtwo\":\"You can even draw attention to certain text with markdown\"}],\"type\":\"RadioButton\"}\n"
         XCTAssertEqual(expected, jsonString)
     }
@@ -150,7 +150,7 @@ class UnknownElementParsing: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
         guard let actionElement = parseResult.adaptiveCard.actions.first else {
             XCTFail("No action found in adaptive card")
             return
@@ -158,13 +158,13 @@ class UnknownElementParsing: XCTestCase {
         
         XCTAssertEqual(actionElement.typeString, "Alert")
         
-        guard let delegate = actionElement as? UnknownAction else {
+        guard let delegate = actionElement as? SwiftUnknownAction else {
             XCTFail("Action element is not an UnknownAction")
             return
         }
         
         let value = delegate.additionalProperties ?? [:]
-        let jsonString = try ParseUtil.jsonToString(value)
+        let jsonString = try SwiftParseUtil.jsonToString(value)
         let expected = "{\"data\":{\"id\":\"1234567890\"},\"title\":\"Submit\",\"type\":\"Alert\"}\n"
         XCTAssertEqual(expected, jsonString)
     }
@@ -194,17 +194,17 @@ class UnknownElementParsing: XCTestCase {
         }
         """
         
-        let parseResult = try AdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
-        let expectedValue = ParseUtil.getJsonValue(from: testJsonString)
-        let expectedString = try ParseUtil.jsonToString(expectedValue)
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJsonString, version: "1.0")
+        let expectedValue = SwiftParseUtil.getJsonValue(from: testJsonString)
+        let expectedString = try SwiftParseUtil.jsonToString(expectedValue)
         let serializedCard = try parseResult.adaptiveCard.serializeToJsonValue()
-        let serializedCardAsString = try ParseUtil.jsonToString(serializedCard)
+        let serializedCardAsString = try SwiftParseUtil.jsonToString(serializedCard)
         
         XCTAssertEqual(expectedString, serializedCardAsString)
         // Helper function for safer dictionary comparison
         func compareJsonDictionaries(_ dict1: [String: Any], _ dict2: [String: Any]) -> Bool {
-            guard let str1 = try? ParseUtil.jsonToString(dict1),
-                  let str2 = try? ParseUtil.jsonToString(dict2) else {
+            guard let str1 = try? SwiftParseUtil.jsonToString(dict1),
+                  let str2 = try? SwiftParseUtil.jsonToString(dict2) else {
                 return false
             }
             return str1 == str2

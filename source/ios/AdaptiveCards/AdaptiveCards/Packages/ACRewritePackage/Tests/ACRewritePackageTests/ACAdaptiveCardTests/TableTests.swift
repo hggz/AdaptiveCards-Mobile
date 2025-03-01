@@ -21,9 +21,9 @@ class TableTests: XCTestCase {
         }
         """
 
-        let context = ParseContext()
+        let context = SwiftParseContext()
         // Use the throwing version that returns a TableCell.
-        let tableCell = try TableCell.deserialize(from: tableCellFragment, context: context)
+        let tableCell = try SwiftTableCell.deserialize(from: tableCellFragment, context: context)
         
         // Ensure no additional properties exist.
         XCTAssertNil(tableCell.additionalProperties, "This TableCell shouldn't have any additionalProperties")
@@ -52,12 +52,12 @@ class TableTests: XCTestCase {
             "{\"items\":[],\"type\":\"TableCell\"}\n" // note: Container auto-emits items
         ]
         
-        let context = ParseContext()
+        let context = SwiftParseContext()
         
         for fragment in fragments {
             // Assume ParseUtil.getJsonValue(from:) and BaseCardElement.parse(json:context:) exist.
-            let jsonValue = ParseUtil.getJsonValue(from: fragment)
-            guard let element = BaseCardElement.parse(json: jsonValue, context: context) else {
+            let jsonValue = SwiftParseUtil.getJsonValue(from: fragment)
+            guard let element = SwiftBaseCardElement.parse(json: jsonValue, context: context) else {
                 XCTFail("Failed to parse BaseCardElement")
                 continue
             }
@@ -102,8 +102,8 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
-        let tableRow = try TableRow.deserialize(from: tableRowFragment, context: context)
+        let context = SwiftParseContext()
+        let tableRow = try SwiftTableRow.deserialize(from: tableRowFragment, context: context)
         
         XCTAssertNil(tableRow.additionalProperties, "This TableRow shouldn't have any additionalProperties")
         XCTAssertEqual(tableRow.cells.count, 2, "This TableRow should have 2 cells")
@@ -117,7 +117,7 @@ class TableTests: XCTestCase {
     }
     
     func testTableElementsParserRegistration() throws {
-        let context = ParseContext()
+        let context = SwiftParseContext()
         XCTAssertNotNil(context.elementParserRegistration?.getParser(for: "Table"), "Should be a registered parser for Table")
         XCTAssertNil(context.elementParserRegistration?.getParser(for: "TableRow"), "Should not be a registered parser for TableRow")
         XCTAssertNil(context.elementParserRegistration?.getParser(for: "TableCell"), "Should not be a registered parser for TableCell")
@@ -132,8 +132,8 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
-        guard let columnDefinition = try? TableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
+        let context = SwiftParseContext()
+        guard let columnDefinition = try? SwiftTableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
             XCTFail("Failed to deserialize TableColumnDefinition")
             return
         }
@@ -175,8 +175,8 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
-        guard let columnDefinition = try? TableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
+        let context = SwiftParseContext()
+        guard let columnDefinition = try? SwiftTableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
             XCTFail("Failed to deserialize TableColumnDefinition")
             return
         }
@@ -214,8 +214,8 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
-        guard let columnDefinition = try? TableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
+        let context = SwiftParseContext()
+        guard let columnDefinition = try? SwiftTableColumnDefinition.deserialize(context: context, from: columnDefinitionFragment) else {
             XCTFail("Failed to deserialize TableColumnDefinition")
             return
         }
@@ -232,8 +232,8 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
-        guard let columnDefinition = try? TableColumnDefinition.deserialize(context: context, from: columnDefinitionInvalidUnitFragment) else {
+        let context = SwiftParseContext()
+        guard let columnDefinition = try? SwiftTableColumnDefinition.deserialize(context: context, from: columnDefinitionInvalidUnitFragment) else {
             XCTFail("Failed to deserialize TableColumnDefinition")
             return
         }
@@ -303,7 +303,7 @@ class TableTests: XCTestCase {
         }
         """
         
-        let context = ParseContext()
+        let context = SwiftParseContext()
         guard let jsonData = tableFragment.data(using: .utf8),
               let jsonDict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
             XCTFail("Failed to parse JSON")
@@ -311,7 +311,7 @@ class TableTests: XCTestCase {
         }
         
         do {
-            let tableParser = TableParser()
+            let tableParser = SwiftTableParser()
             // Let's see the actual error
             // Add debug logging
             print("JSON to parse: \(jsonDict)")
@@ -319,7 +319,7 @@ class TableTests: XCTestCase {
                 print("Type string from JSON: \(typeString)")
             }
             
-            let tableAny: any AdaptiveCardElementProtocol
+            let tableAny: any SwiftAdaptiveCardElementProtocol
             do {
                 tableAny = try tableParser.deserialize(context: context, value: jsonDict)
             } catch {
@@ -328,7 +328,7 @@ class TableTests: XCTestCase {
                 return
             }
             
-            guard let table = tableAny as? Table else {
+            guard let table = tableAny as? SwiftTable else {
                 XCTFail("Deserialized object is not a Table type, got: \(type(of: tableAny))")
                 return
             }
@@ -492,7 +492,7 @@ class TableTests: XCTestCase {
         """
         
         // Deserialize and test type
-        let result = try AdaptiveCard.deserializeFromString(tableCard, version: "1.5")
+        let result = try SwiftAdaptiveCard.deserializeFromString(tableCard, version: "1.5")
         let card = result.adaptiveCard
         let body = card.body
         XCTAssertEqual(body.count, 1)
@@ -575,7 +575,7 @@ class TableTests: XCTestCase {
         }
         """
         
-        let result = try AdaptiveCard.deserializeFromString(tableCard, version: "1.5")
+        let result = try SwiftAdaptiveCard.deserializeFromString(tableCard, version: "1.5")
         let card = result.adaptiveCard
         let body = card.body
         XCTAssertEqual(body.count, 1)
@@ -610,7 +610,7 @@ class TableTests: XCTestCase {
         }
         """
         
-        let result = try AdaptiveCard.deserializeFromString(tableCard, version: "1.5")
+        let result = try SwiftAdaptiveCard.deserializeFromString(tableCard, version: "1.5")
         let card = result.adaptiveCard
         let body = card.body
         XCTAssertEqual(body.count, 1)
@@ -656,14 +656,14 @@ class TableTests: XCTestCase {
         }
         """
         
-        let result = try AdaptiveCard.deserializeFromString(tableCard, version: "1.5")
+        let result = try SwiftAdaptiveCard.deserializeFromString(tableCard, version: "1.5")
         let card = result.adaptiveCard
         let body = card.body
         XCTAssertEqual(body.count, 1)
         let bodyElem = body.first!
         XCTAssertEqual(bodyElem.elementTypeVal, .table, "Only item in the body should be a Table")
         
-        guard let table = bodyElem as? Table else {
+        guard let table = bodyElem as? SwiftTable else {
             XCTFail("Expected body element to be a Table")
             return
         }

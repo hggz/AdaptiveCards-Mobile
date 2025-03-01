@@ -11,14 +11,14 @@ final class HostConfigTests: XCTestCase {
            }
         }
         """
-        let hostConfig = HostConfig.deserialize(from: tableConfigJson)
+        let hostConfig = SwiftHostConfig.deserialize(from: tableConfigJson)
         // Instead of getTable(), we use the table property.
         let tableConfig = hostConfig.table
         XCTAssertEqual(tableConfig.cellSpacing, 11, "Expected cellSpacing to be 11")
     }
     
     func testDeserializeDefaultTable() throws {
-        let hostConfig = HostConfig.deserialize(from: "{}")
+        let hostConfig = SwiftHostConfig.deserialize(from: "{}")
         // Default table configuration should have cellSpacing == 8
         XCTAssertEqual(hostConfig.table.cellSpacing, 8, "Expected default cellSpacing to be 8")
     }
@@ -37,22 +37,22 @@ final class HostConfigTests: XCTestCase {
             }
         }
         """
-        let hostConfig = HostConfig.deserialize(from: columnHeaderJson)
+        let hostConfig = SwiftHostConfig.deserialize(from: columnHeaderJson)
         // Instead of getTextStyles(), we use the textStyles property.
         let columnConfig = hostConfig.textStyles.columnHeader
         
         // Assuming that our Swift mapping converts "normal" to the default weight.
-        XCTAssertEqual(columnConfig.weight, TextWeight.defaultWeight, "Expected weight to be default (normal)")
-        XCTAssertEqual(columnConfig.size, TextSize.small, "Expected size to be Small")
+        XCTAssertEqual(columnConfig.weight, SwiftTextWeight.defaultWeight, "Expected weight to be default (normal)")
+        XCTAssertEqual(columnConfig.size, SwiftTextSize.small, "Expected size to be Small")
         XCTAssertTrue(columnConfig.isSubtle, "Expected isSubtle to be true")
-        XCTAssertEqual(columnConfig.color, ForegroundColor.accent, "Expected color to be Accent")
-        XCTAssertEqual(columnConfig.fontType, FontType.monospace, "Expected fontType to be Monospace")
+        XCTAssertEqual(columnConfig.color, SwiftForegroundColor.accent, "Expected color to be Accent")
+        XCTAssertEqual(columnConfig.fontType, SwiftFontType.monospace, "Expected fontType to be Monospace")
     }
     
     func testDeserializeDefaultColumnHeader() throws {
-        let hostConfig = HostConfig.deserialize(from: "{}")
+        let hostConfig = SwiftHostConfig.deserialize(from: "{}")
         let actualConfig = hostConfig.textStyles.columnHeader
-        let expectedConfig = TextStyleConfig(
+        let expectedConfig = SwiftTextStyleConfig(
             weight: .bolder,        // Expected weight: Bolder
             size: .defaultSize,     // Expected size: Default (i.e. "Normal")
             isSubtle: false,

@@ -28,7 +28,7 @@ class FallbackTests: XCTestCase {
                 return
             }
             
-            let card = try JSONDecoder().decode(AdaptiveCard.self, from: cardData)
+            let card = try JSONDecoder().decode(SwiftAdaptiveCard.self, from: cardData)
             XCTAssertEqual(card.body.count, 1)
             
             guard let textBlock = card.body.first as? TextBlock else {
@@ -104,10 +104,10 @@ class FallbackTests: XCTestCase {
                 return
             }
             
-            let card = try JSONDecoder().decode(AdaptiveCard.self, from: cardData)
+            let card = try JSONDecoder().decode(SwiftAdaptiveCard.self, from: cardData)
             XCTAssertEqual(card.body.count, 2)
             
-            guard let columnSet = card.body.first as? ColumnSet else {
+            guard let columnSet = card.body.first as? SwiftColumnSet else {
                 XCTFail("First body element is not a ColumnSet")
                 return
             }
@@ -129,14 +129,14 @@ class FallbackTests: XCTestCase {
             XCTAssertEqual(textBlock.text, "C TextBlock")
             
             // Access fallback content via fallbackContent
-            guard let fallbackContainer = textBlock.fallbackContent as? Container else {
+            guard let fallbackContainer = textBlock.fallbackContent as? SwiftContainer else {
                 XCTFail("Fallback is not a Container")
                 return
             }
             XCTAssertEqual(fallbackContainer.id, "E")
             XCTAssertEqual(fallbackContainer.items.count, 2)
             
-            guard let image = fallbackContainer.items.first as? Image else {
+            guard let image = fallbackContainer.items.first as? SwiftImage else {
                 XCTFail("First item in fallback container is not an Image")
                 return
             }

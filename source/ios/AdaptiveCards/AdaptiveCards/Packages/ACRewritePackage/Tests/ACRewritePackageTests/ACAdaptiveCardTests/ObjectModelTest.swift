@@ -6,8 +6,8 @@ class ObjectModelTest: XCTestCase {
     // MARK: - Helpers for wrap tests
 
     /// Casts an element to ChoiceSetInput and checks its .wrap
-    private func runChoiceSetWrapTest(_ element: BaseCardElement, expectedWrap: Bool, file: StaticString = #file, line: UInt = #line) {
-        guard let choiceSet = element as? ChoiceSetInput else {
+    private func runChoiceSetWrapTest(_ element: SwiftBaseCardElement, expectedWrap: Bool, file: StaticString = #file, line: UInt = #line) {
+        guard let choiceSet = element as? SwiftChoiceSetInput else {
             XCTFail("Expected ChoiceSetInput at given index.", file: file, line: line)
             return
         }
@@ -15,8 +15,8 @@ class ObjectModelTest: XCTestCase {
     }
 
     /// Casts an element to ToggleInput and checks its .wrap
-    private func runToggleWrapTest(_ element: BaseCardElement, expectedWrap: Bool, file: StaticString = #file, line: UInt = #line) {
-        guard let toggle = element as? ToggleInput else {
+    private func runToggleWrapTest(_ element: SwiftBaseCardElement, expectedWrap: Bool, file: StaticString = #file, line: UInt = #line) {
+        guard let toggle = element as? SwiftToggleInput else {
             XCTFail("Expected ToggleInput at given index.", file: file, line: line)
             return
         }
@@ -26,11 +26,11 @@ class ObjectModelTest: XCTestCase {
     // MARK: - Tests
 
     func testSelectActionEmptyJsonTest() throws {
-        var context = ParseContext()
+        var context = SwiftParseContext()
         let emptyJson: [String: Any] = [:]
 
         // Swift function is throwing; catch or use try?
-        let selectAction = try ParseUtil.getAction(from: emptyJson, key: "selectAction", context: context)
+        let selectAction = try SwiftParseUtil.getAction(from: emptyJson, key: "selectAction", context: context)
         XCTAssertNil(selectAction)
     }
 
@@ -56,10 +56,10 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let json = try ParseUtil.getJsonValueFromString(cardStr)
-        var context = ParseContext()
+        let json = try SwiftParseUtil.getJsonValueFromString(cardStr)
+        var context = SwiftParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
+        let selectAction = try SwiftParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNil(selectAction)
     }
 
@@ -76,10 +76,10 @@ class ObjectModelTest: XCTestCase {
             }
         }
         """
-        let json = try ParseUtil.getJsonValueFromString(str)
-        var context = ParseContext()
+        let json = try SwiftParseUtil.getJsonValueFromString(str)
+        var context = SwiftParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
+        let selectAction = try SwiftParseUtil.getAction(from: json, key: "selectAction", context: context)
 
         // According to the original C++ test, it expects an UnknownAction. In your Swift code,
         // it might end up returning a BaseActionElement with .type = .unknown, or it might throw.
@@ -88,7 +88,7 @@ class ObjectModelTest: XCTestCase {
         XCTAssertNotNil(selectAction)
         // If your action has something akin to `action.type == .unknown`,
         // or if your code simply can't parse and returns a fallback:
-        XCTAssertEqual(selectAction?.typeString, ActionType.unknownAction.rawValue)
+        XCTAssertEqual(selectAction?.typeString, SwiftActionType.unknownAction.rawValue)
     }
 
     func testSelectActionOpenUrlTest() throws {
@@ -116,13 +116,13 @@ class ObjectModelTest: XCTestCase {
             }
         }
         """
-        let json = try ParseUtil.getJsonValueFromString(str)
-        var context = ParseContext()
+        let json = try SwiftParseUtil.getJsonValueFromString(str)
+        var context = SwiftParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
+        let selectAction = try SwiftParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
         // If your Swift OpenUrlAction has .type = .openUrl, or something similar, test that:
-        XCTAssertEqual(selectAction?.typeString, ActionType.openUrl.rawValue)
+        XCTAssertEqual(selectAction?.typeString, SwiftActionType.openUrl.rawValue)
         XCTAssertEqual(selectAction?.title, "View")
     }
 
@@ -139,12 +139,12 @@ class ObjectModelTest: XCTestCase {
             }
         }
         """
-        let json = try ParseUtil.getJsonValueFromString(str)
-        var context = ParseContext()
+        let json = try SwiftParseUtil.getJsonValueFromString(str)
+        var context = SwiftParseContext()
 
-        let selectAction = try ParseUtil.getAction(from: json, key: "selectAction", context: context)
+        let selectAction = try SwiftParseUtil.getAction(from: json, key: "selectAction", context: context)
         XCTAssertNotNil(selectAction)
-        XCTAssertEqual(selectAction?.typeString, ActionType.submit.rawValue)
+        XCTAssertEqual(selectAction?.typeString, SwiftActionType.submit.rawValue)
         XCTAssertEqual(selectAction?.title, "Submit")
     }
 
@@ -173,7 +173,7 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        XCTAssertThrowsError(try AdaptiveCard.deserializeFromString(cardWithDuplicateIds, version: "1.0"))
+        XCTAssertThrowsError(try SwiftAdaptiveCard.deserializeFromString(cardWithDuplicateIds, version: "1.0"))
     }
 
     func testDuplicateIdNestedTest() {
@@ -225,7 +225,7 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        XCTAssertThrowsError(try AdaptiveCard.deserializeFromString(cardWithDuplicateIds, version: "1.0"))
+        XCTAssertThrowsError(try SwiftAdaptiveCard.deserializeFromString(cardWithDuplicateIds, version: "1.0"))
     }
 
     func testMediaElementTest() throws {
@@ -254,10 +254,10 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(cardWithMediaElement, version: "1.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(cardWithMediaElement, version: "1.0")
         let card = parseResult.adaptiveCard
         XCTAssertFalse(card.body.isEmpty)
-        guard let mediaElement = card.body.first as? Media else {
+        guard let mediaElement = card.body.first as? SwiftMedia else {
             XCTFail("First element is not a Media element")
             return
         }
@@ -313,11 +313,11 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(cardWithShowCard, version: "2.0")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(cardWithShowCard, version: "2.0")
         let mainCard = parseResult.adaptiveCard
 
         // Suppose the first action is ShowCardAction.
-        guard let showCardAction = mainCard.actions.first as? ShowCardAction else {
+        guard let showCardAction = mainCard.actions.first as? SwiftShowCardAction else {
             XCTFail("Expected first action to be ShowCardAction.")
             return
         }
@@ -331,13 +331,13 @@ class ObjectModelTest: XCTestCase {
         XCTAssertTrue(showCard.body[0] is TextBlock)
         XCTAssertEqual((showCard.body[0] as? TextBlock)?.text, "What do you think?")
         XCTAssertEqual(showCard.actions.count, 1)
-        XCTAssertTrue(showCard.actions[0] is SubmitAction)
+        XCTAssertTrue(showCard.actions[0] is SwiftSubmitAction)
         XCTAssertEqual(showCard.actions[0].title, "Neat!")
 
         // Serialize the showCard
         let serializedShowCard = try showCard.serialize()
         // Now deserialize again
-        let roundTripped = try AdaptiveCard.deserializeFromString(serializedShowCard, version: "2.0")
+        let roundTripped = try SwiftAdaptiveCard.deserializeFromString(serializedShowCard, version: "2.0")
         let roundTrippedShowCard = roundTripped.adaptiveCard
 
         XCTAssertEqual(roundTrippedShowCard.version, "2.0")
@@ -345,7 +345,7 @@ class ObjectModelTest: XCTestCase {
         XCTAssertTrue(roundTrippedShowCard.body[0] is TextBlock)
         XCTAssertEqual((roundTrippedShowCard.body[0] as? TextBlock)?.text, "What do you think?")
         XCTAssertEqual(roundTrippedShowCard.actions.count, 1)
-        XCTAssertTrue(roundTrippedShowCard.actions[0] is SubmitAction)
+        XCTAssertTrue(roundTrippedShowCard.actions[0] is SwiftSubmitAction)
         XCTAssertEqual(roundTrippedShowCard.actions[0].title, "Neat!")
     }
 
@@ -385,7 +385,7 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.2")
         let card = parseResult.adaptiveCard
         XCTAssertEqual(card.body.count, 2)
 
@@ -424,7 +424,7 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.2")
         let card = parseResult.adaptiveCard
         XCTAssertEqual(card.body.count, 2)
 
@@ -450,13 +450,13 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.5")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.5")
         let card = parseResult.adaptiveCard
         XCTAssertTrue(parseResult.warnings.isEmpty)
         XCTAssertEqual(card.body.count, 1)
 
         // Ensure it's a ChoiceSetInput.
-        guard let choiceSet = card.body[0] as? ChoiceSetInput else {
+        guard let choiceSet = card.body[0] as? SwiftChoiceSetInput else {
             XCTFail("Expected a ChoiceSetInput.")
             return
         }
@@ -518,10 +518,10 @@ class ObjectModelTest: XCTestCase {
         """
 
         // This should succeed
-        XCTAssertNoThrow(try AdaptiveCard.deserializeFromString(columnTypeSetOrEmpty, version: "1.0"))
+        XCTAssertNoThrow(try SwiftAdaptiveCard.deserializeFromString(columnTypeSetOrEmpty, version: "1.0"))
 
         // This should fail
-        XCTAssertThrowsError(try AdaptiveCard.deserializeFromString(columnTypeInvalid, version: "1.0"))
+        XCTAssertThrowsError(try SwiftAdaptiveCard.deserializeFromString(columnTypeInvalid, version: "1.0"))
     }
 
     func testImplicitImageTypeInImageSetTest() {
@@ -566,8 +566,8 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        XCTAssertNoThrow(try AdaptiveCard.deserializeFromString(imageTypeSetOrEmpty, version: "1.0"))
-        XCTAssertThrowsError(try AdaptiveCard.deserializeFromString(imageTypeInvalid, version: "1.0"))
+        XCTAssertNoThrow(try SwiftAdaptiveCard.deserializeFromString(imageTypeSetOrEmpty, version: "1.0"))
+        XCTAssertThrowsError(try SwiftAdaptiveCard.deserializeFromString(imageTypeInvalid, version: "1.0"))
     }
 
     func testTextBlockStyleParsingTest() throws {
@@ -610,14 +610,14 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.2")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.2")
         let card = parseResult.adaptiveCard
         let body = card.body
         XCTAssertEqual(body.count, 5)
 
         // The original C++ test wanted: [Heading, Heading, Default, (invalid => no style?), (implicit => default)]
         // Your Swift code calls it textStyle. If it's invalid, it presumably becomes .defaultStyle
-        let expected: [TextStyle?] = [
+        let expected: [SwiftTextStyle?] = [
             .heading,       // explicit "heading"
             .heading,       // explicit "Heading"
             .defaultStyle,  // explicit "Default"
@@ -676,20 +676,20 @@ class ObjectModelTest: XCTestCase {
         }
         """
 
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.5")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.5")
         let card = parseResult.adaptiveCard
         XCTAssertEqual(card.body.count, 2)
 
         // If you want to do the "text vs. password" check,
         // you need an actual property or extension on TextInput.
         // For demonstration, let's just confirm the second has style = "passWORD".
-        guard let plainInput = card.body[0] as? TextInput else {
+        guard let plainInput = card.body[0] as? SwiftTextInput else {
             XCTFail("First body element is not TextInput.")
             return
         }
         XCTAssertNil(plainInput.style)  // or if your code defaults style to something
 
-        guard let passwordInput = card.body[1] as? TextInput else {
+        guard let passwordInput = card.body[1] as? SwiftTextInput else {
             XCTFail("Second body element is not TextInput.")
             return
         }
@@ -715,7 +715,7 @@ class ObjectModelTest: XCTestCase {
         """
 
         // Suppose we expect a warning about ignoring multiline in password style
-        let parseResult = try AdaptiveCard.deserializeFromString(testJson, version: "1.5")
+        let parseResult = try SwiftAdaptiveCard.deserializeFromString(testJson, version: "1.5")
         let warnings = parseResult.warnings
 
         // If your Swift code does produce a warning, it'd appear here:
@@ -730,7 +730,7 @@ class ObjectModelTest: XCTestCase {
 
         let card = parseResult.adaptiveCard
         XCTAssertEqual(card.body.count, 1)
-        guard let theInput = card.body[0] as? TextInput else {
+        guard let theInput = card.body[0] as? SwiftTextInput else {
             XCTFail("Expected a TextInput in the card's body")
             return
         }

@@ -5,13 +5,13 @@ class ParserRegistrationTests: XCTestCase {
     
     // A custom type that implements both element and action behavior.
     // Now it subclasses BaseActionElement—which conforms to AdaptiveCardElementProtocol.
-    class TestCustomElement: BaseActionElement {
+    class TestCustomElement: SwiftBaseActionElement {
         var customImage: String
         
         init(json: [String: Any]) {
             self.customImage = json["customProperty"] as? String ?? ""
             // Call BaseActionElement initializer with ActionType.custom.
-            super.init(type: ActionType.custom)
+            super.init(type: SwiftActionType.custom)
         }
         
         // Provide the required initializer.
@@ -27,32 +27,32 @@ class ParserRegistrationTests: XCTestCase {
     }
     
     // Define a custom element parser.
-    class TestCustomElementParser: BaseCardElementParser {
-        func deserialize(context: ParseContext, value: [String: Any]) throws -> AdaptiveCardElementProtocol {
+    class TestCustomElementParser: SwiftBaseCardElementParser {
+        func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> SwiftAdaptiveCardElementProtocol {
             return TestCustomElement(json: value)
         }
         
-        func deserialize(fromString context: ParseContext, value: String) throws -> AdaptiveCardElementProtocol {
-            let jsonValue = ParseUtil.getJsonValue(from: value)
+        func deserialize(fromString context: SwiftParseContext, value: String) throws -> SwiftAdaptiveCardElementProtocol {
+            let jsonValue = SwiftParseUtil.getJsonValue(from: value)
             return try deserialize(context: context, value: jsonValue)
         }
     }
     
     // Define a custom action parser.
-    class TestCustomActionParser: ActionElementParser {
-        func deserialize(context: ParseContext, from json: [String: Any]) throws -> AdaptiveCardElementProtocol {
+    class TestCustomActionParser: SwiftActionElementParser {
+        func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> SwiftAdaptiveCardElementProtocol {
             return TestCustomElement(json: json)
         }
         
-        func deserialize(fromString jsonString: String, context: ParseContext) throws -> AdaptiveCardElementProtocol {
-            let jsonValue = ParseUtil.getJsonValue(from: jsonString)
+        func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> SwiftAdaptiveCardElementProtocol {
+            let jsonValue = SwiftParseUtil.getJsonValue(from: jsonString)
             return try deserialize(context: context, from: jsonValue)
         }
     }
     
     func testParserRegistration() {
         var actionParser = ActionParserRegistration()
-        var elementParser = ElementParserRegistration()
+        var elementParser = SwiftElementParserRegistration()
         
         let elemType = "notRegisteredYet"
         // Make sure we don't already have this parser.
@@ -62,19 +62,19 @@ class ParserRegistrationTests: XCTestCase {
         let customElementParser = TestCustomElementParser()
         
         // Make sure we can't override a known parser.
-        XCTAssertThrowsError(try actionParser.addParser(for: ActionType.openUrl.rawValue, parser: customActionParser))
-        XCTAssertThrowsError(try elementParser.addParser(for: CardElementType.container.rawValue, parser: customElementParser))
+        XCTAssertThrowsError(try actionParser.addParser(for: SwiftActionType.openUrl.rawValue, parser: customActionParser))
+        XCTAssertThrowsError(try elementParser.addParser(for: SwiftCardElementType.container.rawValue, parser: customElementParser))
         
         // Add our new parser.
         XCTAssertNoThrow(try actionParser.addParser(for: elemType, parser: customActionParser))
-        if let actionParserWrapper = actionParser.getParser(for: elemType) as? ActionElementParserWrapper {
+        if let actionParserWrapper = actionParser.getParser(for: elemType) as? SwiftActionElementParserWrapper {
             XCTAssertTrue(actionParserWrapper.actualParser as AnyObject === customActionParser as AnyObject)
         } else {
             XCTFail("Custom action parser not registered correctly")
         }
         
         XCTAssertNoThrow(try elementParser.addParser(for: elemType, parser: customElementParser))
-        if let cardParserWrapper = elementParser.getParser(for: elemType) as? BaseCardElementParserWrapper {
+        if let cardParserWrapper = elementParser.getParser(for: elemType) as? SwiftBaseCardElementParserWrapper {
             XCTAssertTrue(cardParserWrapper.actualParser as AnyObject === customElementParser as AnyObject)
         } else {
             XCTFail("Custom element parser not registered correctly")
@@ -83,7 +83,7 @@ class ParserRegistrationTests: XCTestCase {
         // Overwrite our new parser.
         let customActionParser2 = TestCustomActionParser()
         XCTAssertNoThrow(try actionParser.addParser(for: elemType, parser: customActionParser2))
-        if let actionParserWrapper = actionParser.getParser(for: elemType) as? ActionElementParserWrapper {
+        if let actionParserWrapper = actionParser.getParser(for: elemType) as? SwiftActionElementParserWrapper {
             XCTAssertTrue(actionParserWrapper.actualParser as AnyObject === customActionParser2 as AnyObject)
         } else {
             XCTFail("Custom action parser was not overwritten correctly")
@@ -91,7 +91,7 @@ class ParserRegistrationTests: XCTestCase {
         
         let customElementParser2 = TestCustomElementParser()
         XCTAssertNoThrow(try elementParser.addParser(for: elemType, parser: customElementParser2))
-        if let cardParserWrapper = elementParser.getParser(for: elemType) as? BaseCardElementParserWrapper {
+        if let cardParserWrapper = elementParser.getParser(for: elemType) as? SwiftBaseCardElementParserWrapper {
             XCTAssertTrue(cardParserWrapper.actualParser as AnyObject === customElementParser2 as AnyObject)
         } else {
             XCTFail("Custom element parser was not overwritten correctly")
@@ -108,11 +108,11 @@ class ParserRegistrationTests: XCTestCase {
         XCTAssertNil(elementParser.getParser(for: elemType))
         
         // Make sure we can't remove known parser.
-        XCTAssertNotNil(actionParser.getParser(for: ActionType.openUrl.rawValue))
-        XCTAssertThrowsError(try actionParser.removeParser(for: ActionType.openUrl.rawValue))
-        XCTAssertNotNil(actionParser.getParser(for: ActionType.openUrl.rawValue))
-        XCTAssertNotNil(elementParser.getParser(for: CardElementType.container.rawValue))
-        XCTAssertThrowsError(try elementParser.removeParser(for: CardElementType.container.rawValue))
-        XCTAssertNotNil(elementParser.getParser(for: CardElementType.container.rawValue))
+        XCTAssertNotNil(actionParser.getParser(for: SwiftActionType.openUrl.rawValue))
+        XCTAssertThrowsError(try actionParser.removeParser(for: SwiftActionType.openUrl.rawValue))
+        XCTAssertNotNil(actionParser.getParser(for: SwiftActionType.openUrl.rawValue))
+        XCTAssertNotNil(elementParser.getParser(for: SwiftCardElementType.container.rawValue))
+        XCTAssertThrowsError(try elementParser.removeParser(for: SwiftCardElementType.container.rawValue))
+        XCTAssertNotNil(elementParser.getParser(for: SwiftCardElementType.container.rawValue))
     }
 }

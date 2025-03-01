@@ -19,7 +19,7 @@ class Base64Tests: XCTestCase {
         for i in 0..<decodedData.count {
             // Convert the string to a byte array.
             let bytes = Array(decodedData[i].utf8)
-            let encoded = AdaptiveBase64Util.encode(bytes)
+            let encoded = SwiftAdaptiveBase64Util.encode(bytes)
             XCTAssertEqual(encoded, expectedEncodedData[i], "Encoded string did not match expected result at index \(i).")
         }
     }
@@ -29,7 +29,7 @@ class Base64Tests: XCTestCase {
         let encodedData = ["", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"]
         
         // Check empty base64.
-        guard let decoded0 = AdaptiveBase64Util.decode(encodedData[0]) else {
+        guard let decoded0 = SwiftAdaptiveBase64Util.decode(encodedData[0]) else {
             XCTFail("Decoding returned nil for empty base64 string")
             return
         }
@@ -37,7 +37,7 @@ class Base64Tests: XCTestCase {
         
         // Check the rest.
         for i in 1..<encodedData.count {
-            guard let decodedBytes = AdaptiveBase64Util.decode(encodedData[i]) else {
+            guard let decodedBytes = SwiftAdaptiveBase64Util.decode(encodedData[i]) else {
                 XCTFail("Decoding returned nil for \(encodedData[i])")
                 continue
             }
@@ -55,7 +55,7 @@ class Base64Tests: XCTestCase {
         // Ensure that decoding invalid base64 doesn't crash. If decode returns nil,
         // that is acceptable; if it returns a value, we simply ignore it.
         for uri in badUris {
-            _ = AdaptiveBase64Util.decode(uri)
+            _ = SwiftAdaptiveBase64Util.decode(uri)
         }
     }
 }

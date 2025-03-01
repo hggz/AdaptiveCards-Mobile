@@ -5,7 +5,7 @@ class FactTest: XCTestCase {
     
     func testDefineFromEmptyConstructor() {
         // Create an empty Fact instance
-        var emptyFact = Fact()
+        var emptyFact = SwiftFact()
         XCTAssertTrue(emptyFact.title.isEmpty, "Expected title to be empty on initialization.")
         
         // Define & test title
@@ -23,8 +23,8 @@ class FactTest: XCTestCase {
         XCTAssertEqual(jsonData, "{\"title\":\"1 Example Title!\",\"value\":\"1 Example Value!\"}\n", "Serialized JSON does not match expected output.")
         
         // Create parse context and test deserialization
-        let context = ParseContext()
-        guard let parsedFact = Fact.deserialize(fromString: jsonData, context: context) else {
+        let context = SwiftParseContext()
+        guard let parsedFact = SwiftFact.deserialize(fromString: jsonData, context: context) else {
             XCTFail("Deserialization failed to return a Fact instance.")
             return
         }
