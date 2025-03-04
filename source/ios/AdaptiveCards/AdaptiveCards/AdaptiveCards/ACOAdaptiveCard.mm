@@ -19,14 +19,15 @@
 #import "SharedAdaptiveCard.h"
 #import "UtiliOS.h"
 #import <Foundation/Foundation.h>
-#import <ACRewritePackage-Swift.h>
-#import "SwiftAdaptiveCardParserBridge.h"
+#import "SwiftAdaptiveCardObjcBridge.h"
+#import <AdaptiveCards/AdaptiveCards-Swift.h>
 
 using namespace AdaptiveCards;
 
 @implementation ACOAdaptiveCard {
     std::shared_ptr<AdaptiveCard> _adaptiveCard;
     NSMutableArray<ACRIBaseInputHandler> *_inputs;
+    SwiftAdaptiveCardParseResult * _adaptiveCardParseResult;
 }
 
 - (void)setInputs:(NSArray *)inputs
@@ -37,6 +38,10 @@ using namespace AdaptiveCards;
 - (void)appendInputs:(NSArray *)inputs
 {
     [_inputs addObjectsFromArray:inputs];
+}
+
+- (void)setAdaptiveCardParseResult:(SwiftAdaptiveCardParseResult *)parseResult {
+    _adaptiveCardParseResult = parseResult;
 }
 
 - (NSData *)inputs
@@ -122,58 +127,58 @@ using namespace AdaptiveCards;
 + (ACOAdaptiveCardParseResult *)fromJson:(NSString *)payload {
     ACOAdaptiveCardParseResult *result = nil;
     
-    if (!payload) {
-        return result; // TEMP
+    BOOL useSwiftParser = NO;
+    
+    const std::string g_version = "1.6";
+    NSError *jsonError = nil;
+
+    // First, check if the JSON is valid
+    if (![self isValidJson:payload error:&jsonError]) {
+        NSLog(@"Initial JSON Deserialization Error: %@", jsonError.localizedDescription);
+        // Attempt to fix the JSON using regex replacement
+        NSString *processedPayload = [self correctInvalidJsonEscapes:payload];
+        // Update payload to the corrected version
+        payload = processedPayload;
     }
-    
-    BOOL useSwiftParser = YES;
-    
-    if (useSwiftParser) {
-        result = [SwiftAdaptiveCardParserBridge parsePayloadWithSwift:payload];
-    } else {
-        const std::string g_version = "1.6";
-        NSError *jsonError = nil;
 
-        // First, check if the JSON is valid
-        if (![self isValidJson:payload error:&jsonError]) {
-            NSLog(@"Initial JSON Deserialization Error: %@", jsonError.localizedDescription);
-            // Attempt to fix the JSON using regex replacement
-            NSString *processedPayload = [self correctInvalidJsonEscapes:payload];
-            // Update payload to the corrected version
-            payload = processedPayload;
+    // Use the already validated JSON object without re-serialization
+    try {
+        ACOAdaptiveCard *card = [[ACOAdaptiveCard alloc] init];
+        SwiftAdaptiveCardParseResult *swiftResult = nil;
+        NSMutableArray *acrParseWarnings = [[NSMutableArray alloc] init];
+        std::shared_ptr<ParseResult> parseResult = AdaptiveCard::DeserializeFromString(std::string([payload UTF8String]), g_version);
+        
+        if (useSwiftParser) {
+            swiftResult = [SwiftAdaptiveCardParser parseWithPayload:payload];
+            if (swiftResult != nil) {
+                [card setAdaptiveCardParseResult:swiftResult];
+            }
+            acrParseWarnings = [SwiftAdaptiveCardObjcBridge getWarningsFromParseResult:swiftResult useSwift:YES];
+        } else {
+            NSValue *pointerValue = [NSValue valueWithPointer:&parseResult];
+            acrParseWarnings = [SwiftAdaptiveCardObjcBridge getWarningsFromParseResult:pointerValue useSwift:NO];
         }
 
-        // Use the already validated JSON object without re-serialization
-        try {
-            ACOAdaptiveCard *card = [[ACOAdaptiveCard alloc] init];
-            std::shared_ptr<ParseResult> parseResult = AdaptiveCard::DeserializeFromString(std::string([payload UTF8String]), g_version);
-            NSMutableArray *acrParseWarnings = [[NSMutableArray alloc] init];
-            std::vector<std::shared_ptr<AdaptiveCardParseWarning>> parseWarnings = parseResult->GetWarnings();
-            for (const auto &warning : parseWarnings) {
-                ACRParseWarning *acrParseWarning = [[ACRParseWarning alloc] initWithParseWarning:warning];
-                [acrParseWarnings addObject:acrParseWarning];
-            }
-            card->_adaptiveCard = parseResult->GetAdaptiveCard();
-            if (card && card->_adaptiveCard) {
-                card->_refresh = [[ACORefresh alloc] init:card->_adaptiveCard->GetRefresh()];
-                card->_authentication = [[ACOAuthentication alloc] init:card->_adaptiveCard->GetAuthentication()];
-            }
-            result = [[ACOAdaptiveCardParseResult alloc] init:card errors:nil warnings:acrParseWarnings];
-        } catch (const AdaptiveCardParseException &e) {
-            // Converts AdaptiveCardParseException to NSError
-            ErrorStatusCode errorStatusCode = e.GetStatusCode();
-            NSInteger errorCode = (long)errorStatusCode;
-            NSBundle *adaptiveCardsBundle = [[ACOBundle getInstance] getBundle];
-            NSString *localizedFormat = NSLocalizedStringFromTableInBundle(@"AdaptiveCards.Parsing", nil, adaptiveCardsBundle, "Parsing Error Messages");
-            NSString *objectModelErrorCodeInString = [NSString stringWithCString:ErrorStatusCodeToString(errorStatusCode).c_str() encoding:NSUTF8StringEncoding];
-            NSDictionary<NSErrorUserInfoKey, id> *userInfo = @{NSLocalizedDescriptionKey : [NSString localizedStringWithFormat:localizedFormat, objectModelErrorCodeInString]};
-            NSError *parseError = [NSError errorWithDomain:ACRParseErrorDomain
-                                                      code:errorCode
-                                                  userInfo:userInfo];
-            NSArray<NSError *> *errors = @[ parseError ];
-
-            result = [[ACOAdaptiveCardParseResult alloc] init:nil errors:errors warnings:nil];
+        card->_adaptiveCard = parseResult->GetAdaptiveCard();
+        if (card && card->_adaptiveCard) {
+            card->_refresh = [[ACORefresh alloc] init:card->_adaptiveCard->GetRefresh()];
+            card->_authentication = [[ACOAuthentication alloc] init:card->_adaptiveCard->GetAuthentication()];
         }
+        result = [[ACOAdaptiveCardParseResult alloc] init:card errors:nil warnings:acrParseWarnings];
+    } catch (const AdaptiveCardParseException &e) {
+        // Converts AdaptiveCardParseException to NSError
+        ErrorStatusCode errorStatusCode = e.GetStatusCode();
+        NSInteger errorCode = (long)errorStatusCode;
+        NSBundle *adaptiveCardsBundle = [[ACOBundle getInstance] getBundle];
+        NSString *localizedFormat = NSLocalizedStringFromTableInBundle(@"AdaptiveCards.Parsing", nil, adaptiveCardsBundle, "Parsing Error Messages");
+        NSString *objectModelErrorCodeInString = [NSString stringWithCString:ErrorStatusCodeToString(errorStatusCode).c_str() encoding:NSUTF8StringEncoding];
+        NSDictionary<NSErrorUserInfoKey, id> *userInfo = @{NSLocalizedDescriptionKey : [NSString localizedStringWithFormat:localizedFormat, objectModelErrorCodeInString]};
+        NSError *parseError = [NSError errorWithDomain:ACRParseErrorDomain
+                                                  code:errorCode
+                                              userInfo:userInfo];
+        NSArray<NSError *> *errors = @[ parseError ];
+
+        result = [[ACOAdaptiveCardParseResult alloc] init:nil errors:errors warnings:nil];
     }
 
     return result;

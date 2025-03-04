@@ -310,8 +310,9 @@
 		84AE295A27FFA26F00D01B82 /* ContentSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 84AE295527FFA26F00D01B82 /* ContentSource.h */; };
 		84AE295B27FFA26F00D01B82 /* CaptionSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 84AE295627FFA26F00D01B82 /* CaptionSource.h */; };
 		84AE295C27FFA26F00D01B82 /* CaptionSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84AE295727FFA26F00D01B82 /* CaptionSource.cpp */; };
-		90576CA82D52975B00744D3D /* SwiftAdaptiveCardParserBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 90576CA62D52975B00744D3D /* SwiftAdaptiveCardParserBridge.h */; };
-		90576CA92D52975B00744D3D /* SwiftAdaptiveCardParserBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 90576CA72D52975B00744D3D /* SwiftAdaptiveCardParserBridge.m */; };
+		903289392D76A7F90001AE1D /* SwiftAdaptiveCardSwiftBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903289382D76A7F90001AE1D /* SwiftAdaptiveCardSwiftBridge.swift */; };
+		90576CA82D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 90576CA62D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.h */; };
+		90576CA92D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.mm in Sources */ = {isa = PBXBuildFile; fileRef = 90576CA72D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.mm */; };
 		90576CAB2D52ACA000744D3D /* ACRewritePackage in Frameworks */ = {isa = PBXBuildFile; productRef = 90576CAA2D52ACA000744D3D /* ACRewritePackage */; };
 		B35633222C060D7900F1C999 /* ValueChangedActionTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = B35633212C060D7900F1C999 /* ValueChangedActionTests.mm */; };
 		B35633242C060EEF00F1C999 /* ValueChangedActionValid.json in Resources */ = {isa = PBXBuildFile; fileRef = B35633232C060EEF00F1C999 /* ValueChangedActionValid.json */; };
@@ -857,8 +858,9 @@
 		84AE295527FFA26F00D01B82 /* ContentSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContentSource.h; path = ../../../../shared/cpp/ObjectModel/ContentSource.h; sourceTree = "<group>"; };
 		84AE295627FFA26F00D01B82 /* CaptionSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CaptionSource.h; path = ../../../../shared/cpp/ObjectModel/CaptionSource.h; sourceTree = "<group>"; };
 		84AE295727FFA26F00D01B82 /* CaptionSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CaptionSource.cpp; path = ../../../../shared/cpp/ObjectModel/CaptionSource.cpp; sourceTree = "<group>"; };
-		90576CA62D52975B00744D3D /* SwiftAdaptiveCardParserBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftAdaptiveCardParserBridge.h; sourceTree = "<group>"; };
-		90576CA72D52975B00744D3D /* SwiftAdaptiveCardParserBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SwiftAdaptiveCardParserBridge.m; sourceTree = "<group>"; };
+		903289382D76A7F90001AE1D /* SwiftAdaptiveCardSwiftBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftAdaptiveCardSwiftBridge.swift; sourceTree = "<group>"; };
+		90576CA62D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftAdaptiveCardObjcBridge.h; sourceTree = "<group>"; };
+		90576CA72D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SwiftAdaptiveCardObjcBridge.mm; sourceTree = "<group>"; };
 		9240A5BA903EB4E235296A01 /* Pods-AdaptiveCards.apprelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdaptiveCards.apprelease.xcconfig"; path = "Target Support Files/Pods-AdaptiveCards/Pods-AdaptiveCards.apprelease.xcconfig"; sourceTree = "<group>"; };
 		92C9540BDB87B09349BF0018 /* Pods-AdaptiveCards-AdaptiveCardsTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AdaptiveCards-AdaptiveCardsTests.release.xcconfig"; path = "Target Support Files/Pods-AdaptiveCards-AdaptiveCardsTests/Pods-AdaptiveCards-AdaptiveCardsTests.release.xcconfig"; sourceTree = "<group>"; };
 		B35633212C060D7900F1C999 /* ValueChangedActionTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ValueChangedActionTests.mm; sourceTree = "<group>"; };
@@ -1289,8 +1291,9 @@
 				6BC30F6D21E56CF900B9FAAE /* UtiliOS.mm */,
 				46058FE02C64774800966E76 /* ACRLayoutHelper.mm */,
 				46DF58E22C6F12FC00DCBA77 /* ACRFlowLayout.mm */,
-				90576CA62D52975B00744D3D /* SwiftAdaptiveCardParserBridge.h */,
-				90576CA72D52975B00744D3D /* SwiftAdaptiveCardParserBridge.m */,
+				90576CA62D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.h */,
+				90576CA72D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.mm */,
+				903289382D76A7F90001AE1D /* SwiftAdaptiveCardSwiftBridge.swift */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -1968,7 +1971,7 @@
 				F4FE456A1F196F3D0071D9E5 /* ACRContentStackView.h in Headers */,
 				F4D402111F7DAC2C00D0356B /* ACOAdaptiveCardParseResult.h in Headers */,
 				F42741071EF8624F00399FBB /* ACRIBaseCardElementRenderer.h in Headers */,
-				90576CA82D52975B00744D3D /* SwiftAdaptiveCardParserBridge.h in Headers */,
+				90576CA82D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.h in Headers */,
 				F4D402131F7DAC2C00D0356B /* ACOHostConfigParseResult.h in Headers */,
 				F43110451F357487001AAE30 /* ACOHostConfig.h in Headers */,
 				F4F2556C1F98246000A80D39 /* ACOBaseActionElement.h in Headers */,
@@ -2175,6 +2178,7 @@
 					F423C0B41EE1FBA900905679 = {
 						CreatedOnToolsVersion = 8.3.2;
 						DevelopmentTeam = UBF8T346G9;
+						LastSwiftMigration = 1540;
 						ProvisioningStyle = Automatic;
 					};
 					F423C0BD1EE1FBAA00905679 = {
@@ -2383,6 +2387,7 @@
 				4608EE8A2BF5C1AB00543095 /* ACRRatingLabelRenderer.mm in Sources */,
 				F44872F71EE2261F00FCAFAE /* BaseActionElement.cpp in Sources */,
 				F44872FB1EE2261F00FCAFAE /* BaseInputElement.cpp in Sources */,
+				903289392D76A7F90001AE1D /* SwiftAdaptiveCardSwiftBridge.swift in Sources */,
 				46058FD42C5CEEFE00966E76 /* FlowLayout.cpp in Sources */,
 				F974C5362800B8E100C1B3C7 /* CaptionSource.cpp in Sources */,
 				F9A9E55526FE9FE400D13410 /* StyledCollectionElement.cpp in Sources */,
@@ -2498,7 +2503,7 @@
 				F401A8801F1045CA006D7AF2 /* ACRContentHoldingUIView.mm in Sources */,
 				F44873121EE2261F00FCAFAE /* Image.cpp in Sources */,
 				46B329182BF3228F009671AE /* RatingInput.cpp in Sources */,
-				90576CA92D52975B00744D3D /* SwiftAdaptiveCardParserBridge.m in Sources */,
+				90576CA92D52975B00744D3D /* SwiftAdaptiveCardObjcBridge.mm in Sources */,
 				F4CAE77B1F7325DF00545555 /* Separator.cpp in Sources */,
 				F448731F1EE2261F00FCAFAE /* ShowCardAction.cpp in Sources */,
 				6B8C766626461E98009548FA /* ACRInputTableView.mm in Sources */,
@@ -2672,6 +2677,7 @@
 			baseConfigurationReference = 9240A5BA903EB4E235296A01 /* Pods-AdaptiveCards.apprelease.xcconfig */;
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "iPhone Developer";
@@ -2711,6 +2717,7 @@
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = NO;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -2720,6 +2727,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = ED131801E4C2E2B662925ABF /* Pods-AdaptiveCards-AdaptiveCardsTests.apprelease.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -2872,6 +2880,7 @@
 			baseConfigurationReference = 777DD1173C03E3F4EC695141 /* Pods-AdaptiveCards.debug.xcconfig */;
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "iPhone Developer";
@@ -2911,6 +2920,8 @@
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = NO;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -2921,6 +2932,7 @@
 			baseConfigurationReference = 4B0881019D2B9BA6009F1B94 /* Pods-AdaptiveCards.release.xcconfig */;
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "iPhone Developer";
@@ -2960,6 +2972,7 @@
 				SCAN_ALL_SOURCE_FILES_FOR_INCLUDES = NO;
 				SKIP_INSTALL = YES;
 				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
 			};
@@ -2969,6 +2982,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3F3FBD57C361267D351D4B65 /* Pods-AdaptiveCards-AdaptiveCardsTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -2991,6 +3005,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 92C9540BDB87B09349BF0018 /* Pods-AdaptiveCards-AdaptiveCardsTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;

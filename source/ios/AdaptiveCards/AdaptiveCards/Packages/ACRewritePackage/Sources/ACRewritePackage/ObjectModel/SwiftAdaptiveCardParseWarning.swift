@@ -9,11 +9,11 @@ public struct SwiftAdaptiveCardParseWarning: Codable {
         self.message = message
     }
 
-    func getStatusCode() -> SwiftWarningStatusCode {
+    public func getStatusCode() -> SwiftWarningStatusCode {
         return statusCode
     }
 
-    func getReason() -> String {
+    public func getReason() -> String {
         return message
     }
 }

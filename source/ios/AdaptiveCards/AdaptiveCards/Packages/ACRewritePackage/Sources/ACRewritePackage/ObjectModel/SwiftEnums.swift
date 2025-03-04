@@ -51,7 +51,7 @@ enum SwiftErrorStatusCode: String, Codable {
     case invalidJson, renderFailed, requiredPropertyMissing, invalidPropertyValue, unsupportedParserOverride, idCollision, customError, unknownElementType, serializationFailed
 }
 
-enum SwiftWarningStatusCode: String, Codable {
+public enum SwiftWarningStatusCode: String, Codable {
     case unknownElementType, unknownActionElementType, unknownPropertyOnElement, unknownEnumValue, noRendererForType
     case interactivityNotSupported, maxActionsExceeded, assetLoadFailed, unsupportedSchemaVersion, unsupportedMediaType
     case invalidMediaMix, invalidColorFormat, invalidDimensionSpecified, invalidLanguage, invalidValue, customWarning
