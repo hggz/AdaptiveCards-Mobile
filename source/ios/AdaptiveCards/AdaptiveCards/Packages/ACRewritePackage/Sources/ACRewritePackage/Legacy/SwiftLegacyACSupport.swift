@@ -88,9 +88,28 @@ struct SwiftImageParser: SwiftBaseCardElementParser {
 
 // MARK: - SwiftImage Extension
 
-extension SwiftImage {
+internal extension SwiftImage {
     /// Serializes to legacy JSON format
     func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
         return try SwiftImageLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("altText")
+        self.knownProperties.insert("backgroundColor")
+        self.knownProperties.insert("height")
+        self.knownProperties.insert("horizontalAlignment")
+        self.knownProperties.insert("selectAction")
+        self.knownProperties.insert("size")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("url")
+        self.knownProperties.insert("width")
+    }
+    
+    // MARK: - Resource Information
+    func getResourceInformation(_ resourceInfo: inout [SwiftRemoteResourceInformation]) {
+        let info = SwiftRemoteResourceInformation(url: self.url, mimeType: "image")
+        resourceInfo.append(info)
     }
 }
