@@ -207,3 +207,83 @@ internal extension SwiftIcon {
         self.knownProperties.insert("selectAction")
     }
 }
+
+enum SwiftIconInfoLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftIconInfo
+    static func deserialize(from value: [String: Any]) throws -> SwiftIconInfo {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftIconInfo.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftIconInfo
+    static func deserialize(from jsonString: String) throws -> SwiftIconInfo {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftIconInfo.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftIconInfo to JSON dictionary with proper formatting
+    static func serializeToJson(_ iconInfo: SwiftIconInfo) throws -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        // Only add non-default properties
+        if iconInfo.iconSize != .standard {
+            json["size"] = iconInfo.iconSize.rawValue
+        }
+        
+        if iconInfo.iconStyle != .regular {
+            json["style"] = iconInfo.iconStyle.rawValue
+        }
+        
+        if iconInfo.foregroundColor != .default {
+            json["color"] = iconInfo.foregroundColor.rawValue
+        }
+        
+        if let name = iconInfo.name {
+            json["name"] = name
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ iconInfo: SwiftIconInfo) throws -> String {
+        let json = try serializeToJson(iconInfo)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftIconInfo Extension
+
+extension SwiftIconInfo {
+    // Serialization to JSON
+    func toJSON() -> [String: Any] {
+        (try? SwiftIconInfoLegacySupport.serializeToJson(self)) ?? [:]
+    }
+    
+    func toJSONString() -> String {
+        (try? SwiftIconInfoLegacySupport.serializeToJsonString(self)) ?? "{}"
+    }
+    
+    // Static factory methods
+    static func fromJSON(_ json: [String: Any]) -> SwiftIconInfo? {
+        guard !json.isEmpty else { return nil }
+        return try? SwiftIconInfoLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftIconInfo? {
+        return try? SwiftIconInfoLegacySupport.deserialize(from: jsonString)
+    }
+}
