@@ -113,3 +113,97 @@ internal extension SwiftImage {
         resourceInfo.append(info)
     }
 }
+
+// MARK: - Consolidated SwiftIcon Legacy Support
+
+/// Unified legacy support for SwiftIcon parsing and serialization
+enum SwiftIconLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftIcon
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftIcon {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftIcon.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftIcon
+    static func deserialize(from jsonString: String) throws -> SwiftIcon {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftIcon.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftIcon to JSON dictionary with proper formatting
+    static func serializeToJson(_ icon: SwiftIcon, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set type property
+        json["type"] = "Icon"
+        
+        // Add icon name if present
+        if let name = icon.name {
+            json["name"] = name
+        }
+        
+        // Only add non-default properties
+        if icon.foregroundColor != .default {
+            json["color"] = icon.foregroundColor.rawValue
+        }
+        
+        if icon.iconSize != .standard {
+            json["size"] = icon.iconSize.rawValue
+        }
+        
+        if icon.iconStyle != .regular {
+            json["style"] = icon.iconStyle.rawValue
+        }
+        
+        // Add selectAction if present
+        if let action = icon.selectAction {
+            json["selectAction"] = try SwiftBaseCardElement.serializeSelectAction(action)
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses Icon elements in an Adaptive Card
+struct SwiftIconParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.icon)
+        return try SwiftIconLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftIconLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftIconLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftIcon Extension
+
+internal extension SwiftIcon {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftIconLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("name")
+        self.knownProperties.insert("color")
+        self.knownProperties.insert("size")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("selectAction")
+    }
+}
