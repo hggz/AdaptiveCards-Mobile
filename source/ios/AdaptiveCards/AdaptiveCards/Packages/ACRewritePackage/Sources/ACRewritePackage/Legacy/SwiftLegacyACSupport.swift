@@ -356,3 +356,225 @@ extension SwiftUnknownElement {
         return try SwiftUnknownElementLegacySupport.deserialize(from: json)
     }
 }
+
+// MARK: - Consolidated SwiftAuthentication Legacy Support
+
+/// Unified legacy support for SwiftAuthentication parsing and serialization
+enum SwiftAuthenticationLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftAuthentication
+    static func deserialize(from json: [String: Any]) throws -> SwiftAuthentication {
+        return SwiftAuthentication(
+            text: json["text"] as? String ?? "",
+            connectionName: json["connectionName"] as? String ?? "",
+            tokenExchangeResource: try (json["tokenExchangeResource"] as? [String: Any]).flatMap {
+                try SwiftTokenExchangeResource.deserialize(from: $0)
+            },
+            buttons: (json["buttons"] as? [[String: Any]])?.compactMap {
+                SwiftAuthCardButton.deserialize(from: $0)
+            } ?? []
+        )
+    }
+    
+    /// Deserializes string into a SwiftAuthentication
+    static func deserialize(from jsonString: String) -> SwiftAuthentication? {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            return nil
+        }
+        return try? deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftAuthentication to JSON string
+    static func serialize(_ authentication: SwiftAuthentication) -> String {
+        let jsonData = try? JSONEncoder().encode(authentication)
+        return jsonData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    }
+    
+    /// Converts a SwiftAuthentication to JSON dictionary
+    static func serializeToJson(_ authentication: SwiftAuthentication) throws -> [String: Any] {
+        return try authentication.serializeToJsonValue()
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ authentication: SwiftAuthentication) throws -> String {
+        let json = try serializeToJson(authentication)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftAuthentication Extension
+
+extension SwiftAuthentication {
+    // Serialization helpers
+    func serialize() -> String {
+        return SwiftAuthenticationLegacySupport.serialize(self)
+    }
+    
+    func toJSON() throws -> [String: Any] {
+        return try SwiftAuthenticationLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftAuthenticationLegacySupport.serializeToJsonString(self)
+    }
+    
+    // Static factory methods
+    static func deserialize(from json: [String: Any]) throws -> SwiftAuthentication {
+        return try SwiftAuthenticationLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) -> SwiftAuthentication? {
+        return SwiftAuthenticationLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftAuthentication? {
+        return try? SwiftAuthenticationLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftAuthentication? {
+        return SwiftAuthenticationLegacySupport.deserialize(from: jsonString)
+    }
+    
+    func serializeToJsonValue() throws -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        if !text.isEmpty {
+            json["text"] = text
+        }
+        if !connectionName.isEmpty {
+            json["connectionName"] = connectionName
+        }
+        if let tokenExchangeResource = tokenExchangeResource, tokenExchangeResource.shouldSerialize {
+            json["tokenExchangeResource"] = try tokenExchangeResource.serializeToJsonValue()
+        }
+        if !buttons.isEmpty {
+            json["buttons"] = buttons.map { $0.serializeToJsonValue() }
+        }
+        
+        return json
+    }
+    
+    func shouldSerialize() -> Bool {
+        return !text.isEmpty ||
+               !connectionName.isEmpty ||
+               !buttons.isEmpty ||
+               (tokenExchangeResource?.shouldSerialize ?? false)
+    }
+}
+
+// MARK: - Consolidated SwiftAuthCardButton Legacy Support
+
+/// Unified legacy support for SwiftAuthCardButton parsing and serialization
+enum SwiftAuthCardButtonLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftAuthCardButton
+    static func deserialize(from json: [String: Any]) -> SwiftAuthCardButton {
+        return SwiftAuthCardButton(
+            type: json["type"] as? String ?? "",
+            title: json["title"] as? String ?? "",
+            image: json["image"] as? String ?? "",
+            value: json["value"] as? String ?? ""
+        )
+    }
+    
+    /// Deserializes string into a SwiftAuthCardButton
+    static func deserialize(from jsonString: String) -> SwiftAuthCardButton? {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            return nil
+        }
+        return deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftAuthCardButton to JSON string
+    static func serialize(_ button: SwiftAuthCardButton) -> String {
+        let jsonData = try? JSONEncoder().encode(button)
+        return jsonData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+    }
+    
+    /// Converts a SwiftAuthCardButton to JSON dictionary
+    static func serializeToJson(_ button: SwiftAuthCardButton) -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        if !button.type.isEmpty {
+            json["type"] = button.type
+        }
+        if !button.title.isEmpty {
+            json["title"] = button.title
+        }
+        if !button.image.isEmpty {
+            json["image"] = button.image
+        }
+        if !button.value.isEmpty {
+            json["value"] = button.value
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ button: SwiftAuthCardButton) throws -> String {
+        let json = serializeToJson(button)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftAuthCardButton Extension
+
+extension SwiftAuthCardButton {
+    // Serialization helpers
+    func serialize() -> String {
+        return SwiftAuthCardButtonLegacySupport.serialize(self)
+    }
+    
+    func serializeToJsonValue() -> [String: Any] {
+        return SwiftAuthCardButtonLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSON() -> [String: Any] {
+        return SwiftAuthCardButtonLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftAuthCardButtonLegacySupport.serializeToJsonString(self)
+    }
+    
+    // Validation
+    func shouldSerialize() -> Bool {
+        return !type.isEmpty || !title.isEmpty || !image.isEmpty || !value.isEmpty
+    }
+    
+    // Static factory methods
+    static func deserialize(from json: [String: Any]) -> SwiftAuthCardButton {
+        return SwiftAuthCardButtonLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) -> SwiftAuthCardButton? {
+        return SwiftAuthCardButtonLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftAuthCardButton {
+        return SwiftAuthCardButtonLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftAuthCardButton? {
+        return SwiftAuthCardButtonLegacySupport.deserialize(from: jsonString)
+    }
+}
