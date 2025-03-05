@@ -287,3 +287,72 @@ extension SwiftIconInfo {
         return try? SwiftIconInfoLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftUnknownElement Legacy Support
+
+/// Unified legacy support for SwiftUnknownElement parsing and serialization
+enum SwiftUnknownElementLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftUnknownElement
+    static func deserialize(from value: [String: Any]) throws -> SwiftUnknownElement {
+        guard let typeString = value["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        // Include all properties
+        let properties = value.mapValues { AnyCodable($0) }
+        
+        return SwiftUnknownElement(elementType: typeString, additionalProperties: properties)
+    }
+    
+    /// Deserializes string into a SwiftUnknownElement
+    static func deserialize(from jsonString: String) throws -> SwiftUnknownElement {
+        let json = try SwiftParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(from: json)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftUnknownElement to JSON dictionary
+    static func serializeToJson(_ element: SwiftUnknownElement) throws -> [String: Any] {
+        return element.additionalProperties?.mapValues { $0.value } ?? [:]
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ element: SwiftUnknownElement) throws -> String {
+        let json = try serializeToJson(element)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses unknown elements in an Adaptive Card
+struct SwiftUnknownElementParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftUnknownElementLegacySupport.deserialize(from: value)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftUnknownElementLegacySupport.deserialize(from: value)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftUnknownElementLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftUnknownElement Extension
+
+extension SwiftUnknownElement {
+    // Static factory methods
+    static func createFromJSON(_ json: [String: Any]) throws -> SwiftUnknownElement {
+        return try SwiftUnknownElementLegacySupport.deserialize(from: json)
+    }
+}
