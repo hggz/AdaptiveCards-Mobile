@@ -44,7 +44,7 @@ final class SwiftUnknownAction: SwiftBaseActionElement {
             properties[key.stringValue] = try container.decode(AnyCodable.self, forKey: key)
         }
         
-        try super.init(type: .unknownAction)
+        super.init(type: .unknownAction)
         self.additionalProperties = properties
     }
     

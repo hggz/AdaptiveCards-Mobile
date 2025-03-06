@@ -345,6 +345,22 @@ enum SwiftShowCardActionLegacySupport {
     }
 }
 
+/// Parser for `ShowCardAction` elements.
+class SwiftShowCardActionParser: SwiftActionElementParser {
+    
+    /// Deserializes a `ShowCardAction` from a JSON dictionary.
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftShowCardAction.self, from: data)
+    }
+
+    /// Deserializes a `ShowCardAction` from a JSON string.
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        let json = try SwiftParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(context: context, from: json)
+    }
+}
+
 enum SwiftOpenUrlActionLegacySupport {
     /// Deserializes a `SwiftOpenUrlAction` from a JSON dictionary.
     static func deserialize(from json: [String: Any]) throws -> SwiftOpenUrlAction {
@@ -565,5 +581,30 @@ final class UnknownActionParser: SwiftActionElementParser {
     func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
         let json = try SwiftParseUtil.getJsonDictionary(from: jsonString)
         return try deserialize(context: context, from: json)
+    }
+}
+
+enum SwiftStyledCollectionElementLegacySupport {
+    static func serializeToJsonValue(_ element: SwiftStyledCollectionElement, superResult: [String: Any]) throws -> [String: Any] {
+        var json = superResult
+        if element.style != .none {
+            json["style"] = SwiftContainerStyle.toString(element.style)
+        }
+        if let verticalAlignment = element.verticalContentAlignment {
+            json["verticalContentAlignment"] = verticalAlignment.rawValue
+        }
+        if element.hasBleed {
+            json["bleed"] = true
+        }
+        if element.minHeight > 0 {
+            json["minHeight"] = "\(element.minHeight)px"
+        }
+        if let selectAction = element.selectAction {
+            json["selectAction"] = selectAction.toJSON()
+        }
+        if let backgroundImage = element.backgroundImage {
+            json["backgroundImage"] = try backgroundImage.serializeToJsonValue()
+        }
+        return json
     }
 }
