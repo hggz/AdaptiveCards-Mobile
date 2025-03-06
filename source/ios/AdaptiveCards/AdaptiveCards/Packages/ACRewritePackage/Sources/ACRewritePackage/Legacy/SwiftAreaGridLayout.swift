@@ -3,17 +3,13 @@ import Foundation
 /// Represents an area grid layout in an Adaptive Card.
 class SwiftAreaGridLayout: SwiftLayout {
     // MARK: - Properties
-    var columns: [String]
-    var areas: [SwiftGridArea]
-    var rowSpacing: SwiftSpacing
-    var columnSpacing: SwiftSpacing
+    var columns: [String] = []
+    var areas: [SwiftGridArea] = []
+    var rowSpacing: SwiftSpacing = .default
+    var columnSpacing: SwiftSpacing = .default
     
     // MARK: - Initialization
     override init() {
-        self.columns = []
-        self.areas = []
-        self.rowSpacing = .default
-        self.columnSpacing = .default
         super.init()
         self.layoutContainerType = .areaGrid
     }

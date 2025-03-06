@@ -1,11 +1,14 @@
 import Foundation
 
+/// Represents a background image in an Adaptive Card.
 struct SwiftBackgroundImage: Codable {
-    var url: String
-    var fillMode: SwiftImageFillMode
-    var horizontalAlignment: SwiftHorizontalAlignment
-    var verticalAlignment: SwiftVerticalAlignment
-
+    // MARK: - Properties
+    let url: String
+    let fillMode: SwiftImageFillMode
+    let horizontalAlignment: SwiftHorizontalAlignment
+    let verticalAlignment: SwiftVerticalAlignment
+    
+    // MARK: - Initialization
     init(
         url: String = "",
         fillMode: SwiftImageFillMode = .cover,
@@ -17,64 +20,52 @@ struct SwiftBackgroundImage: Codable {
         self.horizontalAlignment = horizontalAlignment
         self.verticalAlignment = verticalAlignment
     }
-
-    func shouldSerialize() -> Bool {
-        return !url.isEmpty
-    }
-
-    func serialize() -> String {
-        let jsonData = try? JSONEncoder().encode(self)
-        return jsonData.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
-    }
-
-    func serializeToJsonValue() -> [String: Any] {
-        var json: [String: Any] = ["url": url]
-        
-        // Use specified enum cases from the test
-        switch fillMode {
-        case .repeatHorizontally:
-            json["fillMode"] = "repeatHorizontally"
-        default:
-            json["fillMode"] = fillMode.rawValue.lowercased()
-        }
-        
-        json["horizontalAlignment"] = horizontalAlignment.rawValue.lowercased()
-        json["verticalAlignment"] = verticalAlignment.rawValue.lowercased()
-        return json
+    
+    // MARK: - Codable Implementation
+    private enum CodingKeys: String, CodingKey {
+        case url, fillMode, horizontalAlignment, verticalAlignment
     }
     
-    static func deserialize(from json: [String: Any]) throws -> SwiftBackgroundImage {
-        guard let url = json["url"] as? String else { return SwiftBackgroundImage() }
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Case-insensitive enum parsing
-        let fillModeStr = (json["fillMode"] as? String ?? "cover").lowercased()
-        let horizontalStr = (json["horizontalAlignment"] as? String ?? "left").lowercased()
-        let verticalStr = (json["verticalAlignment"] as? String ?? "top").lowercased()
+        // Decode url with default
+        url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
         
-        // Map common variations
+        // Case-insensitive enum parsing for fillMode
+        let fillModeStr = try container.decodeIfPresent(String.self, forKey: .fillMode)?.lowercased() ?? "cover"
+        
+        // Map common variations for fillMode
         let fillModeMap: [String: SwiftImageFillMode] = [
             "repeathorizontally": .repeatHorizontally,
             "repeat-horizontally": .repeatHorizontally,
             "repeat_horizontally": .repeatHorizontally
         ]
         
-        let fillMode = fillModeMap[fillModeStr] ?? SwiftImageFillMode(rawValue: fillModeStr) ?? .cover
-        let horizontalAlignment = SwiftHorizontalAlignment(rawValue: horizontalStr) ?? .left
-        let verticalAlignment = SwiftVerticalAlignment(rawValue: verticalStr) ?? .top
+        fillMode = fillModeMap[fillModeStr] ?? SwiftImageFillMode(rawValue: fillModeStr) ?? .cover
         
-        return SwiftBackgroundImage(
-            url: url,
-            fillMode: fillMode,
-            horizontalAlignment: horizontalAlignment,
-            verticalAlignment: verticalAlignment
-        )
+        // Decode alignment values with defaults
+        let horizontalStr = try container.decodeIfPresent(String.self, forKey: .horizontalAlignment)?.lowercased() ?? "left"
+        horizontalAlignment = SwiftHorizontalAlignment(rawValue: horizontalStr) ?? .left
+        
+        let verticalStr = try container.decodeIfPresent(String.self, forKey: .verticalAlignment)?.lowercased() ?? "top"
+        verticalAlignment = SwiftVerticalAlignment(rawValue: verticalStr) ?? .top
     }
     
-    static func deserialize(from jsonString: String) -> SwiftBackgroundImage? {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
-            return nil
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(url, forKey: .url)
+        
+        // Use specified enum cases for fillMode
+        switch fillMode {
+        case .repeatHorizontally:
+            try container.encode("repeatHorizontally", forKey: .fillMode)
+        default:
+            try container.encode(fillMode.rawValue.lowercased(), forKey: .fillMode)
         }
-        return try? deserialize(from: jsonDict)
+        
+        try container.encode(horizontalAlignment.rawValue.lowercased(), forKey: .horizontalAlignment)
+        try container.encode(verticalAlignment.rawValue.lowercased(), forKey: .verticalAlignment)
     }
 }
