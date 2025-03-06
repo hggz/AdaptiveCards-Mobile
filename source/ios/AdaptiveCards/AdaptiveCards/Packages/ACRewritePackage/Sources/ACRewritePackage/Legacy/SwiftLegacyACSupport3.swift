@@ -412,3 +412,154 @@ extension SwiftGridArea {
         }
     }
 }
+
+// MARK: - Consolidated SwiftMedia Legacy Support
+
+/// Unified legacy support for SwiftMedia parsing and serialization
+enum SwiftMediaLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftMedia
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftMedia {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftMedia.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftMedia
+    static func deserialize(from jsonString: String) throws -> SwiftMedia {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftMedia.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftMedia to JSON dictionary with proper formatting
+    static func serializeToJson(_ media: SwiftMedia, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "Media"
+        
+        // Add optional properties
+        if let poster = media.poster {
+            json["poster"] = poster
+        }
+        
+        if let altText = media.altText {
+            json["altText"] = altText
+        }
+        
+        // Add sources array
+        json["sources"] = media.sources.map { $0.serializeToJson() }
+        
+        // Add caption sources if not empty
+        if !media.captionSources.isEmpty {
+            json["captionSources"] = media.captionSources.map { $0.serializeToJson() }
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ media: SwiftMedia) -> String {
+        do {
+            // Use the full serialization path for consistency
+            let baseJson = try media.serializeToJsonValue()
+            let jsonData = try JSONSerialization.data(withJSONObject: baseJson, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(baseJson, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+    
+    // MARK: - Resource Information
+    
+    /// Retrieves resource information (from poster and media sources)
+    static func getResourceInformation(_ media: SwiftMedia) -> [SwiftRemoteResourceInformation] {
+        var resourceInfo: [SwiftRemoteResourceInformation] = []
+        
+        // Add poster if present
+        if let poster = media.poster {
+            resourceInfo.append(SwiftRemoteResourceInformation(url: poster, mimeType: "image"))
+        }
+        
+        // Add sources
+        for source in media.sources {
+            resourceInfo.append(contentsOf: source.getResourceInformation())
+        }
+        
+        return resourceInfo
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses Media elements in an Adaptive Card
+struct SwiftMediaParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.media)
+        return try SwiftMediaLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftMediaLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftMediaLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftMedia Extension
+
+internal extension SwiftMedia {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftMediaLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("poster")
+        self.knownProperties.insert("altText")
+        self.knownProperties.insert("sources")
+        self.knownProperties.insert("captionSources")
+    }
+    
+    // MARK: - Resource Information
+    func mediaResourceInformation() -> [SwiftRemoteResourceInformation] {
+        return SwiftMediaLegacySupport.getResourceInformation(self)
+    }
+    
+    // Legacy compatibility methods
+    func serializeToJson() -> [String: Any] {
+        do {
+            return try self.serializeToJsonValue()
+        } catch {
+            return [:]
+        }
+    }
+    
+    func toJSONString() -> String {
+        return SwiftMediaLegacySupport.serializeToJsonString(self)
+    }
+}
+
+// Legacy static methods for backward compatibility
+extension SwiftMedia {
+    static func createFromJSON(_ json: [String: Any]) throws -> SwiftMedia {
+        return try SwiftMediaLegacySupport.deserialize(from: json)
+    }
+    
+    static func createFromJSONString(_ jsonString: String) throws -> SwiftMedia {
+        return try SwiftMediaLegacySupport.deserialize(from: jsonString)
+    }
+}
