@@ -1,30 +1,8 @@
 import Foundation
 
+/// Represents a choice input in an Adaptive Card.
 struct SwiftChoiceInput: Codable {
-    var title: String
-    var value: String
-
-    private enum CodingKeys: String, CodingKey {
-        case title = "title"
-        case value = "value"
-    }
-
-    func serializeToJson() -> String? {
-        guard let jsonData = try? JSONEncoder().encode(self) else {
-            return nil
-        }
-        return String(data: jsonData, encoding: .utf8)
-    }
-
-    static func deserialize(from json: [String: Any]) throws -> SwiftChoiceInput {
-        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(SwiftChoiceInput.self, from: jsonData)
-    }
-
-    static func deserialize(from jsonString: String) throws -> SwiftChoiceInput {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "ChoiceInput", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
-        }
-        return try JSONDecoder().decode(SwiftChoiceInput.self, from: jsonData)
-    }
+    // MARK: - Properties
+    let title: String
+    let value: String
 }

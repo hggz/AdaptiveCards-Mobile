@@ -92,3 +92,187 @@ extension SwiftBackgroundImage {
         return SwiftBackgroundImageLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftCaptionSource Legacy Support
+
+/// Unified legacy support for SwiftCaptionSource parsing and serialization
+enum SwiftCaptionSourceLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftCaptionSource using Codable
+    static func deserialize(from json: [String: Any]) throws -> SwiftCaptionSource {
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftCaptionSource.self, from: jsonData)
+    }
+    
+    /// Deserializes string into a SwiftCaptionSource
+    static func deserialize(from jsonString: String) throws -> SwiftCaptionSource {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "CaptionSource", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
+        }
+        return try JSONDecoder().decode(SwiftCaptionSource.self, from: jsonData)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftCaptionSource to JSON string using Codable
+    static func serializeToJson(_ captionSource: SwiftCaptionSource) -> String? {
+        guard let jsonData = try? JSONEncoder().encode(captionSource) else {
+            return nil
+        }
+        return String(data: jsonData, encoding: .utf8)
+    }
+    
+    /// Converts to JSON dictionary
+    static func toJsonDictionary(_ captionSource: SwiftCaptionSource) throws -> [String: Any] {
+        guard let jsonData = try? JSONEncoder().encode(captionSource),
+              let json = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            throw EncodingError.invalidValue(captionSource, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON dictionary"))
+        }
+        return json
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ captionSource: SwiftCaptionSource) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let jsonData = try encoder.encode(captionSource)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(captionSource, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftCaptionSource Extension
+
+extension SwiftCaptionSource {
+    // Validation methods
+    func shouldSerialize() -> Bool {
+        return mimeType != nil || url != nil || label != nil
+    }
+    
+    // Serialization helpers
+    func serializeToJson() -> String? {
+        return SwiftCaptionSourceLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSON() throws -> [String: Any] {
+        return try SwiftCaptionSourceLegacySupport.toJsonDictionary(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftCaptionSourceLegacySupport.serializeToJsonString(self)
+    }
+    
+    // Static factory methods
+    static func deserialize(from json: [String: Any]) throws -> SwiftCaptionSource {
+        return try SwiftCaptionSourceLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) throws -> SwiftCaptionSource {
+        return try SwiftCaptionSourceLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftCaptionSource? {
+        return try? SwiftCaptionSourceLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftCaptionSource? {
+        return try? SwiftCaptionSourceLegacySupport.deserialize(from: jsonString)
+    }
+}
+
+// MARK: - Consolidated SwiftChoiceInput Legacy Support
+
+/// Unified legacy support for SwiftChoiceInput parsing and serialization
+enum SwiftChoiceInputLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftChoiceInput using Codable
+    static func deserialize(from json: [String: Any]) throws -> SwiftChoiceInput {
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftChoiceInput.self, from: jsonData)
+    }
+    
+    /// Deserializes string into a SwiftChoiceInput
+    static func deserialize(from jsonString: String) throws -> SwiftChoiceInput {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "ChoiceInput", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
+        }
+        return try JSONDecoder().decode(SwiftChoiceInput.self, from: jsonData)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftChoiceInput to JSON string using Codable
+    static func serializeToJson(_ choiceInput: SwiftChoiceInput) -> String? {
+        guard let jsonData = try? JSONEncoder().encode(choiceInput) else {
+            return nil
+        }
+        return String(data: jsonData, encoding: .utf8)
+    }
+    
+    /// Converts to JSON dictionary
+    static func toJsonDictionary(_ choiceInput: SwiftChoiceInput) throws -> [String: Any] {
+        guard let jsonData = try? JSONEncoder().encode(choiceInput),
+              let json = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            throw EncodingError.invalidValue(choiceInput, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON dictionary"))
+        }
+        return json
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ choiceInput: SwiftChoiceInput) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let jsonData = try encoder.encode(choiceInput)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(choiceInput, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftChoiceInput Extension
+
+extension SwiftChoiceInput {
+    // Validation methods
+    func shouldSerialize() -> Bool {
+        return !title.isEmpty || !value.isEmpty
+    }
+    
+    // Serialization helpers
+    func serializeToJson() -> String? {
+        return SwiftChoiceInputLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSON() throws -> [String: Any] {
+        return try SwiftChoiceInputLegacySupport.toJsonDictionary(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftChoiceInputLegacySupport.serializeToJsonString(self)
+    }
+    
+    // Static factory methods
+    static func deserialize(from json: [String: Any]) throws -> SwiftChoiceInput {
+        return try SwiftChoiceInputLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) throws -> SwiftChoiceInput {
+        return try SwiftChoiceInputLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftChoiceInput? {
+        return try? SwiftChoiceInputLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftChoiceInput? {
+        return try? SwiftChoiceInputLegacySupport.deserialize(from: jsonString)
+    }
+}
