@@ -1288,3 +1288,159 @@ extension SwiftBaseElement {
         return true
     }
 }
+
+// MARK: - Consolidated SwiftBaseCardElement Legacy Support
+
+extension SwiftBaseCardElement {
+    // MARK: - Deserialization Methods
+    
+    /// Parses a BaseCardElement from a JSON dictionary.
+    static func deserialize(from originalJson: [String: Any]) throws -> SwiftBaseCardElement {
+        // 1) Unwrap first
+        let unwrapped = SwiftParseUtil.unwrapAnyCodable(from: originalJson)
+        guard let jsonDict = unwrapped as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        
+        // 2) Now "type" is definitely a String if present
+        guard let typeString = jsonDict["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        let knownTypes = [
+            SwiftCardElementType.textBlock.rawValue,
+            SwiftCardElementType.columnSet.rawValue,
+            SwiftCardElementType.container.rawValue,
+            SwiftCardElementType.column.rawValue,
+            SwiftCardElementType.image.rawValue,
+            SwiftCardElementType.factSet.rawValue,
+            SwiftCardElementType.actionSet.rawValue,
+            SwiftCardElementType.richTextBlock.rawValue,
+            SwiftCardElementType.imageSet.rawValue,
+            SwiftCardElementType.textInput.rawValue,
+            SwiftCardElementType.numberInput.rawValue,
+            SwiftCardElementType.dateInput.rawValue,
+            SwiftCardElementType.timeInput.rawValue,
+            SwiftCardElementType.choiceSetInput.rawValue,
+            SwiftCardElementType.toggleInput.rawValue,
+            SwiftCardElementType.media.rawValue,
+            SwiftCardElementType.table.rawValue
+        ]
+        
+        if !knownTypes.contains(typeString) {
+            // For unknown types, return an UnknownElement that just preserves the JSON.
+            return try SwiftUnknownElement.createFromJSON(jsonDict)
+        }
+        
+        // 3) Convert to Data and decode
+        let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
+        let decoder = JSONDecoder()
+        
+        switch typeString {
+        case SwiftCardElementType.textBlock.rawValue:
+            return try decoder.decode(SwiftTextBlock.self, from: data)
+        case SwiftCardElementType.columnSet.rawValue:
+            return try decoder.decode(SwiftColumnSet.self, from: data)
+        case SwiftCardElementType.container.rawValue:
+            return try decoder.decode(SwiftContainer.self, from: data)
+        case SwiftCardElementType.column.rawValue:
+            return try decoder.decode(SwiftColumn.self, from: data)
+        case SwiftCardElementType.factSet.rawValue:
+            return try decoder.decode(SwiftFactSet.self, from: data)
+        case SwiftCardElementType.actionSet.rawValue:
+            return try decoder.decode(SwiftActionSet.self, from: data)
+        case SwiftCardElementType.richTextBlock.rawValue:
+            return try decoder.decode(SwiftRichTextBlock.self, from: data)
+        case SwiftCardElementType.image.rawValue:
+            return try decoder.decode(SwiftImage.self, from: data)
+        case SwiftCardElementType.imageSet.rawValue:
+            return try decoder.decode(SwiftImageSet.self, from: data)
+        case SwiftCardElementType.textInput.rawValue:
+            return try decoder.decode(SwiftTextInput.self, from: data)
+        case SwiftCardElementType.numberInput.rawValue:
+            return try decoder.decode(SwiftNumberInput.self, from: data)
+        case SwiftCardElementType.dateInput.rawValue:
+            return try decoder.decode(SwiftDateInput.self, from: data)
+        case SwiftCardElementType.timeInput.rawValue:
+            return try decoder.decode(SwiftTimeInput.self, from: data)
+        case SwiftCardElementType.choiceSetInput.rawValue:
+            return try decoder.decode(SwiftChoiceSetInput.self, from: data)
+        case SwiftCardElementType.toggleInput.rawValue:
+            return try decoder.decode(SwiftToggleInput.self, from: data)
+        case SwiftCardElementType.media.rawValue:
+            return try decoder.decode(SwiftMedia.self, from: data)
+        case SwiftCardElementType.table.rawValue:
+            return try decoder.decode(SwiftTable.self, from: data)
+        case SwiftCardElementType.unknown.rawValue:
+            fallthrough
+        default:
+            return try decoder.decode(SwiftBaseCardElement.self, from: data)
+        }
+    }
+
+    /// Parses a BaseCardElement from a JSON string.
+    static func deserialize(from jsonString: String) throws -> SwiftBaseCardElement {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Utility Methods
+    
+    /// Factory method for creating from JSON
+    static func fromJSON(_ json: [String: Any]) -> SwiftBaseCardElement? {
+        return try? self.deserialize(from: json)
+    }
+    
+    /// Set additional properties from a JSON dictionary
+    func setAdditionalProperties(_ json: [String: Any]) {
+        var codableDict = [String: AnyCodable]()
+        for (key, value) in json {
+            codableDict[key] = AnyCodable(value)
+        }
+        self.additionalProperties = codableDict
+    }
+    
+    /// Set the element type string
+    func setElementTypeString(_ type: String) {
+        self.typeString = type
+    }
+    
+    // MARK: - Element Lookup Methods
+    
+    /// Helper method to find parent element
+    func findParent() -> SwiftBaseCardElement? {
+        guard let parentId = parentalId else { return nil }
+        return findElement(withId: parentId)
+    }
+    
+    /// Helper method to find element by ID
+    func findElement(withId id: SwiftInternalId) -> SwiftBaseCardElement? {
+        // This needs to be implemented with access to the element registry
+        // For now, return nil to match current behavior
+        return nil
+    }
+    
+    // MARK: - Action Serialization
+    
+    /// Serialize a select action
+    static func serializeSelectAction(_ action: SwiftBaseActionElement) throws -> [String: Any] {
+        return try action.serializeToJsonValue()
+    }
+    
+    // MARK: - Type Properties
+    
+    /// Returns the type string (as originally decoded)
+    var elementTypeString: String {
+        return self.typeString
+    }
+    
+    /// A convenience "parse" method used in tests.
+    static func parse(json: [String: Any], context: SwiftParseContext) -> SwiftBaseCardElement? {
+        // We simply attempt to deserialize and return nil if an error is thrown.
+        return try? SwiftBaseCardElement.deserialize(from: json)
+    }
+}
