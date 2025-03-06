@@ -2,37 +2,38 @@ import Foundation
 
 /// Represents a media source, inheriting properties from `ContentSource`.
 struct SwiftMediaSource: Codable {
-    var url: String
-    var mimeType: String?
-
-    init(url: String, mimeType: String? = nil) {
-        self.url = url
-        self.mimeType = mimeType
-    }
-
-    /// Deserialize a `MediaSource` from JSON.
-    static func deserialize(from json: [String: Any]) throws -> SwiftMediaSource {
-        let jsonData = try JSONSerialization.data(withJSONObject: json)
-        return try JSONDecoder().decode(SwiftMediaSource.self, from: jsonData)
-    }
-
-    /// Deserialize a `MediaSource` from a JSON string.
-    static func deserialize(from jsonString: String) throws -> SwiftMediaSource {
-        guard let jsonData = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(SwiftMediaSource.self, from: jsonData)
+    // MARK: - Properties
+    let url: String
+    let mimeType: String?
+    
+    // MARK: - Codable Implementation
+    
+    private enum CodingKeys: String, CodingKey {
+        case url, mimeType
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        url = try container.decode(String.self, forKey: .url)
+        mimeType = try container.decodeIfPresent(String.self, forKey: .mimeType)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(url, forKey: .url)
+        try container.encodeIfPresent(mimeType, forKey: .mimeType)
+    }
+    
+    // MARK: - Initialization with Default Values
+    
+    // MARK: - Serialization to JSON
     func serializeToJson() -> [String: Any] {
-        var json: [String: Any] = ["url": url]
-        if let mimeType = mimeType {
-            json["mimeType"] = mimeType
-        }
-        return json
+        return SwiftMediaSourceLegacySupport.serializeToJson(self)
     }
     
+    // MARK: - Resource Information
     func getResourceInformation() -> [SwiftRemoteResourceInformation] {
-        return [SwiftRemoteResourceInformation(url: url, mimeType: mimeType ?? "unknown")]
+        return SwiftMediaSourceLegacySupport.getResourceInformation(self)
     }
 }

@@ -563,3 +563,82 @@ extension SwiftMedia {
         return try SwiftMediaLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftMediaSource Legacy Support
+
+/// Unified legacy support for SwiftMediaSource parsing and serialization
+enum SwiftMediaSourceLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftMediaSource
+    static func deserialize(from value: [String: Any]) throws -> SwiftMediaSource {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftMediaSource.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftMediaSource
+    static func deserialize(from jsonString: String) throws -> SwiftMediaSource {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftMediaSource.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftMediaSource to JSON dictionary
+    static func serializeToJson(_ mediaSource: SwiftMediaSource) -> [String: Any] {
+        var json: [String: Any] = ["url": mediaSource.url]
+        if let mimeType = mediaSource.mimeType {
+            json["mimeType"] = mimeType
+        }
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ mediaSource: SwiftMediaSource) -> String {
+        do {
+            let json = serializeToJson(mediaSource)
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(json, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+    
+    // MARK: - Resource Information
+    
+    /// Retrieves resource information
+    static func getResourceInformation(_ mediaSource: SwiftMediaSource) -> [SwiftRemoteResourceInformation] {
+        return [SwiftRemoteResourceInformation(url: mediaSource.url, mimeType: mediaSource.mimeType ?? "unknown")]
+    }
+}
+
+// MARK: - SwiftMediaSource Extension
+
+extension SwiftMediaSource {
+    // Static factory methods for backward compatibility
+    static func deserialize(from json: [String: Any]) throws -> SwiftMediaSource {
+        return try SwiftMediaSourceLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) throws -> SwiftMediaSource {
+        return try SwiftMediaSourceLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // Additional utility methods
+    static func fromJSON(_ json: [String: Any]) -> SwiftMediaSource? {
+        guard !json.isEmpty else { return nil }
+        return try? SwiftMediaSourceLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftMediaSource? {
+        return try? SwiftMediaSourceLegacySupport.deserialize(from: jsonString)
+    }
+}
