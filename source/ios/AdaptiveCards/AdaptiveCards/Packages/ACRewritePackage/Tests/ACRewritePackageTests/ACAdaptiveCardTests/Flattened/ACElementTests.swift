@@ -9,7 +9,6 @@ import Foundation
 import XCTest
 @testable import ACRewritePackage
 
-
 class ACElementTests: XCTestCase {
     
     func testShowCardSerialization() {
@@ -50,24 +49,40 @@ class ACElementTests: XCTestCase {
         
         do {
             let cardData = cardWithShowCard.data(using: .utf8)!
-            let card = try JSONDecoder().decode(SwiftACAdaptiveCard.self, from: cardData)
+            let parseResult = try SwiftAdaptiveCard.deserializeFromString(cardWithShowCard, version: "2.0")
+            let card = parseResult.adaptiveCard
+            let actions = card.actions
+            // Check if first action is a ShowCard action
+            guard !actions.isEmpty else {
+                XCTFail("Card has no actions")
+                return
+            }
             
-            guard case let .showCard(showCardAction) = card.actions?.first else {
+            let firstAction = actions[0]
+            guard let showCardAction = firstAction as? SwiftShowCardAction else {
                 XCTFail("First action is not a ShowCardAction")
                 return
             }
+            
             let showCard = showCardAction.card
             
             XCTAssertEqual(card.version, "2.0")
-            XCTAssertEqual(showCard.body.count, 1)
-            if case let .textBlock(textBlock) = showCard.body.first {
-                XCTAssertEqual(textBlock.text, "What do you think?")
-            }
+            XCTAssertEqual(showCard?.body.count, 1)
             
-            XCTAssertEqual(showCard.actions?.count, 1)
-            if case let .submit(submitAction) = showCard.actions?.first {
-                XCTAssertEqual(submitAction.title, "Neat!")
+            // Check text block in show card
+            guard let textBlockElement = showCard?.body.first as? SwiftTextBlock else {
+                XCTFail("First body element is not a TextBlock")
+                return
             }
+            XCTAssertEqual(textBlockElement.text, "What do you think?")
+            
+            // Check actions in show card
+            XCTAssertEqual(showCard?.actions.count, 1)
+            guard let submitAction = showCard?.actions.first as? SwiftSubmitAction else {
+                XCTFail("First action of show card is not a SubmitAction")
+                return
+            }
+            XCTAssertEqual(submitAction.title, "Neat!")
             
         } catch {
             XCTFail("Deserialization or serialization failed with error: \(error)")

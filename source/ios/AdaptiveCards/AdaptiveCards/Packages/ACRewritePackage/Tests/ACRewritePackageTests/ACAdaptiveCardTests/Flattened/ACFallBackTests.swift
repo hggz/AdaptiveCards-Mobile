@@ -31,20 +31,25 @@ class ACFallbackTests: XCTestCase {
         """
 
         do {
-            let cardData = cardStr.data(using: .utf8)!
-            let card = try JSONDecoder().decode(SwiftACAdaptiveCard.self, from: cardData)
+            let parseResult = try SwiftAdaptiveCard.deserializeFromString(cardStr, version: "1.2")
+            let card = parseResult.adaptiveCard
             
             XCTAssertEqual(card.body.count, 1)
-            if case let .textBlock(textBlock) = card.body.first  {
-                XCTAssertEqual(textBlock.text, "Primary TextBlock")
-                if case let .textBlock(fallBackElement) = textBlock.fallback {
-                    XCTAssertEqual(fallBackElement.text, "Fallback TextBlock")
-                } else {
-                    XCTFail("Fallback is not a TextBlock")
-                }
-            } else {
+            
+            guard let textBlock = card.body.first as? SwiftTextBlock else {
                 XCTFail("Body element is not a TextBlock")
+                return
             }
+            
+            XCTAssertEqual(textBlock.text, "Primary TextBlock")
+            
+            guard let fallbackContent = textBlock.fallbackContent as? SwiftTextBlock else {
+                XCTFail("Fallback is not a TextBlock")
+                return
+            }
+            
+            XCTAssertEqual(fallbackContent.text, "Fallback TextBlock")
+            
         } catch {
             XCTFail("Failed to decode AdaptiveCard: \(error)")
         }
@@ -100,52 +105,69 @@ class ACFallbackTests: XCTestCase {
         """
 
         do {
-            let cardData = cardStr.data(using: .utf8)!
-            let card = try JSONDecoder().decode(SwiftACAdaptiveCard.self, from: cardData)
+            let parseResult = try SwiftAdaptiveCard.deserializeFromString(cardStr, version: "1.2")
+            let card = parseResult.adaptiveCard
             
             XCTAssertEqual(card.body.count, 2)
-            if case let .columnSet(columnSet) = card.body.first {
-                XCTAssertEqual(columnSet.id, "A")
-                XCTAssertEqual(columnSet.columns.count, 1)
-                if let column = columnSet.columns.first {
-                    XCTAssertEqual(column.id, "B")
-                    XCTAssertEqual(column.items.count, 1)
-                    if case let .textBlock(textBlock) = column.items.first {
-                        XCTAssertEqual(textBlock.id, "C")
-                        XCTAssertEqual(textBlock.text, "C TextBlock")
-                        if case let .container(fallbackContainer) = textBlock.fallback  {
-                            XCTAssertEqual(fallbackContainer.id, "E")
-                            XCTAssertEqual(fallbackContainer.items.count, 2)
-                            if case let .image(image) = fallbackContainer.items.first {
-                                XCTAssertEqual(image.id, "I")
-                                XCTAssertEqual(image.url, "http://adaptivecards.io/content/cats/2.png")
-                            } else {
-                                XCTFail("First item in fallback container is not an Image")
-                            }
-                            if case let .textBlock(fallbackTextBlock) = fallbackContainer.items.last {
-                                XCTAssertEqual(fallbackTextBlock.id, "J")
-                                XCTAssertEqual(fallbackTextBlock.text, "C ColumnSet fallback textblock")
-                            } else {
-                                XCTFail("Second item in fallback container is not a TextBlock")
-                            }
-                        } else {
-                            XCTFail("Fallback is not a Container")
-                        }
-                    } else {
-                        XCTFail("First item in column is not a TextBlock")
-                    }
-                } else {
-                    XCTFail("Column is missing")
-                }
-            } else {
+            
+            // Test the ColumnSet structure
+            guard let columnSet = card.body.first as? SwiftColumnSet else {
                 XCTFail("First body element is not a ColumnSet")
+                return
             }
-            if case let .textBlock(textBlock) = card.body.last {
-                XCTAssertEqual(textBlock.id, "F")
-                XCTAssertEqual(textBlock.text, "F TextBlock")
-            } else {
+            
+            XCTAssertEqual(columnSet.id, "A")
+            XCTAssertEqual(columnSet.columns.count, 1)
+            
+            guard let column = columnSet.columns.first else {
+                XCTFail("Column is missing")
+                return
+            }
+            
+            XCTAssertEqual(column.id, "B")
+            XCTAssertEqual(column.items.count, 1)
+            
+            guard let textBlock = column.items.first as? SwiftTextBlock else {
+                XCTFail("First item in column is not a TextBlock")
+                return
+            }
+            
+            XCTAssertEqual(textBlock.id, "C")
+            XCTAssertEqual(textBlock.text, "C TextBlock")
+            
+            guard let fallbackContainer = textBlock.fallbackContent as? SwiftContainer else {
+                XCTFail("Fallback is not a Container")
+                return
+            }
+            
+            XCTAssertEqual(fallbackContainer.id, "E")
+            XCTAssertEqual(fallbackContainer.items.count, 2)
+            
+            guard let image = fallbackContainer.items.first as? SwiftImage else {
+                XCTFail("First item in fallback container is not an Image")
+                return
+            }
+            
+            XCTAssertEqual(image.id, "I")
+            XCTAssertEqual(image.url, "http://adaptivecards.io/content/cats/2.png")
+            
+            guard let fallbackTextBlock = fallbackContainer.items.last as? SwiftTextBlock else {
+                XCTFail("Second item in fallback container is not a TextBlock")
+                return
+            }
+            
+            XCTAssertEqual(fallbackTextBlock.id, "J")
+            XCTAssertEqual(fallbackTextBlock.text, "C ColumnSet fallback textblock")
+            
+            // Test the second TextBlock
+            guard let lastTextBlock = card.body.last as? SwiftTextBlock else {
                 XCTFail("Second body element is not a TextBlock")
+                return
             }
+            
+            XCTAssertEqual(lastTextBlock.id, "F")
+            XCTAssertEqual(lastTextBlock.text, "F TextBlock")
+            
         } catch {
             XCTFail("Failed to decode AdaptiveCard: \(error)")
         }
