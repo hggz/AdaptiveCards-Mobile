@@ -1191,3 +1191,141 @@ struct SwiftRemoteResourceInformation: Codable {
     var url: String
     var mimeType: String
 }
+
+/// Custom type to handle any JSON value (for additionalProperties)
+struct AnyCodable: Codable {
+    let value: Any
+
+    init(_ value: Any) {
+        self.value = value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let intValue = try? container.decode(Int.self) {
+            value = intValue
+        } else if let doubleValue = try? container.decode(Double.self) {
+            value = doubleValue
+        } else if let stringValue = try? container.decode(String.self) {
+            value = stringValue
+        } else if let boolValue = try? container.decode(Bool.self) {
+            value = boolValue
+        } else if let arrayValue = try? container.decode([AnyCodable].self) {
+            value = arrayValue
+        } else if let dictValue = try? container.decode([String: AnyCodable].self) {
+            value = dictValue
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid JSON format")
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        if let intValue = value as? Int {
+            try container.encode(intValue)
+        } else if let doubleValue = value as? Double {
+            try container.encode(doubleValue)
+        } else if let stringValue = value as? String {
+            try container.encode(stringValue)
+        } else if let boolValue = value as? Bool {
+            try container.encode(boolValue)
+        } else if let arrayValue = value as? [AnyCodable] {
+            try container.encode(arrayValue)
+        } else if let dictValue = value as? [String: AnyCodable] {
+            try container.encode(dictValue)
+        } else {
+            throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: encoder.codingPath, debugDescription: "Invalid JSON format"))
+        }
+    }
+}
+
+/// A dynamic coding key that can represent any key.
+struct DynamicCodingKeys: CodingKey {
+    var stringValue: String
+    var intValue: Int? { return nil }
+    init?(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { self.stringValue = "\(intValue)" }
+}
+
+extension SwiftBaseElement.CodingKeys: CaseIterable {
+    static var allCases: [SwiftBaseElement.CodingKeys] {
+        return [.typeString, .id, .internalId, .additionalProperties, .requires, .fallbackType, .fallbackContent, .canFallbackToAncestor, .fallback]
+    }
+}
+
+/// Represents a semantic version with major, minor, build, and revision components.
+struct SwiftSemanticVersion: Codable, Comparable, CustomStringConvertible {
+    let major: UInt
+    let minor: UInt
+    let build: UInt
+    let revision: UInt
+
+    /// Initializes a `SemanticVersion` from a version string.
+    /// - Throws: `SemanticVersionError.invalidVersion` if the version format is incorrect.
+    init(_ version: String) throws {
+        let pattern = #"^(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?$"#
+        let regex = try NSRegularExpression(pattern: pattern)
+        let nsVersion = version as NSString
+        let matches = regex.matches(in: version, range: NSRange(location: 0, length: nsVersion.length))
+
+        guard let match = matches.first else {
+            throw SemanticVersionError.invalidVersion(version)
+        }
+
+        // Helper function to extract and convert each captured group.
+        func extract(_ index: Int) throws -> UInt {
+            // If the group didn't match, return 0.
+            guard index < match.numberOfRanges,
+                  let range = Range(match.range(at: index), in: version) else {
+                return 0
+            }
+            let substring = String(version[range])
+            // Try to convert the captured substring to UInt.
+            guard let value = UInt(substring) else {
+                throw SemanticVersionError.invalidVersion(version)
+            }
+            return value
+        }
+
+        self.major = try extract(1)
+        self.minor = try extract(2)
+        self.build = try extract(3)
+        self.revision = try extract(4)
+    }
+
+    var description: String {
+        return "\(major).\(minor).\(build).\(revision)"
+    }
+
+    // MARK: - Comparable Implementation
+    static func == (lhs: SwiftSemanticVersion, rhs: SwiftSemanticVersion) -> Bool {
+        return lhs.major == rhs.major &&
+               lhs.minor == rhs.minor &&
+               lhs.build == rhs.build &&
+               lhs.revision == rhs.revision
+    }
+
+    static func < (lhs: SwiftSemanticVersion, rhs: SwiftSemanticVersion) -> Bool {
+        if lhs.major != rhs.major { return lhs.major < rhs.major }
+        if lhs.minor != rhs.minor { return lhs.minor < rhs.minor }
+        if lhs.build != rhs.build { return lhs.build < rhs.build }
+        return lhs.revision < rhs.revision
+    }
+
+    static func > (lhs: SwiftSemanticVersion, rhs: SwiftSemanticVersion) -> Bool {
+        return rhs < lhs
+    }
+
+    static func <= (lhs: SwiftSemanticVersion, rhs: SwiftSemanticVersion) -> Bool {
+        return !(lhs > rhs)
+    }
+
+    static func >= (lhs: SwiftSemanticVersion, rhs: SwiftSemanticVersion) -> Bool {
+        return !(lhs < rhs)
+    }
+}
+
+/// Error cases for `SemanticVersion` parsing.
+enum SemanticVersionError: Error {
+    case invalidVersion(String)
+}

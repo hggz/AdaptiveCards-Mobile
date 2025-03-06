@@ -1225,3 +1225,66 @@ extension SwiftColumnSet {
         }
     }
 }
+
+// MARK: - Consolidated SwiftBaseElement Legacy Support
+
+extension SwiftBaseElement {
+    /// Deserialize from JSON data.
+    static func decode(from json: Data) throws -> SwiftBaseElement {
+        return try JSONDecoder().decode(SwiftBaseElement.self, from: json)
+    }
+    
+    /// Serialize to JSON data.
+    func encodeToData() throws -> Data {
+        return try JSONEncoder().encode(self)
+    }
+    
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat() throws -> [String: Any] {
+        var json: [String: Any] = ["type": typeString]
+        
+        // Add core properties
+        if let id = id {
+            json["id"] = id
+        }
+        
+        // Add additional properties
+        if let additionalProperties = additionalProperties {
+            for (key, anyCodable) in additionalProperties {
+                json[key] = anyCodable.value
+            }
+        }
+        
+        // Add fallback info using the "fallback" key:
+        if let fallbackContent = fallbackContent {
+            json["fallback"] = try fallbackContent.serializeToJsonValue()
+        } else if let fallbackType = fallbackType {
+            json["fallback"] = fallbackType.rawValue
+        }
+        
+        // Recursively unwrap AnyCodable values.
+        if let unwrapped = SwiftParseUtil.unwrapAnyCodable(from: json) as? [String: Any] {
+            return unwrapped
+        }
+        
+        return json
+    }
+    
+    /// Checks whether the element meets host requirements.
+    func meetsRequirements(_ hostProvides: SwiftFeatureRegistration) -> Bool {
+        guard let requires = requires else { return true }
+        
+        for (feature, requiredVersion) in requires {
+            let hostVersionString = hostProvides.getFeatureVersion(featureName: feature)
+            guard let hostVersion = try? SwiftSemanticVersion(hostVersionString) else {
+                return false
+            }
+            
+            if hostVersion < requiredVersion {
+                return false
+            }
+        }
+        
+        return true
+    }
+}
