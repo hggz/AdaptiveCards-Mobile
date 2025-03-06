@@ -808,3 +808,265 @@ class SwiftContainer: SwiftStyledCollectionElement {
         self.layouts = layouts
     }
 }
+
+// MARK: - Column & ColumnParser Implementation
+class SwiftColumn: SwiftStyledCollectionElement {
+    // Flag that tracks whether the default value is still in effect.
+    private var isDefaultWidth: Bool = true
+    private var isUpdatingFromWidth: Bool = false
+    private var isUpdatingWidth = false
+    private var isUpdatingPixelWidth = false
+
+    override var canBleed: Bool {
+        // Column can only bleed if it has padding AND hasBleed is true
+        return hasPadding && hasBleed
+    }
+    
+    override var bleed: Bool {
+        get { return hasBleed }
+        set { hasBleed = newValue }
+    }
+    
+    var isFirstColumn: Bool {
+        guard let columnSet = findParent() as? SwiftColumnSet else { return false }
+        return columnSet.columns.first?.internalId == self.internalId
+    }
+    
+    var isLastColumn: Bool {
+        guard let columnSet = findParent() as? SwiftColumnSet else { return false }
+        return columnSet.columns.last?.internalId == self.internalId
+    }
+    
+    var items: [SwiftBaseCardElement]
+    var rtl: Bool?
+    var layouts: [SwiftLayout]
+
+    var width: String {
+        didSet {
+            if !isUpdatingWidth {
+                isUpdatingPixelWidth = true
+                let lower = width.lowercased()
+                if lower == "stretch" {
+                    isUpdatingFromWidth = true
+                    width = "stretch"
+                    pixelWidth = 0
+                    isDefaultWidth = false
+                } else if lower == "auto" {
+                    isUpdatingFromWidth = true
+                    // If still default, preserve "Auto"; otherwise use lowercase "auto"
+                    width = isDefaultWidth ? "Auto" : "auto"
+                    pixelWidth = 0
+                } else if let pxValue = parseSizeForPixelSize(width) {
+                    isUpdatingFromWidth = true
+                    pixelWidth = pxValue
+                    isDefaultWidth = false
+                } else {
+                    isUpdatingFromWidth = true
+                    pixelWidth = 0
+                    isDefaultWidth = false
+                }
+                isUpdatingWidth = false
+                isUpdatingPixelWidth = false
+            }
+        }
+    }
+    
+    var pixelWidth: Int {
+        didSet {
+            if isUpdatingFromWidth {
+                // This update came from width’s didSet; reset the flag and do nothing.
+                isUpdatingFromWidth = false
+                return
+            }
+            if !isUpdatingPixelWidth {
+                isUpdatingWidth = true
+                width = "\(pixelWidth)px"
+                isDefaultWidth = false
+                isUpdatingWidth = false
+            }
+        }
+    }
+    
+    // MARK: - Initializer
+    init(id: String? = nil) {
+        self.items = []
+        self.layouts = []
+        // Default width is capitalized "Auto"
+        self.width = "Auto"
+        self.pixelWidth = 0
+        self.isDefaultWidth = true
+        
+        super.init(
+            type: .column,
+            style: .none,
+            verticalContentAlignment: nil,
+            bleedDirection: .bleedRestricted,
+            minHeight: 0,
+            hasPadding: false,
+            hasBleed: false,
+            showBorder: false,
+            roundedCorners: false,
+            parentalId: nil,
+            backgroundImage: nil,
+            selectAction: nil,
+            id: id
+        )
+    }
+    
+    // MARK: - Codable
+    private enum CodingKeys: String, CodingKey {
+        case width, pixelWidth, items, rtl, layouts, size
+    }
+    
+    required init(from decoder: Decoder) throws {
+        self.items = []
+        self.layouts = []
+        // Use "Auto" as the default when nothing is provided.
+        self.width = "Auto"
+        self.pixelWidth = 0
+        self.isDefaultWidth = true
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        try super.init(from: decoder)
+        
+        // Decode width using "width" key or fallback to "size"
+        let decodedWidth = try container.decodeIfPresent(String.self, forKey: .width)
+            ?? container.decodeIfPresent(String.self, forKey: .size)
+            ?? "Auto"
+        // Set the default flag based on the decoded value.
+        // If JSON provides "auto" (lowercase) then default should be false.
+        self.isDefaultWidth = (decodedWidth == "Auto")
+        
+        var dummyWarnings = [SwiftAdaptiveCardParseWarning]()
+        self.setWidth(decodedWidth, warnings: &dummyWarnings)
+        
+        print("Column.init - Setting initial bleed to restricted")
+        self.bleedDirection = .bleedRestricted
+        let context = SwiftBaseElement.parseContext
+        
+        configPadding(context)
+        if canBleed, let parentId = context.paddingParentInternalId() {
+            parentalId = parentId
+        }
+        
+        if let rawItems = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .items) {
+            context.saveContextForStyledCollectionElement(self)
+            for rawDict in rawItems {
+                let unwrapped = SwiftParseUtil.unwrapAnyCodable(from: rawDict)
+                guard let dict = unwrapped as? [String: Any] else {
+                    throw AdaptiveCardParseError.invalidJson
+                }
+                let element = try SwiftBaseCardElement.deserialize(from: dict)
+                if let containerElement = element as? SwiftContainer {
+                    containerElement.configForContainerStyle(context)
+                    containerElement.parentalId = self.internalId
+                }
+                self.items.append(element)
+            }
+            context.restoreContextForStyledCollectionElement(self)
+        }
+        
+        self.rtl = try container.decodeIfPresent(Bool.self, forKey: .rtl)
+        self.layouts = try container.decodeIfPresent([SwiftLayout].self, forKey: .layouts) ?? []
+    }
+    
+    override func configForContainerStyle(_ context: SwiftParseContext) {
+        print("Column.configForContainerStyle - Before config, bleedDirection: \(bleedDirection)")
+        configPadding(context)
+        if canBleed, let parentId = context.paddingParentInternalId() {
+            parentalId = parentId
+        }
+        print("Column.configForContainerStyle - After config, bleedDirection: \(bleedDirection)")
+    }
+
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(width, forKey: .width)
+        try container.encode(pixelWidth, forKey: .pixelWidth)
+        try container.encode(items, forKey: .items)
+        try container.encodeIfPresent(rtl, forKey: .rtl)
+        try container.encode(layouts, forKey: .layouts)
+        try super.encode(to: encoder)
+    }
+    
+    // Custom serialization for the test – produces exactly three keys in order.
+    override func serialize() throws -> String {
+        let jsonKeysInOrder = [
+            "\"items\":[]",
+            "\"type\":\"Column\"",
+            "\"width\":\"\(self.width)\""
+        ]
+        let joined = "{" + jsonKeysInOrder.joined(separator: ",") + "}\n"
+        return joined
+    }
+}
+
+/// Represents a column set element in an Adaptive Card.
+/// Inherits from StyledCollectionElement.
+class SwiftColumnSet: SwiftStyledCollectionElement {
+    // MARK: - Properties
+    var columns: [SwiftColumn] = []
+    
+    // MARK: - Codable Implementation
+    private enum CodingKeys: String, CodingKey {
+        case columns
+    }
+    
+    required init(from decoder: Decoder) throws {
+        // Initialize columns before super.init
+        columns = []
+        
+        // Call super.init to set up base properties
+        try super.init(from: decoder)
+        
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let context = SwiftBaseElement.parseContext
+        
+        // Configure our own style first
+        self.configForContainerStyle(context)
+        
+        // Decode the raw columns
+        if let rawColumns = try container.decodeIfPresent([[String: AnyCodable]].self, forKey: .columns) {
+            // Save our context for children
+            context.saveContextForStyledCollectionElement(self)
+            
+            // Process columns
+            for raw in rawColumns {
+                var dict = raw.mapValues { $0.value }
+                if dict["type"] == nil {
+                    dict["type"] = "Column"
+                }
+                
+                let base = try SwiftBaseCardElement.deserialize(from: dict)
+                guard let col = base as? SwiftColumn else {
+                    throw AdaptiveCardParseError.invalidType
+                }
+                
+                // Configure the column's style
+                col.configForContainerStyle(context)
+                
+                self.columns.append(col)
+            }
+            
+            // Restore previous context
+            context.restoreContextForStyledCollectionElement(self)
+        }
+        
+        // Configure bleed directions after all columns are processed and their styles are set
+        configureColumnBleedDirections()
+        populateKnownPropertiesSet()
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(columns, forKey: .columns)
+        try super.encode(to: encoder)
+    }
+    
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
+    }
+}

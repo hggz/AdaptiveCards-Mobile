@@ -823,3 +823,405 @@ extension SwiftContainer {
         }
     }
 }
+
+// MARK: - Consolidated SwiftColumn Legacy Support
+
+/// Unified legacy support for SwiftColumn parsing and serialization
+enum SwiftColumnLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftColumn
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftColumn {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftColumn.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftColumn
+    static func deserialize(from jsonString: String) throws -> SwiftColumn {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftColumn.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftColumn to JSON dictionary with proper formatting
+    static func serializeToJson(_ column: SwiftColumn, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "Column"
+        json["width"] = column.width
+        
+        // Serialize items array
+        if !column.items.isEmpty {
+            var itemsArray: [[String: Any]] = []
+            for item in column.items {
+                let itemJson = try item.serializeToJsonValue()
+                itemsArray.append(itemJson)
+            }
+            json["items"] = itemsArray
+        }
+        
+        // Add optional properties
+        if let rtl = column.rtl {
+            json["rtl"] = rtl
+        }
+        
+        // Add layouts if present
+        if !column.layouts.isEmpty {
+            var layoutsArray: [[String: Any]] = []
+            for layout in column.layouts {
+                // Assuming SwiftLayout has a toJSON method or similar
+                layoutsArray.append(layout.toJSON())
+            }
+            json["layouts"] = layoutsArray
+        }
+        
+        // Add style if not default
+        if column.style != .none {
+            json["style"] = column.style.rawValue
+        }
+        
+        // Add vertical content alignment if present
+        if let verticalContentAlignment = column.verticalContentAlignment {
+            json["verticalContentAlignment"] = verticalContentAlignment.rawValue.lowercased()
+        }
+        
+        // Add selectAction if present
+        if let selectAction = column.selectAction {
+            json["selectAction"] = try SwiftBaseCardElement.serializeSelectAction(selectAction)
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses Column elements in an Adaptive Card
+struct SwiftColumnParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        guard let typeString = value["type"] as? String,
+              typeString == SwiftCardElementType.column.rawValue else {
+            throw SwiftAdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "Invalid type for Column")
+        }
+        
+        guard let column = try SwiftBaseCardElement.deserialize(from: value) as? SwiftColumn else {
+            throw SwiftAdaptiveCardParseException(statusCode: .unsupportedParserOverride, message: "Column deserialization failed")
+        }
+        
+        var columnWidth = SwiftParseUtil.getValueAsString(from: value, key: "width")
+        if columnWidth.isEmpty {
+            columnWidth = SwiftParseUtil.getValueAsString(from: value, key: "size")
+        }
+        column.setWidth(columnWidth, warnings: &context.warnings)
+        column.setRtl(SwiftParseUtil.getOptionalBool(from: value, key: "rtl"))
+        
+        if let layoutArray: [[String: Any]] = try? SwiftParseUtil.getArray(from: value, key: "layouts", required: false), !layoutArray.isEmpty {
+            var parsedLayouts: [SwiftLayout] = []
+            for layoutJson in layoutArray {
+                guard let baseLayout = SwiftLayout.fromJSON(layoutJson) else {
+                    throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Failed to parse layout")
+                }
+                switch baseLayout.layoutContainerType {
+                case .flow:
+                    let flowLayout = try SwiftFlowLayout.deserialize(from: layoutJson)
+                    parsedLayouts.append(flowLayout)
+                case .areaGrid:
+                    let areaGridLayout = SwiftAreaGridLayout.deserialize(from: layoutJson)
+                    if areaGridLayout.areas.isEmpty && areaGridLayout.columns.isEmpty {
+                        let stackLayout = SwiftLayout()
+                        stackLayout.layoutContainerType = .stack
+                        parsedLayouts.append(stackLayout)
+                    } else if areaGridLayout.areas.isEmpty {
+                        let flowLayout = try SwiftFlowLayout.deserialize(from: layoutJson)
+                        flowLayout.layoutContainerType = .flow
+                        parsedLayouts.append(flowLayout)
+                    } else {
+                        parsedLayouts.append(SwiftAreaGridLayout.deserialize(from: layoutJson))
+                    }
+                default:
+                    parsedLayouts.append(baseLayout)
+                }
+            }
+            
+            column.layouts = parsedLayouts
+        }
+        
+        return column
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftColumnLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: context, value: jsonDict)
+    }
+}
+
+// MARK: - SwiftColumn Extension
+
+extension SwiftColumn {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftColumnLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("items")
+        self.knownProperties.insert("rtl")
+        self.knownProperties.insert("selectAction")
+        self.knownProperties.insert("width")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("verticalContentAlignment")
+    }
+    
+    // MARK: - Resource Information
+    func getResourceInformation(_ resourceInfo: inout [SwiftRemoteResourceInformation]) {
+        for element in items {
+            if let id = element.id {
+                resourceInfo.append(SwiftRemoteResourceInformation(url: id, mimeType: ""))
+            }
+        }
+    }
+    
+    // MARK: - Child Deserialization
+    func deserializeChildren(context: SwiftParseContext, json: [String: Any]) throws {
+        let cardElements = try SwiftParseUtil.getElementCollection(
+            isTopToBottomContainer: true,
+            context: context,
+            json: json,
+            key: "items",
+            required: false
+        )
+        items = cardElements
+    }
+    
+    // MARK: - RTL and Layout Setters
+    func setRtl(_ value: Bool?) {
+        rtl = value
+    }
+    
+    func setLayouts(_ value: [SwiftLayout]) {
+        layouts = value
+    }
+    
+    // Helper to parse strings ending in "px" (e.g., "20px" → 20)
+    internal func parseSizeForPixelSize(_ val: String) -> Int? {
+        let lower = val.lowercased()
+        guard lower.hasSuffix("px") else { return nil }
+        let numberPart = lower.dropLast(2)
+        return Int(numberPart)
+    }
+    
+    // MARK: - setWidth Methods
+    func setWidth(_ value: String, warnings: inout [SwiftAdaptiveCardParseWarning]) {
+        self.width = value  // Property observer on 'width' will update pixelWidth
+    }
+    
+    func setWidth(_ value: String) {
+        var dummyWarnings = [SwiftAdaptiveCardParseWarning]()
+        setWidth(value, warnings: &dummyWarnings)
+    }
+    
+    func setPixelWidth(_ value: Int) {
+        self.pixelWidth = value // Observer on 'pixelWidth' will update 'width'
+    }
+    
+    func getPixelWidth() -> Int {
+        return pixelWidth
+    }
+}
+
+// MARK: - Consolidated SwiftColumnSet Legacy Support
+
+/// Unified legacy support for SwiftColumnSet parsing and serialization
+enum SwiftColumnSetLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftColumnSet
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftColumnSet {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftColumnSet.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftColumnSet
+    static func deserialize(from jsonString: String) throws -> SwiftColumnSet {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftColumnSet.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftColumnSet to JSON dictionary with proper formatting
+    static func serializeToJson(_ columnSet: SwiftColumnSet, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "ColumnSet"
+        
+        // Serialize columns array
+        if !columnSet.columns.isEmpty {
+            var columnsArray: [[String: Any]] = []
+            for column in columnSet.columns {
+                let columnJson = try column.serializeToJsonValue()
+                columnsArray.append(columnJson)
+            }
+            json["columns"] = columnsArray
+        }
+        
+        // Add style if not default
+        if columnSet.style != .none {
+            json["style"] = columnSet.style.rawValue
+        }
+        
+        // Add selectAction if present
+        if let selectAction = columnSet.selectAction {
+            json["selectAction"] = try SwiftBaseCardElement.serializeSelectAction(selectAction)
+        }
+        
+        // Add bleed if true
+        if columnSet.hasBleed {
+            json["bleed"] = true
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses ColumnSet elements in an Adaptive Card
+struct SwiftColumnSetParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: .columnSet)
+        
+        // Parse the columnset itself
+        let columnSet = try SwiftBaseCardElement.deserialize(from: value) as! SwiftColumnSet
+        
+        // Parse columns array
+        let columnsArray: [[String: Any]] = try SwiftParseUtil.getArray(from: value, key: "columns", required: true)
+        var columns: [SwiftColumn] = []
+        
+        for colJson in columnsArray {
+            var temp = colJson
+            if temp["type"] == nil {
+                temp["type"] = "Column"
+            }
+            
+            let base = try SwiftBaseCardElement.deserialize(from: temp)
+            guard let col = base as? SwiftColumn else {
+                throw AdaptiveCardParseError.invalidType
+            }
+            columns.append(col)
+        }
+        
+        columnSet.columns = columns
+        return columnSet
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftColumnSetLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: context, value: jsonDict)
+    }
+}
+
+// MARK: - SwiftColumnSet Extension
+
+extension SwiftColumnSet {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftColumnSetLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("bleed")
+        self.knownProperties.insert("columns")
+        self.knownProperties.insert("selectAction")
+        self.knownProperties.insert("style")
+    }
+    
+    // MARK: - Resource Information
+    func getResourceInformation(_ resourceInfo: inout [SwiftRemoteResourceInformation]) {
+        // Iterate over our columns
+        for column in columns {
+            column.getResourceInformation(&resourceInfo)
+        }
+    }
+    
+    // MARK: - Child Deserialization
+    func deserializeChildren(context: SwiftParseContext, json: [String: Any]) throws {
+        // Use ParseUtil to get an array of BaseCardElement
+        let elements = try SwiftParseUtil.getElementCollection(
+            isTopToBottomContainer: false,
+            context: context,
+            json: json,
+            key: "columns",
+            required: false
+        )
+        // Filter for Column instances
+        self.columns = elements.compactMap { $0 as? SwiftColumn }
+    }
+    
+    // MARK: - Bleed Configuration
+    
+    /// Indicates whether this ColumnSet is nested (i.e. not at the top level of the card)
+    var isNested: Bool {
+        return self.parentalId != nil
+    }
+    
+    /// Adjusts the bleedDirection for each contained Column based on position
+    func configureColumnBleedDirections() {
+        for (index, column) in columns.enumerated() {
+            guard let column = column as? SwiftColumn else { continue }
+            
+            if !column.canBleed {
+                column.bleedDirection = .bleedRestricted
+                continue
+            }
+            
+            // Start with bleedDown
+            var direction: SwiftContainerBleedDirection = .bleedDown
+            
+            // Add bleedUp if parent ColumnSet has bleed enabled
+            if self.hasBleed && self.canBleed {
+                direction.insert(.bleedUp)
+            }
+            
+            // Add left/right based on position
+            if index == 0 {
+                direction.insert(.bleedLeft)
+            }
+            if index == columns.count - 1 {
+                direction.insert(.bleedRight)
+            }
+            
+            column.bleedDirection = direction
+            
+            // Set parental ID for bleeding columns
+            if column.canBleed {
+                if let parentalId = self.parentalId {
+                    column.parentalId = parentalId
+                } else if let contextParentId = column.parentalId {
+                    column.parentalId = contextParentId
+                }
+            }
+        }
+    }
+}
