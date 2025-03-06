@@ -289,6 +289,7 @@ internal extension SwiftTableCell {
         return try SwiftTableCellLegacySupport.serializeToJson(self, baseJson: superResult)
     }
     
+
     // MARK: - Static Factory Methods
     
     /// Deserializes a `TableCell` from a JSON dictionary.

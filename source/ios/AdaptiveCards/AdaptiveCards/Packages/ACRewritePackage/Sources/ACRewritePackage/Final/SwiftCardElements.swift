@@ -1320,3 +1320,382 @@ struct SwiftSeparator: Codable {
         return SwiftSeparatorLegacySupport.serializeToJson(self)
     }
 }
+
+/// Represents an unknown element in an Adaptive Card.
+class SwiftUnknownElement: SwiftBaseCardElement {
+    // MARK: - Properties
+    private let elementType: String
+    
+    override var typeString: String {
+        get { return elementType }
+        set { /* Immutable property, setter required by protocol */ }
+    }
+    
+    // MARK: - Codable Implementation
+    
+    private struct DynamicCodingKeys: CodingKey {
+        var stringValue: String
+        var intValue: Int?
+        
+        init?(stringValue: String) {
+            self.stringValue = stringValue
+            self.intValue = nil
+        }
+        
+        init?(intValue: Int) {
+            self.stringValue = "\(intValue)"
+            self.intValue = intValue
+        }
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
+        
+        // Get type first
+        guard let typeKey = container.allKeys.first(where: { $0.stringValue == "type" }),
+              let typeString = try? container.decode(String.self, forKey: typeKey) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .init(stringValue: "type")!,
+                in: container,
+                debugDescription: "Type is required"
+            )
+        }
+        
+        // Set the element type before super.init
+        elementType = typeString
+        
+        // Store ALL properties including type
+        var properties = [String: AnyCodable]()
+        for key in container.allKeys {
+            properties[key.stringValue] = try container.decode(AnyCodable.self, forKey: key)
+        }
+        
+        // Call super.init after initializing properties
+        try super.init(from: decoder)
+        self.additionalProperties = properties
+    }
+    
+    // Custom initializer
+    init(id: String? = nil, elementType: String, additionalProperties: [String: AnyCodable] = [:]) {
+        self.elementType = elementType
+        super.init(
+            type: .unknown,
+            spacing: nil,
+            height: nil,
+            targetWidth: nil,
+            separator: nil,
+            isVisible: true,
+            areaGridName: nil,
+            id: id
+        )
+        
+        // Store ALL properties including type
+        var props = additionalProperties
+        props["type"] = AnyCodable(elementType)
+        self.additionalProperties = props
+    }
+    
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        return additionalProperties?.mapValues { $0.value } ?? [:]
+    }
+}
+
+/// Represents text element properties including text content, styling, and formatting options.
+struct SwiftTextElementProperties: Codable {
+    // MARK: - Properties
+    
+    let text: String
+    let textSize: SwiftTextSize?
+    let textWeight: SwiftTextWeight?
+    let fontType: SwiftFontType?
+    let textColor: SwiftForegroundColor?
+    let isSubtle: Bool?
+    let language: String
+    
+    // MARK: - Codable Implementation
+    
+    enum CodingKeys: String, CodingKey {
+        case text
+        case textSize = "size"
+        case textWeight = "weight"
+        case fontType
+        case textColor = "color"
+        case isSubtle
+        case language
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let rawText = try container.decode(String.self, forKey: .text)
+        text = SwiftTextElementProperties.processHTMLEntities(rawText)
+        
+        textSize = try container.decodeIfPresent(SwiftTextSize.self, forKey: .textSize)
+        textWeight = try container.decodeIfPresent(SwiftTextWeight.self, forKey: .textWeight)
+        fontType = try container.decodeIfPresent(SwiftFontType.self, forKey: .fontType)
+        textColor = try container.decodeIfPresent(SwiftForegroundColor.self, forKey: .textColor)
+        isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
+        language = try container.decodeIfPresent(String.self, forKey: .language) ?? ""
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(text, forKey: .text)
+        try container.encodeIfPresent(textSize, forKey: .textSize)
+        try container.encodeIfPresent(textWeight, forKey: .textWeight)
+        try container.encodeIfPresent(fontType, forKey: .fontType)
+        try container.encodeIfPresent(textColor, forKey: .textColor)
+        try container.encodeIfPresent(isSubtle, forKey: .isSubtle)
+        try container.encode(language, forKey: .language)
+    }
+    
+    // MARK: - Serialization to JSON
+    
+    /// Serializes the `TextElementProperties` to a JSON dictionary.
+    func toJSON() -> [String: Any] {
+        return SwiftTextElementPropertiesLegacySupport.serializeToJson(self)
+    }
+    
+    // MARK: - HTML Entity Processing
+    
+    /// Converts HTML entities in text to their respective characters.
+    private static func processHTMLEntities(_ input: String) -> String {
+        let replacements: [String: String] = [
+            "&quot;": "\"",
+            "&lt;": "<",
+            "&gt;": ">",
+            "&nbsp;": " ",
+            "&amp;": "&"
+        ]
+
+        var output = input
+        for (entity, replacement) in replacements {
+            output = output.replacingOccurrences(of: entity, with: replacement)
+        }
+        return output
+    }
+}
+
+struct SwiftContentSource: Codable {
+    var mimeType: String?
+    var url: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case mimeType = "MimeType"
+        case url = "Url"
+    }
+}
+
+/// Represents a compound button element in an Adaptive Card.
+class SwiftCompoundButton: SwiftBaseCardElement {
+    // MARK: - Properties
+    let badge: String?
+    let title: String?           // Inherited name "title" is now unique since we subclass BaseCardElement.
+    let buttonDescription: String?  // Renamed from "description" to avoid conflict with Swift's 'description'.
+    let icon: SwiftIconInfo?
+    let selectAction: SwiftBaseActionElement?
+
+    // MARK: - Codable Implementation
+    
+    private enum CodingKeys: String, CodingKey {
+        case badge, title, buttonDescription = "description", icon, selectAction
+    }
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode all properties before super.init
+        badge = try container.decodeIfPresent(String.self, forKey: .badge)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+        buttonDescription = try container.decodeIfPresent(String.self, forKey: .buttonDescription)
+        icon = try container.decodeIfPresent(SwiftIconInfo.self, forKey: .icon)
+        
+        // Decode selectAction if present
+        if container.contains(.selectAction) {
+            let actionDict = try container.decode([String: AnyCodable].self, forKey: .selectAction)
+            let dict = actionDict.mapValues { $0.value }
+            selectAction = try SwiftBaseActionElement.deserializeAction(from: dict)
+        } else {
+            selectAction = nil
+        }
+        
+        // Call super.init after initializing all properties
+        try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(badge, forKey: .badge)
+        try container.encodeIfPresent(title, forKey: .title)
+        try container.encodeIfPresent(buttonDescription, forKey: .buttonDescription)
+        try container.encodeIfPresent(icon, forKey: .icon)
+        
+        if let action = selectAction {
+            try container.encode(AnyCodable(try SwiftBaseCardElement.serializeSelectAction(action)), forKey: .selectAction)
+        }
+        
+        try super.encode(to: encoder)
+    }
+    
+    // MARK: - Serialization to JSON
+    /// Serializes the CompoundButton to a JSON dictionary.
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
+    }
+}
+
+/// Base class for layout implementations in an Adaptive Card.
+class SwiftLayout: Codable {
+    // MARK: - Properties
+    var layoutContainerType: SwiftLayoutContainerType = .none
+    var targetWidth: SwiftTargetWidthType = .default
+    
+    // MARK: - Codable Implementation
+    private enum CodingKeys: String, CodingKey {
+        case layoutContainerType = "layout"
+        case targetWidth
+    }
+    
+    // MARK: - Initialization
+    init() { }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        layoutContainerType = try container.decodeIfPresent(SwiftLayoutContainerType.self, forKey: .layoutContainerType) ?? .none
+        targetWidth = try container.decodeIfPresent(SwiftTargetWidthType.self, forKey: .targetWidth) ?? .default
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if layoutContainerType != .stack {
+            try container.encode(layoutContainerType, forKey: .layoutContainerType)
+        }
+        
+        if targetWidth != .default {
+            try container.encode(targetWidth, forKey: .targetWidth)
+        }
+    }
+}
+
+class SwiftFlowLayout: SwiftLayout {
+    var itemFit: SwiftItemFit = .fit
+    var itemWidth: String?
+    var minItemWidth: String?
+    var maxItemWidth: String?
+    var itemPixelWidth: Int = -1
+    var minItemPixelWidth: Int = -1
+    var maxItemPixelWidth: Int = -1
+    var rowSpacing: SwiftSpacing = .default
+    var columnSpacing: SwiftSpacing = .default
+    var horizontalAlignment: SwiftHorizontalAlignment = .center
+
+    override init() {
+        super.init()
+        layoutContainerType = .flow
+    }
+
+    required init(from decoder: Decoder) throws {
+        try super.init(from: decoder)
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.itemFit = try container.decodeIfPresent(SwiftItemFit.self, forKey: .itemFit) ?? .fit
+        self.itemWidth = try container.decodeIfPresent(String.self, forKey: .itemWidth)
+        self.minItemWidth = try container.decodeIfPresent(String.self, forKey: .minItemWidth)
+        self.maxItemWidth = try container.decodeIfPresent(String.self, forKey: .maxItemWidth)
+        self.rowSpacing = try container.decodeIfPresent(SwiftSpacing.self, forKey: .rowSpacing) ?? .default
+        self.columnSpacing = try container.decodeIfPresent(SwiftSpacing.self, forKey: .columnSpacing) ?? .default
+        self.horizontalAlignment = try container.decodeIfPresent(SwiftHorizontalAlignment.self, forKey: .horizontalAlignment) ?? .center
+        self.itemPixelWidth = SwiftFlowLayout.parseSizeToPixels(try container.decodeIfPresent(String.self, forKey: .itemWidth)) ?? -1
+        self.minItemPixelWidth = SwiftFlowLayout.parseSizeToPixels(try container.decodeIfPresent(String.self, forKey: .minItemWidth)) ?? -1
+        self.maxItemPixelWidth = SwiftFlowLayout.parseSizeToPixels(try container.decodeIfPresent(String.self, forKey: .maxItemWidth)) ?? -1
+    }
+
+    override func encode(to encoder: Encoder) throws {
+        try super.encode(to: encoder)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        if itemFit != .fit {
+            try container.encode(itemFit, forKey: .itemFit)
+        }
+        try container.encodeIfPresent(itemWidth, forKey: .itemWidth)
+        try container.encodeIfPresent(minItemWidth, forKey: .minItemWidth)
+        try container.encodeIfPresent(maxItemWidth, forKey: .maxItemWidth)
+        if rowSpacing != .default {
+            try container.encode(rowSpacing, forKey: .rowSpacing)
+        }
+        if columnSpacing != .default {
+            try container.encode(columnSpacing, forKey: .columnSpacing)
+        }
+        if horizontalAlignment != .center {
+            try container.encode(horizontalAlignment, forKey: .horizontalAlignment)
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case itemFit, itemWidth, minItemWidth, maxItemWidth, rowSpacing, columnSpacing, horizontalAlignment
+    }
+    
+    static func parseSizeToPixels(_ size: String?) -> Int? {
+        guard let size = size else { return nil }
+        return Int(size.replacingOccurrences(of: "px", with: ""))
+    }
+}
+
+/// Represents an area grid layout in an Adaptive Card.
+class SwiftAreaGridLayout: SwiftLayout {
+    // MARK: - Properties
+    var columns: [String] = []
+    var areas: [SwiftGridArea] = []
+    var rowSpacing: SwiftSpacing = .default
+    var columnSpacing: SwiftSpacing = .default
+    
+    // MARK: - Initialization
+    override init() {
+        super.init()
+        self.layoutContainerType = .areaGrid
+    }
+    
+    // MARK: - Codable Implementation
+    private enum CodingKeys: String, CodingKey {
+        case columns, areas, rowSpacing, columnSpacing
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Decode all properties before super.init
+        columns = try container.decodeIfPresent([String].self, forKey: .columns) ?? []
+        areas = try container.decodeIfPresent([SwiftGridArea].self, forKey: .areas) ?? []
+        rowSpacing = try container.decodeIfPresent(SwiftSpacing.self, forKey: .rowSpacing) ?? .default
+        columnSpacing = try container.decodeIfPresent(SwiftSpacing.self, forKey: .columnSpacing) ?? .default
+        
+        // Call super.init after initializing all properties
+        try super.init(from: decoder)
+        self.layoutContainerType = .areaGrid
+    }
+    
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(columns, forKey: .columns)
+        try container.encode(areas, forKey: .areas)
+        try container.encode(rowSpacing, forKey: .rowSpacing)
+        try container.encode(columnSpacing, forKey: .columnSpacing)
+        try super.encode(to: encoder)
+    }
+}
+
+/// Represents a token exchange resource in Adaptive Cards.
+struct SwiftTokenExchangeResource: Codable {
+    /// The unique identifier for the token exchange resource.
+    let id: String?
+    
+    /// The URI associated with the resource.
+    let uri: String?
+    
+    /// The provider ID for the resource.
+    let providerId: String?
+}

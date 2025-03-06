@@ -132,3 +132,51 @@ class SwiftParseContext {
         print("Current style stack: \(parentalContainerStyles)")
     }
 }
+
+public struct SwiftAdaptiveCardParseWarning: Codable {
+    let statusCode: SwiftWarningStatusCode
+    let message: String
+
+    init(statusCode: SwiftWarningStatusCode, message: String) {
+        self.statusCode = statusCode
+        self.message = message
+    }
+
+    public func getStatusCode() -> SwiftWarningStatusCode {
+        return statusCode
+    }
+
+    public func getReason() -> String {
+        return message
+    }
+}
+
+/// Represents an error encountered while parsing an Adaptive Card.
+struct SwiftAdaptiveCardParseException: Error {
+    let statusCode: SwiftErrorStatusCode
+    let message: String
+    
+    init(statusCode: SwiftErrorStatusCode, message: String) {
+        self.statusCode = statusCode
+        self.message = message
+    }
+    
+    // Added to satisfy tests:
+    func what() -> String {
+        return message
+    }
+    
+    func getStatusCode() -> SwiftErrorStatusCode {
+        return statusCode
+    }
+    
+    func getReason() -> String {
+        return message
+    }
+}
+
+extension SwiftAdaptiveCardParseException: LocalizedError {
+    var errorDescription: String? {
+        return message
+    }
+}

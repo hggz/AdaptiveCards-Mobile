@@ -608,3 +608,218 @@ enum SwiftStyledCollectionElementLegacySupport {
         return json
     }
 }
+
+extension SwiftContentSource {
+    func serializeToJson() -> String? {
+        guard let jsonData = try? JSONEncoder().encode(self) else {
+            return nil
+        }
+        return String(data: jsonData, encoding: .utf8)
+    }
+
+    func getResourceInformation() -> SwiftRemoteResourceInformation? {
+        guard let url = url, let mimeType = mimeType else { return nil }
+        return SwiftRemoteResourceInformation(url: url, mimeType: mimeType)
+    }
+
+    static func deserialize(from json: [String: Any]) throws -> SwiftContentSource {
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftContentSource.self, from: jsonData)
+    }
+
+    static func deserialize(from jsonString: String) throws -> SwiftContentSource {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "ContentSource", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
+        }
+        return try JSONDecoder().decode(SwiftContentSource.self, from: jsonData)
+    }
+}
+
+extension SwiftFlowLayout {
+    class func deserialize(from json: [String: Any]) throws -> SwiftFlowLayout {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftFlowLayout.self, from: data)
+    }
+}
+
+// MARK: - Consolidated SwiftContainer Legacy Support
+
+/// Unified legacy support for SwiftContainer parsing and serialization
+enum SwiftContainerLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftContainer
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftContainer {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftContainer.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftContainer
+    static func deserialize(from jsonString: String) throws -> SwiftContainer {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftContainer.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftContainer to JSON dictionary with proper formatting
+    static func serializeToJson(_ container: SwiftContainer, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "Container"
+        
+        // Serialize child items if present
+        if !container.items.isEmpty {
+            var itemsArray: [[String: Any]] = []
+            for item in container.items {
+                let itemJson = try item.serializeToJsonValue()
+                itemsArray.append(itemJson)
+            }
+            json["items"] = itemsArray
+        }
+        
+        // Add layouts if present
+        if !container.layouts.isEmpty {
+            var layoutsArray: [[String: Any]] = []
+            for layout in container.layouts {
+                // Assuming SwiftLayout has a toJSON method or similar
+                layoutsArray.append(layout.toJSON())
+            }
+            json["layouts"] = layoutsArray
+        }
+        
+        // Add rtl if present
+        if let rtl = container.rtl {
+            json["rtl"] = rtl
+        }
+        
+        // Add vertical content alignment if present
+        if let verticalContentAlignment = container.verticalContentAlignment {
+            json["verticalContentAlignment"] = verticalContentAlignment.rawValue.lowercased()
+        }
+        
+        // Add style if not default
+        if container.style != .none {
+            json["style"] = container.style.rawValue
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses Container elements in an Adaptive Card
+struct SwiftContainerParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: .container)
+        
+        // Save current context
+        let parentStyle = context.parentalContainerStyle
+        
+        // Parse the container itself
+        guard let container = try SwiftBaseCardElement.deserialize(from: value) as? SwiftContainer else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        // Set new parent style for children
+        context.setParentalContainerStyle(container.style)
+        
+        // Configure container style
+        container.configForContainerStyle(context)
+        
+        // Restore parent style
+        if let parentStyle = parentStyle {
+            context.setParentalContainerStyle(parentStyle)
+        }
+        
+        return container
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftContainerLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftContainerLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftContainer Extension
+
+extension SwiftContainer {
+    /// Serializes to legacy JSON format
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("items")
+        self.knownProperties.insert("layouts")
+        self.knownProperties.insert("rtl")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("verticalContentAlignment")
+        self.knownProperties.insert("bleed")
+        self.knownProperties.insert("minHeight")
+    }
+    
+    // MARK: - Helper Methods for Container Style
+    internal func findParentColumn() -> SwiftColumn? {
+        var current: SwiftBaseCardElement? = self
+        var searchPath: [SwiftBaseCardElement] = []
+        
+        // First, build the parent chain
+        while let currentElement = current {
+            searchPath.append(currentElement)
+            if let parentId = currentElement.parentalId {
+                current = findElement(withId: parentId)
+            } else {
+                current = nil
+            }
+        }
+        
+        // Then search through the chain for the first Column
+        for element in searchPath {
+            if let parentId = element.parentalId,
+               let column = findElement(withId: parentId) as? SwiftColumn {
+                return column
+            }
+        }
+        
+        return nil
+    }
+    
+    internal func findParentColumnSet(of element: SwiftBaseCardElement) -> SwiftColumnSet? {
+        var current: SwiftBaseCardElement? = element
+        
+        while let currentElement = current {
+            if let parentId = currentElement.parentalId {
+                if let columnSet = findElement(withId: parentId) as? SwiftColumnSet {
+                    return columnSet
+                }
+                current = findElement(withId: parentId)
+            } else {
+                current = nil
+            }
+        }
+        
+        return nil
+    }
+    
+    func deserializeChildren(from json: [String: Any]) throws {
+        // Parse Items array
+        if let itemsArray = json["items"] as? [[String: Any]] {
+            self.items = try itemsArray.map { itemJson in
+                var mutableJson = itemJson
+                // Ensure type is set for items that don't specify it
+                if mutableJson["type"] == nil {
+                    mutableJson["type"] = "TextBlock" // Default type
+                }
+                return try SwiftBaseCardElement.deserialize(from: mutableJson)
+            }
+        }
+    }
+}
