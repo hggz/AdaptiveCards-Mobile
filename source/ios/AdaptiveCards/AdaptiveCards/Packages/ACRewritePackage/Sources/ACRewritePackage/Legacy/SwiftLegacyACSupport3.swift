@@ -145,3 +145,182 @@ internal extension SwiftChoiceSetInput {
         return SwiftChoiceSetInputLegacySupport.serializeToJsonString(self)
     }
 }
+
+// MARK: - Consolidated SwiftFact Legacy Support
+
+/// Unified legacy support for SwiftFact parsing and serialization
+enum SwiftFactLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftFact
+    static func deserialize(from json: [String: Any]) -> SwiftFact? {
+        guard let title = json["title"] as? String,
+              let value = json["value"] as? String else {
+            return nil
+        }
+        
+        let language = json["language"] as? String
+        
+        // Convert to JSON data and use Codable
+        let jsonDict: [String: Any] = [
+            "title": title,
+            "value": value,
+            "language": language as Any
+        ].compactMapValues { $0 is NSNull ? nil : $0 }
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
+            return try JSONDecoder().decode(SwiftFact.self, from: data)
+        } catch {
+            return nil
+        }
+    }
+    
+    /// Deserializes string into a SwiftFact
+    static func deserialize(from jsonString: String, context: SwiftParseContext? = nil) -> SwiftFact? {
+        guard let data = jsonString.data(using: .utf8) else { return nil }
+        do {
+            return try JSONDecoder().decode(SwiftFact.self, from: data)
+        } catch {
+            return nil
+        }
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftFact to JSON dictionary with proper formatting
+    static func serializeToJson(_ fact: SwiftFact) -> [String: Any] {
+        var dict: [String: Any] = [
+            "title": fact.title,
+            "value": fact.value
+        ]
+        
+        if let language = fact.language {
+            dict["language"] = language
+        }
+        
+        return dict
+    }
+    
+    /// Converts to JSON dictionary with type
+    static func serializeWithType(_ fact: SwiftFact) -> [String: Any] {
+        var dict = serializeToJson(fact)
+        dict["type"] = "Fact"
+        return dict
+    }
+    
+    /// Converts to JSON string
+    static func serialize(_ fact: SwiftFact) -> String {
+        let dict = serializeToJson(fact)
+        let data = try? JSONSerialization.data(withJSONObject: dict, options: [.sortedKeys])
+        return (String(data: data ?? Data(), encoding: .utf8) ?? "{}") + "\n"
+    }
+}
+
+// MARK: - SwiftFact Extension
+
+extension SwiftFact {
+    // MARK: - Initializer
+    
+    init(title: String = "", value: String = "", language: String? = nil) {
+        self.title = title
+        self.value = value
+        self.language = language
+    }
+    
+    // MARK: - Legacy Serialization Methods
+    
+    /// Serializes to a JSON string
+    func serialize() -> String {
+        return SwiftFactLegacySupport.serialize(self)
+    }
+    
+    /// Serializes with type information
+    func serializeWithType() -> [String: Any] {
+        return SwiftFactLegacySupport.serializeWithType(self)
+    }
+    
+    // MARK: - Static Deserialization Methods
+    
+    /// Deserializes from a JSON string
+    static func deserialize(fromString jsonString: String, context: SwiftParseContext) -> SwiftFact? {
+        return SwiftFactLegacySupport.deserialize(from: jsonString)
+    }
+    
+    /// Deserializes from a JSON dictionary
+    static func deserialize(from json: [String: Any]) -> SwiftFact? {
+        return SwiftFactLegacySupport.deserialize(from: json)
+    }
+}
+
+// MARK: - Consolidated SwiftFactSet Legacy Support
+
+/// Unified legacy support for SwiftFactSet parsing and serialization
+enum SwiftFactSetLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftFactSet
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftFactSet {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftFactSet.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftFactSet
+    static func deserialize(from jsonString: String) throws -> SwiftFactSet {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftFactSet.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftFactSet to JSON dictionary with proper formatting
+    static func serializeToJson(_ factSet: SwiftFactSet, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "FactSet"
+        
+        // Add facts array if not empty
+        if !factSet.facts.isEmpty {
+            json["facts"] = factSet.facts.map { $0.serializeToJsonValue() }
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses FactSet elements in an Adaptive Card
+struct SwiftFactSetParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.factSet)
+        return try SwiftFactSetLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftFactSetLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftFactSetLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftFactSet Extension
+
+internal extension SwiftFactSet {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftFactSetLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("facts")
+    }
+}

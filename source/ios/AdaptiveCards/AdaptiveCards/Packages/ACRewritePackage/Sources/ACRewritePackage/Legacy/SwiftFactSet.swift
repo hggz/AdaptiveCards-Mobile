@@ -2,12 +2,10 @@ import Foundation
 
 /// Represents a FactSet element in an Adaptive Card.
 class SwiftFactSet: SwiftBaseCardElement {
-    var facts: [SwiftFact]
+    // MARK: - Properties
+    let facts: [SwiftFact]
     
-    init(facts: [SwiftFact] = [], id: String? = nil) {
-        self.facts = facts
-        super.init(type: .factSet, id: id)
-    }
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case facts
@@ -15,8 +13,15 @@ class SwiftFactSet: SwiftBaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.facts = try container.decodeIfPresent([SwiftFact].self, forKey: .facts) ?? []
+        
+        // Decode properties before super.init
+        facts = try container.decodeIfPresent([SwiftFact].self, forKey: .facts) ?? []
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -25,38 +30,9 @@ class SwiftFactSet: SwiftBaseCardElement {
         try super.encode(to: encoder)
     }
     
+    // MARK: - Serialization to JSON
     override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        
-        // Add FactSet specific properties
-        if !facts.isEmpty {
-            json["facts"] = try facts.map { try $0.serializeToJsonValue() }
-        }
-        
-        return json
-    }
-    
-    // Static creation methods
-    static func createFromJSON(_ json: [String: Any]) throws -> SwiftFactSet {
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(SwiftFactSet.self, from: data)
-    }
-    
-    static func createFromJSONString(_ jsonString: String) throws -> SwiftFactSet {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(SwiftFactSet.self, from: data)
-    }
-}
-
-// Update parser to match pattern
-struct SwiftFactSetParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftFactSet.createFromJSON(value)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftFactSet.createFromJSONString(value)
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
 }
