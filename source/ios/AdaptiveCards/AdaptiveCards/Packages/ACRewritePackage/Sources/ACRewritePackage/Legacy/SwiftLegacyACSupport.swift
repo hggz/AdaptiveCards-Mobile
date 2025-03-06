@@ -836,3 +836,85 @@ extension SwiftAreaGridLayout {
         return json
     }
 }
+
+// MARK: - Consolidated SwiftActionSet Legacy Support
+
+/// Unified legacy support for SwiftActionSet parsing and serialization
+enum SwiftActionSetLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftActionSet
+    static func deserialize(from json: [String: Any]) throws -> SwiftActionSet {
+        let data = try JSONSerialization.data(withJSONObject: json)
+        return try JSONDecoder().decode(SwiftActionSet.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftActionSet
+    static func deserialize(from jsonString: String) throws -> SwiftActionSet {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try JSONDecoder().decode(SwiftActionSet.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftActionSet to JSON dictionary
+    static func serializeToJson(_ actionSet: SwiftActionSet) throws -> [String: Any] {
+        var json = try actionSet.baseSerializeToJsonValue()
+        
+        json["type"] = "ActionSet"
+        
+        if !actionSet.actions.isEmpty {
+            json["actions"] = try actionSet.actions.map { try $0.serializeToJsonValue() }
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ actionSet: SwiftActionSet) throws -> String {
+        let json = try serializeToJson(actionSet)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftActionSet Extension
+
+extension SwiftActionSet {
+    // Helper for serialization support
+    func baseSerializeToJsonValue() throws -> [String: Any] {
+        return try super.serializeToJsonValue()
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftActionSetLegacySupport.serializeToJsonString(self)
+    }
+    
+    static func fromJSONString(_ jsonString: String) throws -> SwiftActionSet {
+        return try SwiftActionSetLegacySupport.deserialize(from: jsonString)
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses ActionSet elements in an Adaptive Card
+struct SwiftActionSetParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.actionSet)
+        return try SwiftActionSetLegacySupport.deserialize(from: value)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftActionSetLegacySupport.deserialize(from: value)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftActionSetLegacySupport.deserialize(from: value)
+    }
+}

@@ -1,14 +1,11 @@
 import Foundation
 
+/// Represents a set of actions in an Adaptive Card.
 class SwiftActionSet: SwiftBaseCardElement {
+    // MARK: - Properties
     var actions: [SwiftBaseActionElement]
-
-    // MARK: - Initializers
-    init(actions: [SwiftBaseActionElement] = [], id: String? = nil) {
-        self.actions = actions
-        super.init(type: .actionSet, id: id)
-    }
     
+    // MARK: - Codable Implementation
     private enum CodingKeys: String, CodingKey {
         case actions
     }
@@ -38,32 +35,5 @@ class SwiftActionSet: SwiftBaseCardElement {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(actions, forKey: .actions)
         try super.encode(to: encoder)
-    }
-    
-    override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        
-        json["type"] = "ActionSet"
-        
-        if !actions.isEmpty {
-            json["actions"] = try actions.map { try $0.serializeToJsonValue() }
-        }
-        
-        return json
-    }
-}
-
-// Parser remains the same but uses decoder
-struct SwiftActionSetParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        let data = try JSONSerialization.data(withJSONObject: value)
-        return try JSONDecoder().decode(SwiftActionSet.self, from: data)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        guard let data = value.data(using: .utf8) else {
-            throw AdaptiveCardParseError.invalidJson
-        }
-        return try JSONDecoder().decode(SwiftActionSet.self, from: data)
     }
 }
