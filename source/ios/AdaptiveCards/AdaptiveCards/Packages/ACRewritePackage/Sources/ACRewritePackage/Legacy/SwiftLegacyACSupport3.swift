@@ -642,3 +642,185 @@ extension SwiftMediaSource {
         return try? SwiftMediaSourceLegacySupport.deserialize(from: jsonString)
     }
 }
+
+import Foundation
+
+// MARK: - Consolidated SwiftRatingInput Legacy Support
+
+/// Unified legacy support for SwiftRatingInput parsing and serialization
+enum SwiftRatingInputLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftRatingInput
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftRatingInput {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftRatingInput.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftRatingInput
+    static func deserialize(from jsonString: String) throws -> SwiftRatingInput {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftRatingInput.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftRatingInput to JSON dictionary with proper formatting
+    static func serializeToJson(_ ratingInput: SwiftRatingInput, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "RatingInput"
+        json["value"] = ratingInput.value
+        json["max"] = ratingInput.max
+        
+        // Add optional properties
+        if let alignment = ratingInput.horizontalAlignment {
+            json["horizontalAlignment"] = alignment.rawValue
+        }
+        
+        // Only include non-default values
+        if ratingInput.size != .medium {
+            json["size"] = ratingInput.size.rawValue
+        }
+        
+        if ratingInput.color != .neutral {
+            json["color"] = ratingInput.color.rawValue
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ ratingInput: SwiftRatingInput) -> String {
+        do {
+            // Use the full serialization path for consistency
+            let baseJson = try ratingInput.serializeToJsonValue()
+            let jsonData = try JSONSerialization.data(withJSONObject: baseJson, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(baseJson, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses RatingInput elements in an Adaptive Card
+struct SwiftRatingInputParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.ratingInput)
+        return try SwiftRatingInputLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRatingInputLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRatingInputLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftRatingInput Extension
+
+internal extension SwiftRatingInput {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftRatingInputLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("max")
+        self.knownProperties.insert("horizontalAlignment")
+        self.knownProperties.insert("size")
+        self.knownProperties.insert("color")
+    }
+    
+    // Legacy compatibility methods
+    func serializeToJson() -> [String: Any] {
+        do {
+            return try self.serializeToJsonValue()
+        } catch {
+            return [:]
+        }
+    }
+    
+    func toJSONString() -> String {
+        return SwiftRatingInputLegacySupport.serializeToJsonString(self)
+    }
+}
+
+// Legacy static methods for backward compatibility
+extension SwiftRatingInput {
+    static func createFromJSON(_ json: [String: Any]) throws -> SwiftRatingInput {
+        return try SwiftRatingInputLegacySupport.deserialize(from: json)
+    }
+    
+    static func createFromJSONString(_ jsonString: String) throws -> SwiftRatingInput {
+        return try SwiftRatingInputLegacySupport.deserialize(from: jsonString)
+    }
+    
+    /// Factory method for creating SwiftRatingInput instances
+    static func create(id: String? = nil,
+                       value: Double = 0,
+                       max: Double = 5,
+                       horizontalAlignment: SwiftHorizontalAlignment? = nil,
+                       size: SwiftRatingSize = .medium,
+                       color: SwiftRatingColor = .neutral,
+                       spacing: SwiftSpacing? = nil,
+                       height: SwiftHeightType? = nil,
+                       targetWidth: SwiftTargetWidthType? = nil,
+                       separator: Bool? = nil,
+                       isVisible: Bool = true,
+                       areaGridName: String? = nil) -> SwiftRatingInput {
+        
+        // Create a JSON dictionary with all properties
+        var json: [String: Any] = [
+            "type": "RatingInput",
+            "value": value,
+            "max": max,
+            "size": size.rawValue,
+            "color": color.rawValue,
+            "isVisible": isVisible
+        ]
+        
+        // Add optional properties
+        if let id = id { json["id"] = id }
+        if let horizontalAlignment = horizontalAlignment { json["horizontalAlignment"] = horizontalAlignment.rawValue }
+        if let spacing = spacing { json["spacing"] = spacing.rawValue }
+        if let height = height { json["height"] = height.rawValue }
+        if let targetWidth = targetWidth { json["targetWidth"] = targetWidth.rawValue }
+        if let separator = separator { json["separator"] = separator }
+        if let areaGridName = areaGridName { json["areaGridName"] = areaGridName }
+        
+        // Use JSON deserialization to create the instance
+        do {
+            return try SwiftRatingInputLegacySupport.deserialize(from: json)
+        } catch {
+            // Create a minimal instance if deserialization fails
+            var minimalJson: [String: Any] = [
+                "type": "RatingInput",
+                "value": 0.0,
+                "max": 5.0,
+                "size": "medium",
+                "color": "neutral",
+                "isVisible": true
+            ]
+            if let id = id { minimalJson["id"] = id }
+            
+            // This should almost never fail, but we need a fallback
+            return try! SwiftRatingInputLegacySupport.deserialize(from: minimalJson)
+        }
+    }
+}
