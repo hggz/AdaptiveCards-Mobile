@@ -3,14 +3,11 @@ import Foundation
 /// Represents a TableCell in an Adaptive Card.
 /// This class now subclasses our updated Container.
 class SwiftTableCell: SwiftContainer {
+    // MARK: - Properties
     
     var isOrphaned: Bool = true
     
-    /// Initializes a `TableCell` with default values.
-    init() {
-        // Call the designated initializer with CardElementType.tableCell.
-        super.init(items: [], layouts: [], rtl: nil, cardElementType: .tableCell)
-    }
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case items
@@ -18,9 +15,17 @@ class SwiftTableCell: SwiftContainer {
         case style
     }
     
-    // New helper to check for an explicit type field in JSON.
-    private enum BaseCodingKeys: String, CodingKey {
-        case type
+    /// Updated initializer for Codable conformance.
+    required init(from decoder: Decoder) throws {
+        // Call super first
+        try super.init(from: decoder)
+        
+        // Then decode our own style explicitly
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let styleString = try container.decodeIfPresent(String.self, forKey: .style) {
+            // Force the style to be set after super.init
+            self.style = SwiftContainerStyle(rawValue: styleString.capitalized) ?? .none
+        }
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -47,81 +52,17 @@ class SwiftTableCell: SwiftContainer {
         }
     }
     
-    /// Updated initializer for Codable conformance.
-    required init(from decoder: Decoder) throws {
-        // Call super first
-        try super.init(from: decoder)
-        
-        // Then decode our own style explicitly
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        if let styleString = try container.decodeIfPresent(String.self, forKey: .style) {
-            // Force the style to be set after super.init
-            self.style = SwiftContainerStyle(rawValue: styleString.capitalized) ?? .none
-            print("TableCell.init - Explicitly setting style to: \(styleString.capitalized)")
-        }
-    }
+    // MARK: - Type Information
+    
     /// Override to report .tableCell when not orphaned.
     override var elementTypeVal: SwiftCardElementType {
         return isOrphaned ? .unknown : .tableCell
     }
-    /// Deserializes a `TableCell` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: SwiftParseContext) throws -> SwiftTableCell {
-        let idProperty = json[SwiftAdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
-        let internalId = SwiftInternalId.next()
-        
-        context.pushElement(idJsonProperty: idProperty, internalId: internalId)
-        
-        // Convert the JSON dictionary to Data.
-        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
-        let cell = try JSONDecoder().decode(SwiftTableCell.self, from: jsonData)
-        
-        // Explicitly set style if provided
-        if let styleString = json["style"] as? String {
-            cell.style = SwiftContainerStyle(rawValue: styleString.capitalized) ?? .none
-            print("TableCell.deserialize - Explicitly setting style to: \(styleString.capitalized)")
-        }
-        
-        // Rest of your existing deserialization code...
-        if let rtl = json[SwiftAdaptiveCardSchemaKey.rtl.rawValue] as? Bool {
-            cell.setRtl(rtl)
-        }
-        
-        cell.additionalProperties = nil
-        context.popElement()
-        return cell
-    }
     
-    /// Deserializes a `TableCell` from a JSON string.
-    static func deserialize(from jsonString: String, context: SwiftParseContext) throws -> SwiftTableCell {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
-        }
-        return try deserialize(from: jsonDict, context: context)
-    }
+    // MARK: - Serialization to JSON
     
-    // In TableCell
     override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        
-        // Add items if present
-        if !items.isEmpty {
-            json["items"] = try items.map { try $0.serializeToJsonValue() }
-        }
-        
-        // Add rtl if present
-        if let rtl = self.rtl {
-            json["rtl"] = rtl
-        }
-        
-        // Add style with proper capitalization if not .none
-        print("TableCell serializeToJsonValue - current style: \(style)")
-        if style != .none {
-            json["style"] = style.rawValue  // Use rawValue to get capitalized version
-            print("TableCell serializeToJsonValue - set style to: \(style.rawValue)")
-        }
-        
-        return json
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
 }
