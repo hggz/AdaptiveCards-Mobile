@@ -368,3 +368,96 @@ extension SwiftChoicesData {
         return try? SwiftChoicesDataLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftCompoundButton Legacy Support
+
+/// Unified legacy support for SwiftCompoundButton parsing and serialization
+enum SwiftCompoundButtonLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftCompoundButton
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftCompoundButton {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftCompoundButton.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftCompoundButton
+    static func deserialize(from jsonString: String) throws -> SwiftCompoundButton {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftCompoundButton.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftCompoundButton to JSON dictionary with proper formatting
+    static func serializeToJson(_ button: SwiftCompoundButton, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set type property
+        json["type"] = "CompoundButton"
+        
+        // Add properties if present
+        if let badge = button.badge {
+            json["badge"] = badge
+        }
+        
+        if let title = button.title {
+            json["title"] = title
+        }
+        
+        if let description = button.buttonDescription {
+            json["description"] = description
+        }
+        
+        if let icon = button.icon {
+            json["icon"] = icon.toJSON()
+        }
+        
+        // Add selectAction if present
+        if let action = button.selectAction {
+            json["selectAction"] = try SwiftBaseCardElement.serializeSelectAction(action)
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses CompoundButton elements in an Adaptive Card
+struct SwiftCompoundButtonParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.compoundButton)
+        return try SwiftCompoundButtonLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftCompoundButtonLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftCompoundButtonLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftCompoundButton Extension
+
+internal extension SwiftCompoundButton {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftCompoundButtonLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("badge")
+        self.knownProperties.insert("title")
+        self.knownProperties.insert("description")
+        self.knownProperties.insert("icon")
+        self.knownProperties.insert("selectAction")
+    }
+}
