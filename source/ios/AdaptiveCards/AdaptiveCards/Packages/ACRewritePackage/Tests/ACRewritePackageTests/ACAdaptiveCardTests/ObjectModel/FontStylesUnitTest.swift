@@ -5,7 +5,7 @@ final class FontTypeTests: XCTestCase {
     
     func testDefineFromEmptyConstructor() throws {
         // Create an empty TextBlock instance.
-        let emptyTB = TextBlock()
+        let emptyTB = SwiftTextBlock()
         
         // Initially, fontType should be nil.
         XCTAssertNil(emptyTB.fontType, "Expected fontType to be nil initially")
@@ -21,7 +21,7 @@ final class FontTypeTests: XCTestCase {
 
     func testEmptyTextBlockSerialization() throws {
         // Create an empty TextBlock instance.
-        let emptyTB = TextBlock()
+        let emptyTB = SwiftTextBlock()
         
         // Serialize the empty text block.
         let jsonString = try emptyTB.serialize()
@@ -32,7 +32,7 @@ final class FontTypeTests: XCTestCase {
         let parser = SwiftTextBlockParser()
         let parsedObject = try parser.deserialize(fromString: context, value: jsonString)
         
-        guard let parsedTextBlock = parsedObject as? TextBlock else {
+        guard let parsedTextBlock = parsedObject as? SwiftTextBlock else {
             XCTFail("Parsed object is not a TextBlock")
             return
         }

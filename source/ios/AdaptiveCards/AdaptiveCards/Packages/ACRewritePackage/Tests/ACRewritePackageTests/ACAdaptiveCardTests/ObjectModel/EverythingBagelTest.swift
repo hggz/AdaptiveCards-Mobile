@@ -481,7 +481,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(card.verticalContentAlignment, .top)
     }
     
-    private func validateTextBlock(_ textBlock: TextBlock,
+    private func validateTextBlock(_ textBlock: SwiftTextBlock,
                                    fontType: SwiftFontType?,
                                    style: SwiftTextStyle?,
                                    id: String) {
@@ -589,7 +589,7 @@ class EverythingBagelTests: XCTestCase {
             if let imageItem = items[0] as? SwiftImage {
                 XCTAssertEqual(imageItem.url, "https://adaptivecards.io/content/cats/3.png")
             }
-            if let textBlockItem = items[1] as? TextBlock {
+            if let textBlockItem = items[1] as? SwiftTextBlock {
                 XCTAssertEqual(textBlockItem.text, "Column3_TextBlock_text")
                 XCTAssertEqual(textBlockItem.id, "Column3_TextBlock_id")
             }
@@ -758,7 +758,7 @@ class EverythingBagelTests: XCTestCase {
         XCTAssertEqual(toggleInput.label, "Input.Toggle_label")
     }
     
-    private func validateTextBlockInInput(_ textBlock: TextBlock) {
+    private func validateTextBlockInInput(_ textBlock: SwiftTextBlock) {
         XCTAssertEqual(textBlock.elementTypeVal, SwiftCardElementType.textBlock)
         XCTAssertEqual(textBlock.elementTypeString, SwiftCardElementType.textBlock.rawValue)
         XCTAssertEqual(textBlock.id, "")
@@ -826,7 +826,7 @@ class EverythingBagelTests: XCTestCase {
             XCTFail("Expected ToggleInput in input container")
         }
         
-        if let textBlock = items[5] as? TextBlock {
+        if let textBlock = items[5] as? SwiftTextBlock {
             validateTextBlockInInput(textBlock)
         } else {
             XCTFail("Expected TextBlock in input container")
@@ -911,20 +911,20 @@ class EverythingBagelTests: XCTestCase {
         let body = card.body
         XCTAssertEqual(body.count, 10)
         
-        if let textBlock = body[0] as? TextBlock {
+        if let textBlock = body[0] as? SwiftTextBlock {
             validateTextBlock(textBlock, fontType: nil, style: .heading, id: "TextBlock_id")
         } else {
             XCTFail("Expected TextBlock as first element in body")
         }
         
-        if let textBlock = body[1] as? TextBlock {
+        if let textBlock = body[1] as? SwiftTextBlock {
             validateTextBlock(textBlock, fontType: .monospace, style: nil, id: "TextBlock_id_mono")
         } else {
             XCTFail("Expected TextBlock as second element in body")
         }
         
         // For the default font type, use .defaultValue instead of .default
-        if let textBlock = body[2] as? TextBlock {
+        if let textBlock = body[2] as? SwiftTextBlock {
             validateTextBlock(textBlock, fontType: .defaultFont, style: nil, id: "TextBlock_id_def")
         } else {
             XCTFail("Expected TextBlock as third element in body")
@@ -1058,7 +1058,7 @@ class EverythingBagelTests: XCTestCase {
     private func validateFallbackCard(_ card: SwiftAdaptiveCard) {
         // If your AdaptiveCard type supports a makeFallbackTextCard method, use it.
         if let fallbackCard = card.makeFallbackTextCard(text: "fallback", language: "en", speak: "speak") {
-            if let fallbackTextBlock = fallbackCard.body.first as? TextBlock {
+            if let fallbackTextBlock = fallbackCard.body.first as? SwiftTextBlock {
                 XCTAssertEqual(fallbackTextBlock.text, "fallback")
                 XCTAssertEqual(fallbackTextBlock.language, "en")
                 XCTAssertEqual(fallbackCard.speak, "speak")

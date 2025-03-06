@@ -480,7 +480,7 @@ public class SwiftAdaptiveCard: Codable {
 
     /// Creates an AdaptiveCard that serves as a fallback, containing a single TextBlock with the provided text.
     func makeFallbackTextCard(text: String, language: String, speak: String) -> SwiftAdaptiveCard? {
-        let fallbackTextBlock = TextBlock(
+        let fallbackTextBlock = SwiftTextBlock(
             text: text,
             textStyle: .heading,      // Use heading as expected
             textSize: SwiftTextSize.defaultSize,

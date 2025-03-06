@@ -356,7 +356,7 @@ class TableTests: XCTestCase {
                 let expectedTexts = ["Name", "Type", "Description"]
                 for (index, cell) in firstRow.cells.enumerated() {
                     XCTAssertEqual(cell.items.count, 1, "Cell \(index) should have 1 item")
-                    if let textBlock = cell.items.first as? TextBlock {
+                    if let textBlock = cell.items.first as? SwiftTextBlock {
                         XCTAssertEqual(textBlock.text, expectedTexts[index])
                         XCTAssertTrue(textBlock.wrap ?? false)
                         XCTAssertEqual(textBlock.textWeight, .bolder)

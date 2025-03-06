@@ -34,7 +34,7 @@ class TextParsingTests: XCTestCase {
     
     // Helper function analogous to the C++ _GetTextBlockText
     private func _getTextBlockText(_ testString: String) -> String {
-        let textBlock = TextBlock()
+        let textBlock = SwiftTextBlock()
         textBlock.setText(testString) // Alternatively, if TextBlock exposes a 'text' property:
                                       // textBlock.text = testString
         return textBlock.getText()    // Or simply return textBlock.text

@@ -575,15 +575,15 @@ enum TextBlockLegacySupport {
     // MARK: - Parsing Functions
     
     /// Deserializes JSON into a TextBlock
-    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> TextBlock {
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftTextBlock {
         // Convert dictionary to JSON data
         let data = try JSONSerialization.data(withJSONObject: value, options: [])
         let decoder = JSONDecoder()
-        return try decoder.decode(TextBlock.self, from: data)
+        return try decoder.decode(SwiftTextBlock.self, from: data)
     }
     
     /// Deserializes string into a TextBlock
-    static func deserialize(from jsonString: String) throws -> TextBlock {
+    static func deserialize(from jsonString: String) throws -> SwiftTextBlock {
         guard let data = jsonString.data(using: .utf8) else {
             throw SerializationError.stringDecodingFailed
         }
@@ -600,7 +600,7 @@ enum TextBlockLegacySupport {
     // MARK: - Serialization Functions
     
     /// Converts a TextBlock to JSON dictionary with proper formatting
-    static func serializeToJson(_ textBlock: TextBlock, baseJson: [String: Any]) throws -> [String: Any] {
+    static func serializeToJson(_ textBlock: SwiftTextBlock, baseJson: [String: Any]) throws -> [String: Any] {
         var json = baseJson
         
         // Always set the type
@@ -662,7 +662,7 @@ enum TextBlockLegacySupport {
     }
     
     /// Serializes to JSON string
-    static func serializeToJsonString(_ textBlock: TextBlock) throws -> String {
+    static func serializeToJsonString(_ textBlock: SwiftTextBlock) throws -> String {
         let json = try textBlock.serializeToJsonValue()
         let data = try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
         guard let jsonString = String(data: data, encoding: .utf8) else {
@@ -694,7 +694,7 @@ struct SwiftTextBlockParser: SwiftBaseCardElementParser {
 
 // MARK: - TextBlock Extensions
 
-extension TextBlock {
+extension SwiftTextBlock {
     /// Serializes to legacy JSON format
     func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
         return try TextBlockLegacySupport.serializeToJson(self, baseJson: superResult)
@@ -745,10 +745,10 @@ extension TextBlock {
 
 // MARK: - Methods for Unit Test Compatibility
 
-extension TextBlock {
+extension SwiftTextBlock {
     /// Sets the text after performing a single-pass HTML entity decode.
     func setText(_ newText: String) {
-        self.text = TextBlock.decodeHTMLEntities(newText)
+        self.text = SwiftTextBlock.decodeHTMLEntities(newText)
     }
     
     /// Returns the (decoded) text.

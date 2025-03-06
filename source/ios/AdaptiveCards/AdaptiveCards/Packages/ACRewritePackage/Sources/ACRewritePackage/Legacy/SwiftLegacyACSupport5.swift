@@ -603,7 +603,7 @@ enum SwiftStyledCollectionElementLegacySupport {
             json["selectAction"] = selectAction.toJSON()
         }
         if let backgroundImage = element.backgroundImage {
-            json["backgroundImage"] = try backgroundImage.serializeToJsonValue()
+            json["backgroundImage"] = backgroundImage.serializeToJsonValue()
         }
         return json
     }

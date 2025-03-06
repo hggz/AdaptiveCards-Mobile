@@ -14,7 +14,7 @@ final class TimeTest: XCTestCase {
     
     func testTransformToTimeTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-28T02:17:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -30,7 +30,7 @@ final class TimeTest: XCTestCase {
     
     func testTransformToTimeTest2() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T18:19:09Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -46,7 +46,7 @@ final class TimeTest: XCTestCase {
     
     func testTransformToTimeWithSmallPositiveOffsetTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-28T04:20:00+02:00)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -62,7 +62,7 @@ final class TimeTest: XCTestCase {
     
     func testTransformToTimeWithLargePositiveOffsetTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-28T11:25:00+09:00)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -78,7 +78,7 @@ final class TimeTest: XCTestCase {
     
     func testTransformToTimeWithMinusOffsetTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T22:27:00-04:00)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -97,7 +97,7 @@ final class DateTest: XCTestCase {
     
     func testTransformDateTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-02-13T20:46:30Z, COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -116,7 +116,7 @@ final class DateTest: XCTestCase {
     
     func testTransformToDateWithSmallPositiveOffset() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-10-28T04:20:00+02:00, COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -135,7 +135,7 @@ final class DateTest: XCTestCase {
     
     func testTransformToDateWithLargePositiveOffset() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-10-28T11:25:00+09:00, COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -154,7 +154,7 @@ final class DateTest: XCTestCase {
     
     func testTransformToDateNegativeOffset() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-10-27T22:27:00-04:00, COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -173,7 +173,7 @@ final class DateTest: XCTestCase {
     
     func testTransformToDateRespectsOptionalSpace() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-10-27T22:27:00-04:00,COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -192,7 +192,7 @@ final class DateTest: XCTestCase {
     
     func testTransformToDateOnlyAllowsUpToOneSpaceBeforeModifier() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-10-27T22:27:00-04:00,  COMPACT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -203,7 +203,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testTimeWithShortFormat() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T22:07:00Z, SHORT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -211,7 +211,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testTimeWithLongFormat() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T22:27:00-04:00, LONG)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -219,7 +219,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testTimeWithLongFormatInText() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "Hello {{TIME(2017-10-27T26:27:00Z, LONG)}} World!"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -227,7 +227,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testMissingLeadingDigitOfMinutesInputTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T22:7:00-04:00)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -235,7 +235,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testMissingColumnDelimiterTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-10-27T2:7:00Q04:00)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -243,7 +243,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testISO8601WithTextTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "You have arrived in New York on {{DATE(2017-10-27T22:23:00Z, SHORT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -259,7 +259,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testTwoISO8601WithText() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "You have arrived in New York on {{DATE(2017-10-27T22:27:00-04:00, SHORT)}} at {{TIME(2017-10-27T22:27:00-04:00)}}.\r have a good trip"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -290,7 +290,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testPrefixStringISO8650suffixStringTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "You will arrived in Seattle on {{DATE(2017-10-27T22:23:00Z, SHORT)}}; have a good trip"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -314,14 +314,14 @@ final class TimeAndDateInputTest: XCTestCase {
     }
     
     func testMalformedCurlybracketsTest() {
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{a{DATE(2017-02-13T20:46:30Z, SHORT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
     }
     
     func testMissingClosingCurlyBracketTest() {
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         // Note: The original C++ test used a missing closing brace.
         let testString = "{{DATE(2017-02-13T20:46:30Z, SHORT)}}".dropLast()  // drop the last '}' to simulate the missing bracket
         blck.text = String(testString)
@@ -329,7 +329,7 @@ final class TimeAndDateInputTest: XCTestCase {
     }
     
     func testYearInBadFormatInputTest() {
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017a02-13T20:46:30Z, SHORT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -337,7 +337,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testDateDefaultStyleInputTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-02-13T20:46:30Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -356,7 +356,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testDateLONGStyleInputTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-02-13T20:46:30Z, LONG)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -375,7 +375,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testDateSHORTStyleInputTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-02-13T20:46:30Z, SHORT)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -394,7 +394,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testDateSmallCaseLONGStyleInputTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-02-13T20:46:30Z, Long)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -402,7 +402,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testInvalidDateTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(2017-99-14T06:08:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -410,7 +410,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testInvalidTimeTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{TIME(2017-99-14T06:08:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -418,7 +418,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testLeapYearValidDayTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(1992-02-29T18:08:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -437,7 +437,7 @@ final class TimeAndDateInputTest: XCTestCase {
     
     func testLeapYearValidDayOnlyAtUTCTest() throws {
         try skipTestIfNotPacificTimezone()
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(1992-02-29T07:59:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)
@@ -455,7 +455,7 @@ final class TimeAndDateInputTest: XCTestCase {
     }
     
     func testNoneLeapYearInvalidDayTest() {
-        let blck = TextBlock()
+        let blck = SwiftTextBlock()
         let testString = "{{DATE(1994-02-29T06:08:00Z)}}"
         blck.text = testString
         XCTAssertEqual(blck.text, testString)

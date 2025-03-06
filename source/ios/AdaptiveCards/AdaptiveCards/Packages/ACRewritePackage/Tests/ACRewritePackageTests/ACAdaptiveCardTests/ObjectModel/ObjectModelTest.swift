@@ -328,8 +328,8 @@ class ObjectModelTest: XCTestCase {
 
         XCTAssertEqual(showCard.version, "2.0")
         XCTAssertEqual(showCard.body.count, 1)
-        XCTAssertTrue(showCard.body[0] is TextBlock)
-        XCTAssertEqual((showCard.body[0] as? TextBlock)?.text, "What do you think?")
+        XCTAssertTrue(showCard.body[0] is SwiftTextBlock)
+        XCTAssertEqual((showCard.body[0] as? SwiftTextBlock)?.text, "What do you think?")
         XCTAssertEqual(showCard.actions.count, 1)
         XCTAssertTrue(showCard.actions[0] is SwiftSubmitAction)
         XCTAssertEqual(showCard.actions[0].title, "Neat!")
@@ -342,8 +342,8 @@ class ObjectModelTest: XCTestCase {
 
         XCTAssertEqual(roundTrippedShowCard.version, "2.0")
         XCTAssertEqual(roundTrippedShowCard.body.count, 1)
-        XCTAssertTrue(roundTrippedShowCard.body[0] is TextBlock)
-        XCTAssertEqual((roundTrippedShowCard.body[0] as? TextBlock)?.text, "What do you think?")
+        XCTAssertTrue(roundTrippedShowCard.body[0] is SwiftTextBlock)
+        XCTAssertEqual((roundTrippedShowCard.body[0] as? SwiftTextBlock)?.text, "What do you think?")
         XCTAssertEqual(roundTrippedShowCard.actions.count, 1)
         XCTAssertTrue(roundTrippedShowCard.actions[0] is SwiftSubmitAction)
         XCTAssertEqual(roundTrippedShowCard.actions[0].title, "Neat!")
@@ -626,7 +626,7 @@ class ObjectModelTest: XCTestCase {
         ]
 
         for (idx, elem) in body.enumerated() {
-            guard let tb = elem as? TextBlock else {
+            guard let tb = elem as? SwiftTextBlock else {
                 XCTFail("Element at \(idx) is not a TextBlock")
                 continue
             }

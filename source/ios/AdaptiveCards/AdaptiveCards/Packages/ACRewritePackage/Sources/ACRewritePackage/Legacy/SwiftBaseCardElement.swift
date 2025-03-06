@@ -148,7 +148,7 @@ class SwiftBaseCardElement: SwiftBaseElement, SwiftAdaptiveCardElementProtocol {
         let decoder = JSONDecoder()
         switch typeString {
         case SwiftCardElementType.textBlock.rawValue:
-            return try decoder.decode(TextBlock.self, from: data)
+            return try decoder.decode(SwiftTextBlock.self, from: data)
         case SwiftCardElementType.columnSet.rawValue:
             return try decoder.decode(SwiftColumnSet.self, from: data)
         case SwiftCardElementType.container.rawValue:

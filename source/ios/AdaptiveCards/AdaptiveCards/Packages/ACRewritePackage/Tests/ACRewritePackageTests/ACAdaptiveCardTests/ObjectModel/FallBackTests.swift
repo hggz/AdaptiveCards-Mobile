@@ -31,14 +31,14 @@ class FallbackTests: XCTestCase {
             let card = try JSONDecoder().decode(SwiftAdaptiveCard.self, from: cardData)
             XCTAssertEqual(card.body.count, 1)
             
-            guard let textBlock = card.body.first as? TextBlock else {
+            guard let textBlock = card.body.first as? SwiftTextBlock else {
                 XCTFail("Body element is not a TextBlock")
                 return
             }
             XCTAssertEqual(textBlock.text, "Primary TextBlock")
             
             // Access the fallback content via the fallbackContent property.
-            guard let fallbackElement = textBlock.fallbackContent as? TextBlock else {
+            guard let fallbackElement = textBlock.fallbackContent as? SwiftTextBlock else {
                 XCTFail("Fallback is not a TextBlock")
                 return
             }
@@ -121,7 +121,7 @@ class FallbackTests: XCTestCase {
             XCTAssertEqual(column.id, "B")
             XCTAssertEqual(column.items.count, 1)
             
-            guard let textBlock = column.items.first as? TextBlock else {
+            guard let textBlock = column.items.first as? SwiftTextBlock else {
                 XCTFail("First item in column is not a TextBlock")
                 return
             }
@@ -143,14 +143,14 @@ class FallbackTests: XCTestCase {
             XCTAssertEqual(image.id, "I")
             XCTAssertEqual(image.url, "http://adaptivecards.io/content/cats/2.png")
             
-            guard let fallbackTextBlock = fallbackContainer.items.last as? TextBlock else {
+            guard let fallbackTextBlock = fallbackContainer.items.last as? SwiftTextBlock else {
                 XCTFail("Second item in fallback container is not a TextBlock")
                 return
             }
             XCTAssertEqual(fallbackTextBlock.id, "J")
             XCTAssertEqual(fallbackTextBlock.text, "C ColumnSet fallback textblock")
             
-            guard let textBlockF = card.body.last as? TextBlock else {
+            guard let textBlockF = card.body.last as? SwiftTextBlock else {
                 XCTFail("Second body element is not a TextBlock")
                 return
             }
