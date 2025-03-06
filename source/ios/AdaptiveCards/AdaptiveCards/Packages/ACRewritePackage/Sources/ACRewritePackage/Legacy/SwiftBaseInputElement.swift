@@ -100,4 +100,11 @@ class SwiftBaseInputElement: SwiftBaseCardElement {
         let json = try super.serializeToJsonValue()
         return try serializeToLegacyJsonFormat(superResult: json)
     }
+    
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("label")
+        self.knownProperties.insert("isRequired")
+        self.knownProperties.insert("errorMessage")
+        self.knownProperties.insert("valueChangedAction")
+    }
 }

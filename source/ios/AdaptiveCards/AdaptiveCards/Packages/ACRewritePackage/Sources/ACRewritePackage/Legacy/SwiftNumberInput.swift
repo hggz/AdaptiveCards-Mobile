@@ -2,55 +2,13 @@ import Foundation
 
 /// Represents a number input element in an Adaptive Card.
 class SwiftNumberInput: SwiftBaseInputElement {
-    var placeholder: String?
-    var value: Double?
-    var min: Double?
-    var max: Double?
-
-    /// Designated initializer.
-    /// - Parameters:
-    ///   - id: An optional identifier.
-    ///   - placeholder: A placeholder string.
-    ///   - value: The current value.
-    ///   - min: The minimum allowed value.
-    ///   - max: The maximum allowed value.
-    ///   - spacing: Optional spacing (inherited from BaseCardElement).
-    ///   - height: Optional height (inherited from BaseCardElement).
-    ///   - targetWidth: Optional target width (inherited from BaseCardElement).
-    ///   - separator: Optional separator flag (inherited from BaseCardElement).
-    ///   - isVisible: Visibility flag (defaults to true).
-    ///   - areaGridName: Optional grid area name.
-    init(id: String? = nil,
-         placeholder: String? = nil,
-         value: Double? = nil,
-         min: Double? = nil,
-         max: Double? = nil,
-         spacing: SwiftSpacing? = nil,
-         height: SwiftHeightType? = nil,
-         targetWidth: SwiftTargetWidthType? = nil,
-         separator: Bool? = nil,
-         isVisible: Bool = true,
-         areaGridName: String? = nil) {
-        
-        self.placeholder = placeholder
-        self.value = value
-        self.min = min
-        self.max = max
-        
-        // Assuming CardElementType has a case for numberInput.
-        super.init(
-            type: .numberInput,
-            id: id, 
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName
-        )
-    }
+    // MARK: - Properties
+    let placeholder: String?
+    let value: Double?
+    let min: Double?
+    let max: Double?
     
-    // MARK: - Codable
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case placeholder, value, min, max
@@ -59,34 +17,43 @@ class SwiftNumberInput: SwiftBaseInputElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Handle optional properties with proper decoding
-        self.placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
+        // Decode all properties before super.init
+        placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
         
         // For numeric values, we might need to handle both String and Number formats
         if let valueDouble = try? container.decodeIfPresent(Double.self, forKey: .value) {
-            self.value = valueDouble
+            value = valueDouble
         } else if let valueString = try? container.decodeIfPresent(String.self, forKey: .value),
                   let valueDouble = Double(valueString) {
-            self.value = valueDouble
+            value = valueDouble
+        } else {
+            value = nil
         }
         
         // Same for min/max
         if let minDouble = try? container.decodeIfPresent(Double.self, forKey: .min) {
-            self.min = minDouble
+            min = minDouble
         } else if let minString = try? container.decodeIfPresent(String.self, forKey: .min),
                   let minDouble = Double(minString) {
-            self.min = minDouble
+            min = minDouble
+        } else {
+            min = nil
         }
         
         if let maxDouble = try? container.decodeIfPresent(Double.self, forKey: .max) {
-            self.max = maxDouble
+            max = maxDouble
         } else if let maxString = try? container.decodeIfPresent(String.self, forKey: .max),
                   let maxDouble = Double(maxString) {
-            self.max = maxDouble
+            max = maxDouble
+        } else {
+            max = nil
         }
         
-        // Decode base properties
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -95,68 +62,20 @@ class SwiftNumberInput: SwiftBaseInputElement {
         try container.encodeIfPresent(value, forKey: .value)
         try container.encodeIfPresent(min, forKey: .min)
         try container.encodeIfPresent(max, forKey: .max)
+        
         try super.encode(to: encoder)
     }
     
-    // MARK: - JSON Serialization
-    
-    /// Converts the NumberInput object into a JSON dictionary.
-    /// This adds the NumberInput–specific keys to those provided by BaseCardElement.
-    func serializeToJson() -> [String: Any] {
-        var json = [String: Any]()
-        // Start with BaseCardElement serialization.
-        if let baseJson = try? self.serializeToJsonValue() {
-            json = baseJson
-        }
-        if let placeholder = placeholder {
-            json["placeholder"] = placeholder
-        }
-        if let value = value {
-            json["value"] = value
-        }
-        if let min = min {
-            json["min"] = min
-        }
-        if let max = max {
-            json["max"] = max
-        }
-        return json
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
     
-    /// Returns a JSON string representation.
-    func toJSONString() -> String {
-        do {
-            let data = try JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted)
-            return String(data: data, encoding: .utf8) ?? "{}"
-        } catch {
-            return "{}"
-        }
-    }
-    
-    // MARK: - Utility Deserialization
-    
-    /// Creates a NumberInput object from a JSON dictionary.
-    static func createFromJSON(_ json: [String: Any]) throws -> SwiftNumberInput {
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(SwiftNumberInput.self, from: data)
-    }
-    
-    /// Creates a NumberInput object from a JSON string.
-    static func createFromJSONString(_ jsonString: String) throws -> SwiftNumberInput {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(SwiftNumberInput.self, from: data)
-    }
-}
-
-/// Parses NumberInput elements in an Adaptive Card.
-class SwiftNumberInputParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftNumberInput.createFromJSON(value)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftNumberInput.createFromJSONString(value)
+    override func populateKnownPropertiesSet() {
+        self.knownProperties.insert("placeholder")
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("min")
+        self.knownProperties.insert("max")
     }
 }

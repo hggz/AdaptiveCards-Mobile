@@ -2,21 +2,24 @@ import Foundation
 
 /// Represents a toggle input field in an Adaptive Card.
 class SwiftToggleInput: SwiftBaseInputElement {
+    // MARK: - Properties
     /// The display title for the toggle.
-    var title: String?
+    let title: String?
     
     /// The default value of the toggle.
-    var value: String?
+    let value: String?
     
     /// The value representing an "off" state.
-    var valueOff: String
+    let valueOff: String
     
     /// The value representing an "on" state.
-    var valueOn: String
+    let valueOn: String
     
     /// Whether the title should wrap.
-    var wrap: Bool
+    let wrap: Bool
 
+    // MARK: - Codable Implementation
+    
     private enum CodingKeys: String, CodingKey {
         case title
         case value
@@ -25,31 +28,22 @@ class SwiftToggleInput: SwiftBaseInputElement {
         case wrap
     }
 
-    /// Initializes a `ToggleInput` with default values.
-    init() {
-        self.title = nil
-        self.value = nil
-        self.valueOff = "false"
-        self.valueOn = "true"
-        self.wrap = false
-        // Use the updated initializer parameter name `type`
-        super.init(type: .toggleInput)
-    }
-
     /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.title = try container.decodeIfPresent(String.self, forKey: .title)
-        self.value = try container.decodeIfPresent(String.self, forKey: .value)
-        self.valueOff = try container.decodeIfPresent(String.self, forKey: .valueOff) ?? "false"
-        self.valueOn = try container.decodeIfPresent(String.self, forKey: .valueOn) ?? "true"
-        self.wrap = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
+        
+        // Decode all properties before super.init
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        valueOff = try container.decodeIfPresent(String.self, forKey: .valueOff) ?? "false"
+        valueOn = try container.decodeIfPresent(String.self, forKey: .valueOn) ?? "true"
+        wrap = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
+        
         // Call super's decoding initializer
         try super.init(from: decoder)
-        // Optionally enforce that the decoded type is indeed .toggleInput
-        if self.type != .toggleInput {
-            self.type = .toggleInput
-        }
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
 
     /// Encodes a `ToggleInput` to JSON.
@@ -57,6 +51,8 @@ class SwiftToggleInput: SwiftBaseInputElement {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(title, forKey: .title)
         try container.encodeIfPresent(value, forKey: .value)
+        
+        // Only encode non-default values
         if valueOff != "false" {
             try container.encode(valueOff, forKey: .valueOff)
         }
@@ -66,24 +62,21 @@ class SwiftToggleInput: SwiftBaseInputElement {
         if wrap {
             try container.encode(wrap, forKey: .wrap)
         }
+        
         try super.encode(to: encoder)
     }
-}
-
-/// Parses ToggleInput elements in an Adaptive Card.
-struct SwiftToggleInputParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        let toggleInput = SwiftToggleInput()
-        toggleInput.title = try SwiftParseUtil.getString(from: value, key: "title", required: true)
-        toggleInput.value = try SwiftParseUtil.getString(from: value, key: "value")
-        toggleInput.wrap = try SwiftParseUtil.getBool(from: value, key: "wrap", defaultValue: false, required: false)
-        toggleInput.valueOff = try SwiftParseUtil.getString(from: value, key: "valueOff")
-        toggleInput.valueOn = try SwiftParseUtil.getString(from: value, key: "valueOn")
-        return toggleInput
+    
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
     
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: context, value: jsonDict)
+    override func populateKnownPropertiesSet() {
+        self.knownProperties.insert("title")
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("valueOff")
+        self.knownProperties.insert("valueOn")
+        self.knownProperties.insert("wrap")
     }
 }

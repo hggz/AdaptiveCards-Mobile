@@ -2,23 +2,13 @@ import Foundation
 
 /// Represents a date input element in an Adaptive Card.
 class SwiftDateInput: SwiftBaseInputElement {
-    var max: String?
-    var min: String?
-    var placeholder: String?
-    var value: String?
+    // MARK: - Properties
+    let max: String?
+    let min: String?
+    let placeholder: String?
+    let value: String?
     
-    // Keep the existing initializer
-    init(id: String? = nil,
-         max: String? = nil,
-         min: String? = nil,
-         placeholder: String? = nil,
-         value: String? = nil) {
-        self.max = max
-        self.min = min
-        self.placeholder = placeholder
-        self.value = value
-        super.init(type: .dateInput, id: id)
-    }
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case max, min, placeholder, value
@@ -27,14 +17,17 @@ class SwiftDateInput: SwiftBaseInputElement {
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        // Handle optional properties with proper decoding
-        self.max = try container.decodeIfPresent(String.self, forKey: .max)
-        self.min = try container.decodeIfPresent(String.self, forKey: .min)
-        self.placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
-        self.value = try container.decodeIfPresent(String.self, forKey: .value)
+        // Decode all properties before super.init
+        max = try container.decodeIfPresent(String.self, forKey: .max)
+        min = try container.decodeIfPresent(String.self, forKey: .min)
+        placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
         
-        // Decode base properties
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -43,50 +36,20 @@ class SwiftDateInput: SwiftBaseInputElement {
         try container.encodeIfPresent(min, forKey: .min)
         try container.encodeIfPresent(placeholder, forKey: .placeholder)
         try container.encodeIfPresent(value, forKey: .value)
+        
         try super.encode(to: encoder)
     }
     
+    // MARK: - Serialization to JSON
     override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        
-        // Add DateInput specific properties
-        if let max = max {
-            json["max"] = max
-        }
-        if let min = min {
-            json["min"] = min
-        }
-        if let placeholder = placeholder {
-            json["placeholder"] = placeholder
-        }
-        if let value = value {
-            json["value"] = value
-        }
-        
-        return json
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
     
-    // Static creation methods like we did for NumberInput
-    static func createFromJSON(_ json: [String: Any]) throws -> SwiftDateInput {
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(SwiftDateInput.self, from: data)
-    }
-    
-    static func createFromJSONString(_ jsonString: String) throws -> SwiftDateInput {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(SwiftDateInput.self, from: data)
-    }
-}
-
-// Update the parser to match the NumberInput pattern
-class SwiftDateInputParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftDateInput.createFromJSON(value)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftDateInput.createFromJSONString(value)
+    override func populateKnownPropertiesSet() {
+        self.knownProperties.insert("max")
+        self.knownProperties.insert("min")
+        self.knownProperties.insert("placeholder")
+        self.knownProperties.insert("value")
     }
 }

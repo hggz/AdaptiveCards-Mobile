@@ -2,65 +2,60 @@ import Foundation
 
 /// Represents a text input element in an Adaptive Card.
 class SwiftTextInput: SwiftBaseInputElement {
+    // MARK: - Properties
     /// Placeholder text displayed when the input is empty.
-    var placeholder: String?
+    let placeholder: String?
     
     /// The default value of the input field.
-    var value: String?
+    let value: String?
     
     /// Whether the input field is multiline.
-    var isMultiline: Bool
+    let isMultiline: Bool
     
     /// Maximum length of the input field.
-    var maxLength: UInt
+    let maxLength: UInt
     
     /// Style of the text input.
-    var style: SwiftTextInputStyle?
+    let style: SwiftTextInputStyle?
     
     /// Optional inline action associated with the input.
-    var inlineAction: SwiftBaseActionElement?
+    let inlineAction: SwiftBaseActionElement?
     
     /// Regular expression for validation.
-    var regex: String?
+    let regex: String?
+    
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case placeholder, value, isMultiline, maxLength, style, inlineAction, regex
     }
     
-    /// Initializes a new `TextInput` with default values.
-    init() {
-        self.placeholder = nil
-        self.value = nil
-        self.isMultiline = false
-        self.maxLength = 0
-        self.style = .text
-        self.inlineAction = nil
-        self.regex = nil
-        // Use the correct parameter name for the base initializer.
-        super.init(type: .textInput)
-    }
-    
     /// Required initializer for decoding.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
-        self.value = try container.decodeIfPresent(String.self, forKey: .value)
-        self.isMultiline = try container.decodeIfPresent(Bool.self, forKey: .isMultiline) ?? false
-        self.maxLength = try container.decodeIfPresent(UInt.self, forKey: .maxLength) ?? 0
-        self.style = try container.decodeIfPresent(SwiftTextInputStyle.self, forKey: .style)
-        if let actionData = try container.decodeIfPresent([String: AnyCodable].self, forKey: .inlineAction) {
-            let actionDict = actionData.mapValues { $0.value }
-            self.inlineAction = try SwiftBaseActionElement.deserializeAction(from: actionDict)
+        
+        // Decode all properties before super.init
+        placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
+        value = try container.decodeIfPresent(String.self, forKey: .value)
+        isMultiline = try container.decodeIfPresent(Bool.self, forKey: .isMultiline) ?? false
+        maxLength = try container.decodeIfPresent(UInt.self, forKey: .maxLength) ?? 0
+        style = try container.decodeIfPresent(SwiftTextInputStyle.self, forKey: .style)
+        regex = try container.decodeIfPresent(String.self, forKey: .regex)
+        
+        // Handle inlineAction separately
+        if container.contains(.inlineAction) {
+            let actionDict = try container.decode([String: AnyCodable].self, forKey: .inlineAction)
+            let dict = actionDict.mapValues { $0.value }
+            inlineAction = try SwiftBaseActionElement.deserializeAction(from: dict)
         } else {
-            self.inlineAction = nil
+            inlineAction = nil
         }
-        self.regex = try container.decodeIfPresent(String.self, forKey: .regex)
-        // Call the superclass decoder initializer.
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
-        // Optionally enforce that the type is .textInput.
-        if self.type != .textInput {
-            self.type = .textInput
-        }
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     /// Encodes a `TextInput` to JSON.
@@ -68,79 +63,31 @@ class SwiftTextInput: SwiftBaseInputElement {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(placeholder, forKey: .placeholder)
         try container.encodeIfPresent(value, forKey: .value)
-        if let action = inlineAction {
-            let actionJson = try action.serializeToJsonValue()
-            let encodableDict = actionJson.mapValues { AnyCodable($0) }
-            try container.encode(encodableDict, forKey: .inlineAction)
-        }
+        try container.encode(isMultiline, forKey: .isMultiline)
         try container.encode(maxLength, forKey: .maxLength)
-        try container.encode(style, forKey: .style)
-        try container.encodeIfPresent(inlineAction, forKey: .inlineAction)
+        try container.encodeIfPresent(style, forKey: .style)
         try container.encodeIfPresent(regex, forKey: .regex)
+        
+        if let action = inlineAction {
+            try container.encode(AnyCodable(try action.serializeToJsonValue()), forKey: .inlineAction)
+        }
+        
         try super.encode(to: encoder)
     }
     
-    override func toJSON() -> [String : Any] {
-        // 1) Start with the BaseElement’s JSON (which has "type", "id", fallback, etc.)
-        var json = super.toJSON()
-        
-        // 2) Insert any TextInput-specific fields:
-        if let placeholder = self.placeholder, !placeholder.isEmpty {
-            json["placeholder"] = placeholder
-        }
-        if let value = self.value, !value.isEmpty {
-            json["value"] = value
-        }
-
-        // The test specifically wants to see "isMultiline": true
-        // so always write out the actual value of isMultiline:
-        json["isMultiline"] = self.isMultiline
-
-        // If you want style always present:
-        // Or only if style != .text is up to you, but the test
-        // might check for "password" in certain cases.
-        if let style = self.style {
-            json["style"] = style.rawValue  // e.g. "password" or "text"
-        }
-
-        // If maxLength != 0, store it too:
-        if self.maxLength > 0 {
-            json["maxLength"] = maxLength
-        }
-        return json
-    }
-}
-
-/// Parses TextInput elements in an Adaptive Card.
-struct SwiftTextInputParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        // Create a new TextInput using its default initializer.
-        let textInput = SwiftTextInput()
-        
-        // Populate properties using ParseUtil helper methods.
-        textInput.placeholder = try SwiftParseUtil.getString(from: value, key: "placeholder")
-        textInput.value = try SwiftParseUtil.getString(from: value, key: "value")
-        textInput.isMultiline = try SwiftParseUtil.getBool(from: value, key: "isMultiline", defaultValue: false, required: false)
-        textInput.maxLength = try SwiftParseUtil.getUInt(from: value, key: "maxLength", defaultValue: 0, required: false)
-        textInput.style = try SwiftParseUtil.getEnumValue(from: value, key: "style", defaultValue: .text, converter: SwiftTextInputStyle.fromString)
-        textInput.inlineAction = try SwiftParseUtil.getAction(from: value, key: "inlineAction", context: context)
-        textInput.regex = try SwiftParseUtil.getString(from: value, key: "regex")
-        
-        // Validate style and multiline settings.
-        if textInput.isMultiline && textInput.style == .password {
-            context.warnings.append(
-                SwiftAdaptiveCardParseWarning(
-                    statusCode: .invalidValue,
-                    message: "Input.Text ignores isMultiline when using password style."
-                )
-            )
-        }
-        
-        return textInput
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
     
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: context, value: jsonDict)
+    override func populateKnownPropertiesSet() {
+        self.knownProperties.insert("placeholder")
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("isMultiline")
+        self.knownProperties.insert("maxLength")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("inlineAction")
+        self.knownProperties.insert("regex")
     }
 }
