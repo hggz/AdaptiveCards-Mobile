@@ -1185,3 +1185,9 @@ extension RawRepresentable where Self: Codable, RawValue == String {
 enum ParsingError: Error {
     case invalidType(expected: String, found: String)
 }
+
+/// Represents a remote resource with a URL and MIME type.
+struct SwiftRemoteResourceInformation: Codable {
+    var url: String
+    var mimeType: String
+}
