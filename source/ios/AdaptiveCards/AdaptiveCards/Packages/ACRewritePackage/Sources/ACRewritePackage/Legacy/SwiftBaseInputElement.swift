@@ -5,16 +5,23 @@ import Foundation
 class SwiftBaseInputElement: SwiftBaseCardElement {
     // MARK: - Properties
     /// The text label for the input element.
-    var label: String?
+    let label: String?
     /// Indicates whether a value is required.
-    var isRequired: Bool
+    let isRequired: Bool
     /// The error message to display if the input is invalid.
-    var errorMessage: String?
-    /// An action to execute when the input’s value changes.
-    var valueChangedAction: SwiftValueChangedAction?
+    let errorMessage: String?
+    /// An action to execute when the input's value changes.
+    let valueChangedAction: SwiftValueChangedAction?
 
-    // MARK: - Initializers
+    // MARK: - Codable
 
+    private enum CodingKeys: String, CodingKey {
+        case label
+        case isRequired
+        case errorMessage
+        case valueChangedAction
+    }
+    
     /// Designated initializer.
     /// - Parameters:
     ///   - type: The type of card element (inherited from BaseCardElement).
@@ -59,55 +66,38 @@ class SwiftBaseInputElement: SwiftBaseCardElement {
         )
     }
 
-    // MARK: - Codable
-
-    private enum CodingKeys: String, CodingKey {
-        case label
-        case isRequired
-        case errorMessage
-        case valueChangedAction
-    }
-
     /// Decodes properties from the given decoder.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.label = try container.decodeIfPresent(String.self, forKey: .label)
-        self.isRequired = try container.decodeIfPresent(Bool.self, forKey: .isRequired) ?? false
-        self.errorMessage = try container.decodeIfPresent(String.self, forKey: .errorMessage)
-        self.valueChangedAction = try container.decodeIfPresent(SwiftValueChangedAction.self, forKey: .valueChangedAction)
+        
+        // Decode all properties before super.init
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        isRequired = try container.decodeIfPresent(Bool.self, forKey: .isRequired) ?? false
+        errorMessage = try container.decodeIfPresent(String.self, forKey: .errorMessage)
+        valueChangedAction = try container.decodeIfPresent(SwiftValueChangedAction.self, forKey: .valueChangedAction)
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
 
     /// Encodes properties into the given encoder.
     override func encode(to encoder: Encoder) throws {
-        try super.encode(to: encoder)
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(label, forKey: .label)
         try container.encode(isRequired, forKey: .isRequired)
         try container.encodeIfPresent(errorMessage, forKey: .errorMessage)
         try container.encodeIfPresent(valueChangedAction, forKey: .valueChangedAction)
+        
+        try super.encode(to: encoder)
     }
-
-    // MARK: - Serialization Helpers
-
-    /// Serializes the BaseInputElement to a JSON string.
-    /// - Returns: A JSON string representation.
-    /// - Throws: An error if the encoding fails.
-    override func serialize() throws -> String {
-        let jsonData = try JSONEncoder().encode(self)
-        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-            throw SerializationError.invalidData
-        }
-        return jsonString
-    }
-
-    /// Determines whether this element has sufficient data to be serialized.
-    /// Checks if at least one of the key properties is non-empty.
-    func shouldSerialize() -> Bool {
-        // Assuming `id` is a property inherited from BaseElement (via BaseCardElement).
-        let idNotEmpty = (super.id ?? "").isEmpty == false
-        let labelNotEmpty = !(label?.isEmpty ?? true)
-        let errorMessageNotEmpty = !(errorMessage?.isEmpty ?? true)
-        return idNotEmpty || isRequired || labelNotEmpty || errorMessageNotEmpty
+    
+    // MARK: - Serialization to JSON
+    /// Serializes the BaseInputElement to a JSON dictionary.
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
 }

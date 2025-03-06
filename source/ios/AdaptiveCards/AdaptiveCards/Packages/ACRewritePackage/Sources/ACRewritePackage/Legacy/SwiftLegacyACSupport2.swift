@@ -461,3 +461,152 @@ internal extension SwiftCompoundButton {
         self.knownProperties.insert("selectAction")
     }
 }
+
+// MARK: - Consolidated SwiftValueChangedAction Legacy Support
+
+/// Unified legacy support for SwiftValueChangedAction parsing and serialization
+enum SwiftValueChangedActionLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftValueChangedAction
+    static func deserialize(from value: [String: Any]) throws -> SwiftValueChangedAction {
+        // Convert dictionary to JSON data and let the decoder handle the validation
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftValueChangedAction.self, from: data)
+    }
+    /// Deserializes string into a SwiftValueChangedAction
+    static func deserialize(from jsonString: String) throws -> SwiftValueChangedAction {
+        guard let data = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try deserialize(from: jsonObject)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftValueChangedAction to JSON dictionary with proper formatting
+    static func serializeToJson(_ action: SwiftValueChangedAction) -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        if !action.targetInputIds.isEmpty {
+            json["targetInputIds"] = action.targetInputIds
+        }
+        
+        json["valueChangedActionType"] = action.valueChangedActionType.rawValue
+        
+        return json
+    }
+    
+    /// Determines whether this action has sufficient data to be serialized.
+    static func shouldSerialize(_ action: SwiftValueChangedAction) -> Bool {
+        return !action.targetInputIds.isEmpty
+    }
+}
+
+// MARK: - SwiftValueChangedAction Extension
+
+extension SwiftValueChangedAction {
+    // MARK: - Serialization Helpers
+    
+    var shouldSerialize: Bool {
+        return SwiftValueChangedActionLegacySupport.shouldSerialize(self)
+    }
+    
+    // Static Methods for Serialization/Deserialization
+    
+    static func deserialize(from json: [String: Any]) -> SwiftValueChangedAction? {
+        return try? SwiftValueChangedActionLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) -> SwiftValueChangedAction? {
+        return try? SwiftValueChangedActionLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func serializeAction(_ action: SwiftValueChangedAction) throws -> [String: Any] {
+        return SwiftValueChangedActionLegacySupport.serializeToJson(action)
+    }
+}
+
+// MARK: - Consolidated SwiftBaseInputElement Legacy Support
+
+/// Unified legacy support for SwiftBaseInputElement parsing and serialization
+enum SwiftBaseInputElementLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftBaseInputElement
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftBaseInputElement {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftBaseInputElement.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftBaseInputElement
+    static func deserialize(from jsonString: String) throws -> SwiftBaseInputElement {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftBaseInputElement.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftBaseInputElement to JSON dictionary with proper formatting
+    static func serializeToJson(_ inputElement: SwiftBaseInputElement, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Add label if present
+        if let label = inputElement.label {
+            json["label"] = label
+        }
+        
+        // Only add non-default properties
+        if inputElement.isRequired {
+            json["isRequired"] = inputElement.isRequired
+        }
+        
+        if let errorMessage = inputElement.errorMessage {
+            json["errorMessage"] = errorMessage
+        }
+        
+        // Add valueChangedAction if present
+        if let action = inputElement.valueChangedAction {
+            json["valueChangedAction"] = try SwiftValueChangedAction.serializeAction(action)
+        }
+        
+        return json
+    }
+    
+    /// Determines whether this element has sufficient data to be serialized.
+    static func shouldSerialize(_ inputElement: SwiftBaseInputElement) -> Bool {
+        // Assuming `id` is a property inherited from BaseElement (via BaseCardElement).
+        let idNotEmpty = (inputElement.id ?? "").isEmpty == false
+        let labelNotEmpty = !(inputElement.label?.isEmpty ?? true)
+        let errorMessageNotEmpty = !(inputElement.errorMessage?.isEmpty ?? true)
+        return idNotEmpty || inputElement.isRequired || labelNotEmpty || errorMessageNotEmpty
+    }
+}
+
+// MARK: - SwiftBaseInputElement Extension
+
+internal extension SwiftBaseInputElement {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftBaseInputElementLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("label")
+        self.knownProperties.insert("isRequired")
+        self.knownProperties.insert("errorMessage")
+        self.knownProperties.insert("valueChangedAction")
+    }
+    
+    /// Determines whether this element has sufficient data to be serialized.
+    func shouldSerialize() -> Bool {
+        return SwiftBaseInputElementLegacySupport.shouldSerialize(self)
+    }
+}
