@@ -1,108 +1,167 @@
 import Foundation
 
-struct SwiftTextRun: SwiftInline, Codable {
+/// Represents a text run element in an Adaptive Card
+struct SwiftTextRun: Codable, SwiftInline {
+    // MARK: - Properties
     let inlineType: SwiftInlineElementType = .textRun
+    
+    /// The text content of the text run
+    let text: String
+    
+    /// Optional text size
+    let textSize: SwiftTextSize?
+    
+    /// Optional text weight
+    let textWeight: SwiftTextWeight?
+    
+    /// Optional font type
+    let fontType: SwiftFontType?
+    
+    /// Optional text color
+    let textColor: SwiftForegroundColor?
+    
+    /// Optional subtle text flag
+    let isSubtle: Bool?
+    
+    /// Italic text flag
+    let italic: Bool
+    
+    /// Strikethrough text flag
+    let strikethrough: Bool
+    
+    /// Highlight text flag
+    let highlight: Bool
+    
+    /// Underline text flag
+    let underline: Bool
+    
+    /// Optional language
+    let language: String?
+    
+    /// Optional select action
+    let selectAction: SwiftBaseActionElement?
+    
+    /// Additional properties not explicitly defined
     var additionalProperties: [String: AnyCodable] = [:]
     
-    var text: String
-    var textSize: SwiftTextSize?
-    var textWeight: SwiftTextWeight?
-    var fontType: SwiftFontType?
-    var textColor: SwiftForegroundColor?
-    var isSubtle: Bool?
-    var italic: Bool
-    var strikethrough: Bool
-    var highlight: Bool
-    var underline: Bool
-    var language: String?
-    var selectAction: SwiftBaseActionElement?
+    // MARK: - Computed Properties
     
+    /// Unwrapped additional properties
     var unwrappedAdditionalProperties: [String: Any] {
         return additionalProperties.mapValues { $0.value }
     }
     
-    enum CodingKeys: String, CodingKey {
+    // MARK: - Coding Keys
+    
+    enum CodingKeys: String, CodingKey, CaseIterable {
         case inlineType = "type"
-        case text, textSize, textWeight, fontType, textColor, isSubtle, italic, strikethrough, highlight, underline, language, selectAction
+        case text, textSize, textWeight, fontType, textColor,
+             isSubtle, italic, strikethrough, highlight,
+             underline, language, selectAction
+        
+        // Add any additional properties not in the predefined keys
+        case additionalProperties
     }
     
-    func serializeToJson() -> [String: Any] {
-        var json = additionalProperties.mapValues { $0.value }
-        json["type"] = inlineType.rawValue
-        json["text"] = text
-        if let textSize = textSize { json["textSize"] = textSize.rawValue }
-        if let textWeight = textWeight { json["textWeight"] = textWeight.rawValue }
-        if let fontType = fontType { json["fontType"] = fontType.rawValue }
-        if let textColor = textColor { json["textColor"] = textColor.rawValue }
-        if let isSubtle = isSubtle { json["isSubtle"] = isSubtle }
-        json["italic"] = italic
-        json["strikethrough"] = strikethrough
-        json["highlight"] = highlight
-        json["underline"] = underline
-        if let language = language { json["language"] = language }
-        if let selectAction = selectAction { json["selectAction"] = selectAction.toJSON()}
-        return json
+    // MARK: - Initializers
+    
+    init(
+        text: String,
+        textSize: SwiftTextSize? = nil,
+        textWeight: SwiftTextWeight? = nil,
+        fontType: SwiftFontType? = nil,
+        textColor: SwiftForegroundColor? = nil,
+        isSubtle: Bool? = nil,
+        italic: Bool = false,
+        strikethrough: Bool = false,
+        highlight: Bool = false,
+        underline: Bool = false,
+        language: String? = "en", // Default to "en"
+        selectAction: SwiftBaseActionElement? = nil,
+        additionalProperties: [String: AnyCodable] = [:]
+    ) {
+        self.text = text
+        self.textSize = textSize
+        self.textWeight = textWeight
+        self.fontType = fontType
+        self.textColor = textColor
+        self.isSubtle = isSubtle
+        self.italic = italic
+        self.strikethrough = strikethrough
+        self.highlight = highlight
+        self.underline = underline
+        self.language = language // Defaults to "en" if nil
+        self.selectAction = selectAction
+        self.additionalProperties = additionalProperties
     }
     
-    static func deserialize(from json: [String: Any]) throws -> SwiftTextRun? {
-        guard let text = json["text"] as? String else { return nil }
+    // MARK: - Decoding
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
         
-        var additionalProperties = json
-        additionalProperties.removeValue(forKey: "type")
-        additionalProperties.removeValue(forKey: "text")
-        additionalProperties.removeValue(forKey: "selectAction")
-        additionalProperties.removeValue(forKey: "color")
-        additionalProperties.removeValue(forKey: "size")
-        additionalProperties.removeValue(forKey: "weight")
+        // Decode required properties
+        text = try container.decode(String.self, forKey: .text)
         
-        // Map properties using AdaptiveCardSchemaKey-style mapping
-        let textSize: SwiftTextSize?
-        if let sizeString = json["textSize"] as? String {
-            textSize = SwiftTextSize.fromString(sizeString)
-        } else if let sizeString = json["size"] as? String {
-            textSize = SwiftTextSize.fromString(sizeString)
-        } else {
-            textSize = nil
-        }
-        let textWeight = (json["weight"] as? String).flatMap { SwiftTextWeight(rawValue: $0) }
-        let fontType = (json["fontType"] as? String).flatMap { SwiftFontType(rawValue: $0) }
-        let textColor = (json["color"] as? String).flatMap { SwiftForegroundColor.fromString($0) }
-        let isSubtle = json["isSubtle"] as? Bool
-        let italic = json["italic"] as? Bool ?? false
-        let strikethrough = json["strikethrough"] as? Bool ?? false
-        let highlight = json["highlight"] as? Bool ?? false
-        let underline = json["underline"] as? Bool ?? false
-        let language = json["lang"] as? String ?? "en" // Note: In C++ it uses "lang" key
+        // Decode optional properties
+        textSize = try container.decodeIfPresent(SwiftTextSize.self, forKey: .textSize)
+        textWeight = try container.decodeIfPresent(SwiftTextWeight.self, forKey: .textWeight)
+        fontType = try container.decodeIfPresent(SwiftFontType.self, forKey: .fontType)
+        textColor = try container.decodeIfPresent(SwiftForegroundColor.self, forKey: .textColor)
+        isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
         
-        // Handle selectAction
-        let selectAction: SwiftBaseActionElement?
-        if let actionData = json["selectAction"] {
-            if let dict = actionData as? [String: AnyCodable],
-               let typeAnyCodable = dict["type"],
-               let typeString = typeAnyCodable.value as? String {
-                let actionDict: [String: Any] = ["type": typeString]
-                selectAction = try SwiftBaseActionElement.deserializeAction(from: actionDict)
-            } else {
-                selectAction = nil
+        // Decode flags with default values
+        italic = try container.decodeIfPresent(Bool.self, forKey: .italic) ?? false
+        strikethrough = try container.decodeIfPresent(Bool.self, forKey: .strikethrough) ?? false
+        highlight = try container.decodeIfPresent(Bool.self, forKey: .highlight) ?? false
+        underline = try container.decodeIfPresent(Bool.self, forKey: .underline) ?? false
+        
+        // Decode optional properties
+        language = try container.decodeIfPresent(String.self, forKey: .language)
+        selectAction = try container.decodeIfPresent(SwiftBaseActionElement.self, forKey: .selectAction)
+        
+        // Handle additional properties
+        additionalProperties = [:]
+        let allKeys = container.allKeys
+        for key in allKeys {
+            // Skip already decoded keys
+            guard !CodingKeys.allCases.contains(key) else { continue }
+            
+            // Try to decode any additional properties
+            if let value = try? container.decode(AnyCodable.self, forKey: key) {
+                additionalProperties[key.stringValue] = value
             }
-        } else {
-            selectAction = nil
         }
+    }
+    
+    // MARK: - Encoding
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
         
-        return SwiftTextRun(
-            additionalProperties: additionalProperties.mapValues { AnyCodable($0) },
-            text: text,
-            textSize: textSize,
-            textWeight: textWeight,
-            fontType: fontType,
-            textColor: textColor,
-            isSubtle: isSubtle,
-            italic: italic,
-            strikethrough: strikethrough,
-            highlight: highlight,
-            underline: underline,
-            language: language,
-            selectAction: selectAction
-        )
+        // Encode required properties
+        try container.encode(text, forKey: .text)
+        
+        // Encode optional properties that are not nil
+        try container.encodeIfPresent(textSize, forKey: .textSize)
+        try container.encodeIfPresent(textWeight, forKey: .textWeight)
+        try container.encodeIfPresent(fontType, forKey: .fontType)
+        try container.encodeIfPresent(textColor, forKey: .textColor)
+        try container.encodeIfPresent(isSubtle, forKey: .isSubtle)
+        
+        // Encode flags when true
+        if italic { try container.encode(italic, forKey: .italic) }
+        if strikethrough { try container.encode(strikethrough, forKey: .strikethrough) }
+        if highlight { try container.encode(highlight, forKey: .highlight) }
+        if underline { try container.encode(underline, forKey: .underline) }
+        
+        // Encode optional properties
+        try container.encodeIfPresent(language, forKey: .language)
+        try container.encodeIfPresent(selectAction, forKey: .selectAction)
+        
+        // Encode additional properties
+        for (key, value) in additionalProperties {
+            try? container.encode(value, forKey: CodingKeys(rawValue: key)!)
+        }
     }
 }

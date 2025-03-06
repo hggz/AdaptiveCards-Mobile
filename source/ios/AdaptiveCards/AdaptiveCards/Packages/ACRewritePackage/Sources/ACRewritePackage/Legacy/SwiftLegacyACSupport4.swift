@@ -849,3 +849,193 @@ extension SwiftTextElementProperties {
         return try SwiftTextElementPropertiesLegacySupport.serializeToJsonString(self)
     }
 }
+
+import Foundation
+
+// MARK: - TextRun Legacy Support
+
+/// Unified legacy support for SwiftTextRun parsing and serialization
+enum SwiftTextRunLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftTextRun
+    static func deserialize(from value: [String: Any]) throws -> SwiftTextRun? {
+        // Use the existing deserialize method from SwiftTextRun
+        return try SwiftTextRun.deserialize(from: value)
+    }
+    
+    /// Deserializes string into a SwiftTextRun
+    static func deserialize(from jsonString: String) throws -> SwiftTextRun? {
+        guard let data = jsonString.data(using: .utf8),
+              let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try deserialize(from: json)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftTextRun to JSON dictionary with proper formatting
+    static func serializeToJson(_ textRun: SwiftTextRun) -> [String: Any] {
+        var json = textRun.additionalProperties.mapValues { $0.value }
+        
+        // Set type property
+        json["type"] = SwiftInlineElementType.textRun.rawValue
+        
+        // Add required property
+        json["text"] = textRun.text
+        
+        // Add optional properties
+        if let textSize = textRun.textSize {
+            json["textSize"] = textSize.rawValue
+            json["size"] = textSize.rawValue // Alternate key for compatibility
+        }
+        
+        if let textWeight = textRun.textWeight {
+            json["textWeight"] = textWeight.rawValue
+            json["weight"] = textWeight.rawValue // Alternate key for compatibility
+        }
+        
+        if let fontType = textRun.fontType {
+            json["fontType"] = fontType.rawValue
+        }
+        
+        if let textColor = textRun.textColor {
+            json["textColor"] = textColor.rawValue
+            json["color"] = textColor.rawValue // Alternate key for compatibility
+        }
+        
+        if let isSubtle = textRun.isSubtle {
+            json["isSubtle"] = isSubtle
+        }
+        
+        // Encode flags when true
+        if textRun.italic { json["italic"] = true }
+        if textRun.strikethrough { json["strikethrough"] = true }
+        if textRun.highlight { json["highlight"] = true }
+        if textRun.underline { json["underline"] = true }
+        
+        // Add language if present (with alternate key)
+        if let language = textRun.language {
+            json["language"] = language
+            json["lang"] = language
+        }
+        
+        // Add selectAction if present
+        if let selectAction = textRun.selectAction {
+            json["selectAction"] = try? SwiftBaseCardElement.serializeSelectAction(selectAction)
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ textRun: SwiftTextRun) throws -> String {
+        let json = serializeToJson(textRun)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftTextRun Extension for Deserialization
+
+extension SwiftTextRun {
+    /// Static method to deserialize from a JSON dictionary
+    static func deserialize(from json: [String: Any]) throws -> SwiftTextRun? {
+        guard let text = json["text"] as? String else { return nil }
+        
+        // Create a mutable copy of additional properties
+        var additionalProperties = json
+        additionalProperties.removeValue(forKey: "type")
+        additionalProperties.removeValue(forKey: "text")
+        additionalProperties.removeValue(forKey: "selectAction")
+        
+        // Mapping for legacy keys
+        let sizeString = json["textSize"] as? String ?? json["size"] as? String
+        let textSize = sizeString.flatMap { SwiftTextSize.fromString($0) }
+        
+        let textWeight = (json["textWeight"] as? String ?? json["weight"] as? String)
+            .flatMap { SwiftTextWeight(rawValue: $0) }
+        
+        let fontType = (json["fontType"] as? String)
+            .flatMap { SwiftFontType(rawValue: $0) }
+        
+        let textColor = (json["textColor"] as? String ?? json["color"] as? String)
+            .flatMap { SwiftForegroundColor.fromString($0) }
+        
+        let isSubtle = json["isSubtle"] as? Bool
+        
+        let italic = json["italic"] as? Bool ?? false
+        let strikethrough = json["strikethrough"] as? Bool ?? false
+        let highlight = json["highlight"] as? Bool ?? false
+        let underline = json["underline"] as? Bool ?? false
+        
+        // Language handling with fallback
+        let language = json["language"] as? String ?? json["lang"] as? String
+        
+        // Handle selectAction
+        let selectAction: SwiftBaseActionElement?
+        if let actionData = json["selectAction"] {
+            if let dict = actionData as? [String: AnyCodable],
+               let typeAnyCodable = dict["type"],
+               let typeString = typeAnyCodable.value as? String {
+                let actionDict: [String: Any] = ["type": typeString]
+                selectAction = try SwiftBaseActionElement.deserializeAction(from: actionDict)
+            } else {
+                selectAction = nil
+            }
+        } else {
+            selectAction = nil
+        }
+        
+        // Remove keys that have been processed
+        additionalProperties.removeValue(forKey: "textSize")
+        additionalProperties.removeValue(forKey: "size")
+        additionalProperties.removeValue(forKey: "weight")
+        additionalProperties.removeValue(forKey: "textWeight")
+        additionalProperties.removeValue(forKey: "fontType")
+        additionalProperties.removeValue(forKey: "textColor")
+        additionalProperties.removeValue(forKey: "color")
+        additionalProperties.removeValue(forKey: "isSubtle")
+        additionalProperties.removeValue(forKey: "italic")
+        additionalProperties.removeValue(forKey: "strikethrough")
+        additionalProperties.removeValue(forKey: "highlight")
+        additionalProperties.removeValue(forKey: "underline")
+        additionalProperties.removeValue(forKey: "language")
+        additionalProperties.removeValue(forKey: "lang")
+        
+        return SwiftTextRun(
+            text: text,
+            textSize: textSize,
+            textWeight: textWeight,
+            fontType: fontType,
+            textColor: textColor,
+            isSubtle: isSubtle,
+            italic: italic,
+            strikethrough: strikethrough,
+            highlight: highlight,
+            underline: underline,
+            language: language ?? "en", // Default to "en" if nil
+            selectAction: selectAction,
+            additionalProperties: additionalProperties.mapValues { AnyCodable($0) }
+        )
+    }
+}
+
+// MARK: - Convenience Extension
+
+extension SwiftTextRun {
+    /// Serializes the text run to a JSON dictionary
+    func serializeToJson() -> [String: Any] {
+        return SwiftTextRunLegacySupport.serializeToJson(self)
+    }
+    
+    /// Serializes the text run to a JSON string
+    func serializeToJsonString() throws -> String {
+        return try SwiftTextRunLegacySupport.serializeToJsonString(self)
+    }
+}
