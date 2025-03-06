@@ -1,11 +1,13 @@
 import Foundation
 
 final class SwiftUnknownAction: SwiftBaseActionElement {
+    // Store the original type string from JSON.
     private var originalTypeString: String
 
     override var typeString: String {
         get {
-            // Special case for "Action.Invalid"
+            // Special handling: if the original type is "Action.Invalid",
+            // return the standardized unknown action type.
             if originalTypeString == "Action.Invalid" {
                 return SwiftActionType.unknownAction.rawValue
             }
@@ -14,24 +16,29 @@ final class SwiftUnknownAction: SwiftBaseActionElement {
         set { originalTypeString = newValue }
     }
     
+    /// Designated initializer.
     init(type: String) {
         self.originalTypeString = type
         super.init(type: .unknownAction)
     }
     
+    /// Custom decoder that captures all JSON properties.
     required init(from decoder: Decoder) throws {
+        // Use dynamic coding keys to iterate over all keys.
         let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
         
-        // Get original type
+        // Retrieve the original type from the JSON.
         guard let typeKey = container.allKeys.first(where: { $0.stringValue == "type" }),
               let typeString = try? container.decode(String.self, forKey: typeKey) else {
-            throw DecodingError.dataCorruptedError(forKey: .init(stringValue: "type")!,
-                                                  in: container,
-                                                  debugDescription: "Type is required")
+            throw DecodingError.dataCorruptedError(
+                forKey: DynamicCodingKeys(stringValue: "type")!,
+                in: container,
+                debugDescription: "Type is required"
+            )
         }
         self.originalTypeString = typeString
         
-        // Decode all properties
+        // Decode all properties into a dictionary.
         var properties = [String: AnyCodable]()
         for key in container.allKeys {
             properties[key.stringValue] = try container.decode(AnyCodable.self, forKey: key)
@@ -41,25 +48,18 @@ final class SwiftUnknownAction: SwiftBaseActionElement {
         self.additionalProperties = properties
     }
     
-    override func serializeToJsonValue() throws -> [String: Any] {
-        // Return all properties including type from additionalProperties
-        return additionalProperties?.mapValues { $0.value } ?? [:]
-    }
-}
-
-final class UnknownActionParser: SwiftActionElementParser {
-    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        guard let typeString = json["type"] as? String else {
-            throw AdaptiveCardParseError.invalidType
+    /// Encode additional properties using dynamic keys.
+    override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: DynamicCodingKeys.self)
+        if let additionalProperties = additionalProperties {
+            for (key, value) in additionalProperties {
+                try container.encode(value, forKey: DynamicCodingKeys(stringValue: key)!)
+            }
         }
-        
-        let unknownAction = SwiftUnknownAction(type: typeString)
-        unknownAction.additionalProperties = json.mapValues { AnyCodable($0) }
-        return unknownAction
     }
     
-    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
-        let json = try SwiftParseUtil.getJsonDictionary(from: jsonString)
-        return try deserialize(context: context, from: json)
+    /// Legacy serialization: returns all captured properties.
+    override func serializeToJsonValue() throws -> [String: Any] {
+        return additionalProperties?.mapValues { $0.value } ?? [:]
     }
 }

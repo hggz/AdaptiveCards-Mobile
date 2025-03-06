@@ -522,3 +522,48 @@ extension SwiftSubmitAction {
         return action
     }
 }
+
+enum SwiftToggleVisibilityActionLegacySupport {
+    /// Deserializes a SwiftToggleVisibilityAction from a JSON dictionary.
+    static func deserialize(from json: [String: Any], context: SwiftParseContext) throws -> SwiftToggleVisibilityAction {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftToggleVisibilityAction.self, from: data)
+    }
+    
+    /// Deserializes a SwiftToggleVisibilityAction from a JSON string.
+    static func deserialize(from jsonString: String, context: SwiftParseContext) throws -> SwiftToggleVisibilityAction {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try JSONDecoder().decode(SwiftToggleVisibilityAction.self, from: data)
+    }
+}
+
+class ToggleVisibilityActionParser: SwiftActionElementParser {
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftToggleVisibilityActionLegacySupport.deserialize(from: json, context: context)
+    }
+    
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftToggleVisibilityActionLegacySupport.deserialize(from: jsonString, context: context)
+    }
+}
+
+final class UnknownActionParser: SwiftActionElementParser {
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        guard let typeString = json["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        // Create an unknown action with the original type.
+        let unknownAction = SwiftUnknownAction(type: typeString)
+        // Store all JSON key–value pairs in additionalProperties.
+        unknownAction.additionalProperties = json.mapValues { AnyCodable($0) }
+        return unknownAction
+    }
+    
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        let json = try SwiftParseUtil.getJsonDictionary(from: jsonString)
+        return try deserialize(context: context, from: json)
+    }
+}
