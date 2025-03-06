@@ -824,3 +824,286 @@ extension SwiftRatingInput {
         }
     }
 }
+
+// MARK: - Consolidated SwiftRatingLabel Legacy Support
+
+/// Unified legacy support for SwiftRatingLabel parsing and serialization
+enum SwiftRatingLabelLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftRatingLabel
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftRatingLabel {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftRatingLabel.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftRatingLabel
+    static func deserialize(from jsonString: String) throws -> SwiftRatingLabel {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftRatingLabel.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftRatingLabel to JSON dictionary with proper formatting
+    static func serializeToJson(_ ratingLabel: SwiftRatingLabel, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "RatingLabel"
+        json["value"] = ratingLabel.value
+        json["max"] = ratingLabel.max
+        
+        // Add optional properties
+        if let count = ratingLabel.count {
+            json["count"] = count
+        }
+        
+        if let alignment = ratingLabel.horizontalAlignment {
+            json["horizontalAlignment"] = alignment.rawValue
+        }
+        
+        // Only include non-default values
+        if ratingLabel.size != .medium {
+            json["size"] = ratingLabel.size.rawValue
+        }
+        
+        if ratingLabel.color != .neutral {
+            json["color"] = ratingLabel.color.rawValue
+        }
+        
+        if ratingLabel.style != .default {
+            json["style"] = ratingLabel.style.rawValue
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ ratingLabel: SwiftRatingLabel) -> String {
+        do {
+            // Use the full serialization path for consistency
+            let baseJson = try ratingLabel.serializeToJsonValue()
+            let jsonData = try JSONSerialization.data(withJSONObject: baseJson, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(baseJson, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses RatingLabel elements in an Adaptive Card
+struct SwiftRatingLabelParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.ratingLabel)
+        return try SwiftRatingLabelLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRatingLabelLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRatingLabelLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftRatingLabel Extension
+
+internal extension SwiftRatingLabel {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftRatingLabelLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("max")
+        self.knownProperties.insert("count")
+        self.knownProperties.insert("horizontalAlignment")
+        self.knownProperties.insert("size")
+        self.knownProperties.insert("color")
+        self.knownProperties.insert("style")
+    }
+    
+    // Legacy compatibility methods
+    func serializeToJson() -> [String: Any] {
+        do {
+            return try self.serializeToJsonValue()
+        } catch {
+            return [:]
+        }
+    }
+    
+    func toJSONString() -> String {
+        return SwiftRatingLabelLegacySupport.serializeToJsonString(self)
+    }
+}
+
+// Legacy static methods for backward compatibility
+extension SwiftRatingLabel {
+    static func createFromJSON(_ json: [String: Any]) throws -> SwiftRatingLabel {
+        return try SwiftRatingLabelLegacySupport.deserialize(from: json)
+    }
+    
+    static func createFromJSONString(_ jsonString: String) throws -> SwiftRatingLabel {
+        return try SwiftRatingLabelLegacySupport.deserialize(from: jsonString)
+    }
+    
+    /// Factory method for creating SwiftRatingLabel instances
+    static func create(id: String? = nil,
+                       value: Double = 0,
+                       max: Double = 5,
+                       count: UInt? = nil,
+                       horizontalAlignment: SwiftHorizontalAlignment? = nil,
+                       size: SwiftRatingSize = .medium,
+                       color: SwiftRatingColor = .neutral,
+                       style: SwiftRatingStyle = .default,
+                       spacing: SwiftSpacing? = nil,
+                       height: SwiftHeightType? = nil,
+                       targetWidth: SwiftTargetWidthType? = nil,
+                       separator: Bool? = nil,
+                       isVisible: Bool = true,
+                       areaGridName: String? = nil) -> SwiftRatingLabel {
+        
+        // Create a JSON dictionary with all properties
+        var json: [String: Any] = [
+            "type": "RatingLabel",
+            "value": value,
+            "max": max,
+            "size": size.rawValue,
+            "color": color.rawValue,
+            "style": style.rawValue,
+            "isVisible": isVisible
+        ]
+        
+        // Add optional properties
+        if let id = id { json["id"] = id }
+        if let count = count { json["count"] = count }
+        if let horizontalAlignment = horizontalAlignment { json["horizontalAlignment"] = horizontalAlignment.rawValue }
+        if let spacing = spacing { json["spacing"] = spacing.rawValue }
+        if let height = height { json["height"] = height.rawValue }
+        if let targetWidth = targetWidth { json["targetWidth"] = targetWidth.rawValue }
+        if let separator = separator { json["separator"] = separator }
+        if let areaGridName = areaGridName { json["areaGridName"] = areaGridName }
+        
+        // Use JSON deserialization to create the instance
+        do {
+            return try SwiftRatingLabelLegacySupport.deserialize(from: json)
+        } catch {
+            // Create a minimal instance if deserialization fails
+            var minimalJson: [String: Any] = [
+                "type": "RatingLabel",
+                "value": 0.0,
+                "max": 5.0,
+                "size": "medium",
+                "color": "neutral",
+                "style": "default",
+                "isVisible": true
+            ]
+            if let id = id { minimalJson["id"] = id }
+            
+            // This should almost never fail, but we need a fallback
+            return try! SwiftRatingLabelLegacySupport.deserialize(from: minimalJson)
+        }
+    }
+}
+
+// MARK: - Consolidated SwiftRefresh Legacy Support
+
+/// Unified legacy support for SwiftRefresh parsing and serialization
+enum SwiftRefreshLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftRefresh
+    static func deserialize(from value: [String: Any]) throws -> SwiftRefresh {
+        let action: SwiftBaseActionElement? = try? SwiftBaseActionElement.deserializeAction(from: value["action"] as? [String: Any] ?? [:])
+        let userIds = value["userIds"] as? [String] ?? []
+        return SwiftRefresh(action: action, userIds: userIds)
+    }
+    
+    /// Deserializes string into a SwiftRefresh
+    static func deserialize(from jsonString: String) throws -> SwiftRefresh {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw SwiftJSONError.missingKey("Unable to parse JSON string")
+        }
+        
+        return try deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftRefresh to JSON dictionary
+    static func serializeToJson(_ refresh: SwiftRefresh) -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        if let action = refresh.action {
+            json["action"] = action.toJSON()
+        }
+        
+        if !refresh.userIds.isEmpty {
+            json["userIds"] = refresh.userIds
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ refresh: SwiftRefresh) -> String {
+        do {
+            let json = serializeToJson(refresh)
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(json, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+}
+
+// MARK: - SwiftRefresh Extension
+
+extension SwiftRefresh {
+    // Static factory methods for backward compatibility
+    static func deserialize(from json: [String: Any]) throws -> SwiftRefresh {
+        return try SwiftRefreshLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) throws -> SwiftRefresh {
+        return try SwiftRefreshLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // Additional utility methods
+    static func fromJSON(_ json: [String: Any]) -> SwiftRefresh? {
+        guard !json.isEmpty else { return nil }
+        return try? SwiftRefreshLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftRefresh? {
+        return try? SwiftRefreshLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // Serialization to string
+    func toJSONString() -> String {
+        return SwiftRefreshLegacySupport.serializeToJsonString(self)
+    }
+}

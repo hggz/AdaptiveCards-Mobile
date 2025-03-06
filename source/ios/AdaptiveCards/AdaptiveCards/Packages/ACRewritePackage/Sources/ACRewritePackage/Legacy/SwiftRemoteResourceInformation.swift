@@ -4,9 +4,4 @@ import Foundation
 struct SwiftRemoteResourceInformation: Codable {
     var url: String
     var mimeType: String
-
-    init(url: String, mimeType: String) {
-        self.url = url
-        self.mimeType = mimeType
-    }
 }

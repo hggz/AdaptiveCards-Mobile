@@ -2,52 +2,16 @@ import Foundation
 
 /// Represents a rating label element in an Adaptive Card.
 class SwiftRatingLabel: SwiftBaseCardElement {
-    var value: Double
-    var max: Double
-    var count: UInt?
-    var horizontalAlignment: SwiftHorizontalAlignment?
-    var size: SwiftRatingSize
-    var color: SwiftRatingColor
-    var style: SwiftRatingStyle
-
-    /// Designated initializer.
-    init(id: String? = nil,
-         value: Double = 0,
-         max: Double = 5,
-         count: UInt? = nil,
-         horizontalAlignment: SwiftHorizontalAlignment? = nil,
-         size: SwiftRatingSize = .medium,
-         color: SwiftRatingColor = .neutral,
-         style: SwiftRatingStyle = .default,
-         spacing: SwiftSpacing? = nil,
-         height: SwiftHeightType? = nil,
-         targetWidth: SwiftTargetWidthType? = nil,
-         separator: Bool? = nil,
-         isVisible: Bool = true,
-         areaGridName: String? = nil) {
-        
-        self.value = value
-        self.max = max
-        self.count = count
-        self.horizontalAlignment = horizontalAlignment
-        self.size = size
-        self.color = color
-        self.style = style
-        
-        // Ensure CardElementType has a case for ratingLabel.
-        super.init(
-            type: .ratingLabel,
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName,
-            id: id
-        )
-    }
+    // MARK: - Properties
+    let value: Double
+    let max: Double
+    let count: UInt?
+    let horizontalAlignment: SwiftHorizontalAlignment?
+    let size: SwiftRatingSize
+    let color: SwiftRatingColor
+    let style: SwiftRatingStyle
     
-    // MARK: - Codable
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case value, max, count, horizontalAlignment, size, color, style
@@ -55,14 +19,21 @@ class SwiftRatingLabel: SwiftBaseCardElement {
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.value = try container.decode(Double.self, forKey: .value)
-        self.max = try container.decode(Double.self, forKey: .max)
-        self.count = try container.decodeIfPresent(UInt.self, forKey: .count)
-        self.horizontalAlignment = try container.decodeIfPresent(SwiftHorizontalAlignment.self, forKey: .horizontalAlignment)
-        self.size = try container.decode(SwiftRatingSize.self, forKey: .size)
-        self.color = try container.decode(SwiftRatingColor.self, forKey: .color)
-        self.style = try container.decode(SwiftRatingStyle.self, forKey: .style)
+        
+        // Decode all properties before super.init
+        value = try container.decode(Double.self, forKey: .value)
+        max = try container.decode(Double.self, forKey: .max)
+        count = try container.decodeIfPresent(UInt.self, forKey: .count)
+        horizontalAlignment = try container.decodeIfPresent(SwiftHorizontalAlignment.self, forKey: .horizontalAlignment)
+        size = try container.decodeIfPresent(SwiftRatingSize.self, forKey: .size) ?? .medium
+        color = try container.decodeIfPresent(SwiftRatingColor.self, forKey: .color) ?? .neutral
+        style = try container.decodeIfPresent(SwiftRatingStyle.self, forKey: .style) ?? .default
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -77,76 +48,9 @@ class SwiftRatingLabel: SwiftBaseCardElement {
         try super.encode(to: encoder)
     }
     
-    // MARK: - JSON Serialization
-    
-    /// Converts the RatingLabel object into a JSON dictionary.
-    /// It starts with the BaseCardElement JSON and adds RatingLabel–specific keys.
-    func serializeToJson() -> [String: Any] {
-        var json = [String: Any]()
-        if let baseJson = try? self.serializeToJsonValue() {
-            json = baseJson
-        }
-        
-        json["value"] = value
-        json["max"] = max
-        
-        if let count = count {
-            json["count"] = count
-        }
-        
-        if let alignment = horizontalAlignment {
-            json["horizontalAlignment"] = alignment.rawValue
-        }
-        
-        if size != .medium {
-            json["size"] = size.rawValue
-        }
-        
-        if color != .neutral {
-            json["color"] = color.rawValue
-        }
-        
-        if style != .default {
-            json["style"] = style.rawValue
-        }
-        
-        return json
-    }
-    
-    /// Returns a JSON string representation.
-    func toJSONString() -> String {
-        do {
-            let data = try JSONSerialization.data(withJSONObject: serializeToJson(), options: .prettyPrinted)
-            return String(data: data, encoding: .utf8) ?? "{}"
-        } catch {
-            return "{}"
-        }
-    }
-    
-    // MARK: - Utility Deserialization
-    
-    /// Creates a RatingLabel object from a JSON dictionary.
-    static func createFromJSON(_ json: [String: Any]) throws -> SwiftRatingLabel {
-        let data = try JSONSerialization.data(withJSONObject: json, options: [])
-        return try JSONDecoder().decode(SwiftRatingLabel.self, from: data)
-    }
-    
-    /// Creates a RatingLabel object from a JSON string.
-    static func createFromJSONString(_ jsonString: String) throws -> SwiftRatingLabel {
-        guard let data = jsonString.data(using: .utf8) else {
-            throw NSError(domain: "Invalid JSON String", code: 0, userInfo: nil)
-        }
-        return try JSONDecoder().decode(SwiftRatingLabel.self, from: data)
-    }
-}
-
-/// Parses RatingLabel elements in an Adaptive Card.
-class SwiftRatingLabelParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftRatingLabel.createFromJSON(value)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        return try SwiftRatingLabel.createFromJSONString(value)
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
 }
