@@ -567,3 +567,285 @@ internal extension SwiftTableRow {
         return try SwiftTableRowLegacySupport.deserialize(from: jsonString, context: context)
     }
 }
+
+// MARK: - Consolidated TextBlock Legacy Support
+
+/// Unified legacy support for TextBlock parsing and serialization
+enum TextBlockLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a TextBlock
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> TextBlock {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(TextBlock.self, from: data)
+    }
+    
+    /// Deserializes string into a TextBlock
+    static func deserialize(from jsonString: String) throws -> TextBlock {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SerializationError.stringDecodingFailed
+        }
+        
+        // Convert to dictionary first
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        
+        return try deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a TextBlock to JSON dictionary with proper formatting
+    static func serializeToJson(_ textBlock: TextBlock, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Always set the type
+        json["type"] = "TextBlock"
+        json["text"] = textBlock.text
+        
+        // Only include id if it's non-nil and non-empty
+        if let id = textBlock.id, !id.isEmpty {
+            json["id"] = id
+        } else {
+            // Remove id from json if it was added by super class
+            json.removeValue(forKey: "id")
+        }
+        
+        // Only include style if it differs from default
+        if let textStyle = textBlock.textStyle, textStyle != .defaultStyle {
+            json[SwiftAdaptiveCardSchemaKey.style.rawValue] = textStyle.rawValue
+        }
+        
+        // Only include language if it's not "en"
+        if let language = textBlock.language, language != "en" {
+            json["lang"] = language
+        }
+        
+        // Include other properties only if they have non-default values
+        if let textSize = textBlock.textSize {
+            json[SwiftAdaptiveCardSchemaKey.size.rawValue] = textSize.rawValue
+        }
+        
+        if let textWeight = textBlock.textWeight {
+            json[SwiftAdaptiveCardSchemaKey.weight.rawValue] = textWeight.rawValue
+        }
+        
+        if let fontType = textBlock.fontType {
+            json[SwiftAdaptiveCardSchemaKey.fontType.rawValue] = fontType.rawValue
+        }
+        
+        if let textColor = textBlock.textColor {
+            json[SwiftAdaptiveCardSchemaKey.color.rawValue] = textColor.serializedString
+        }
+        
+        if let isSubtle = textBlock.isSubtle {
+            json[SwiftAdaptiveCardSchemaKey.isSubtle.rawValue] = isSubtle
+        }
+        
+        if textBlock.wrap {
+            json[SwiftAdaptiveCardSchemaKey.wrap.rawValue] = textBlock.wrap
+        }
+        
+        if textBlock.maxLines > 0 {
+            json[SwiftAdaptiveCardSchemaKey.maxLines.rawValue] = textBlock.maxLines
+        }
+        
+        if let horizontalAlignment = textBlock.horizontalAlignment {
+            json[SwiftAdaptiveCardSchemaKey.horizontalAlignment.rawValue] = horizontalAlignment.rawValue
+        }
+        
+        return json
+    }
+    
+    /// Serializes to JSON string
+    static func serializeToJsonString(_ textBlock: TextBlock) throws -> String {
+        let json = try textBlock.serializeToJsonValue()
+        let data = try JSONSerialization.data(withJSONObject: json, options: [.sortedKeys])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw AdaptiveCardParseError.serializationFailed
+        }
+        return jsonString + "\n"
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses TextBlock elements in an Adaptive Card.
+struct SwiftTextBlockParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        // Verify the type
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.textBlock)
+        return try TextBlockLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try TextBlockLegacySupport.deserialize(from: value)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
+        return try deserialize(context: context, value: jsonDict)
+    }
+}
+
+// MARK: - TextBlock Extensions
+
+extension TextBlock {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try TextBlockLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+
+    // MARK: - Helper Methods for HTML Entity Decoding
+    
+    /// Decodes HTML entities in the provided string using a single pass.
+    /// Supported entities: &amp;, &lt;, &gt;, &nbsp;
+    static func decodeHTMLEntities(_ input: String) -> String {
+        let pattern = "&([a-zA-Z]+);"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return input }
+        let nsInput = input as NSString
+        let matches = regex.matches(in: input, options: [], range: NSRange(location: 0, length: nsInput.length))
+        
+        var result = ""
+        var lastRangeEnd = 0
+        
+        for match in matches {
+            let matchRange = match.range
+            // Append text between last match and current match.
+            result.append(nsInput.substring(with: NSRange(location: lastRangeEnd, length: matchRange.location - lastRangeEnd)))
+            
+            let entityName = nsInput.substring(with: match.range(at: 1))
+            let replacement: String
+            switch entityName {
+            case "amp":
+                replacement = "&"
+            case "lt":
+                replacement = "<"
+            case "gt":
+                replacement = ">"
+            case "nbsp":
+                replacement = "\u{00A0}"
+            default:
+                // Leave unsupported entities unchanged.
+                replacement = nsInput.substring(with: matchRange)
+            }
+            
+            result.append(replacement)
+            lastRangeEnd = matchRange.location + matchRange.length
+        }
+        // Append any remaining text.
+        result.append(nsInput.substring(from: lastRangeEnd))
+        return result
+    }
+}
+
+// MARK: - Methods for Unit Test Compatibility
+
+extension TextBlock {
+    /// Sets the text after performing a single-pass HTML entity decode.
+    func setText(_ newText: String) {
+        self.text = TextBlock.decodeHTMLEntities(newText)
+    }
+    
+    /// Returns the (decoded) text.
+    func getText() -> String {
+        return self.text
+    }
+}
+
+// MARK: - Consolidated SwiftTextElementProperties Legacy Support
+
+/// Unified legacy support for SwiftTextElementProperties parsing and serialization
+enum SwiftTextElementPropertiesLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftTextElementProperties
+    static func deserialize(from value: [String: Any]) throws -> SwiftTextElementProperties {
+        guard value["text"] is String else {
+            throw SwiftAdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "text")
+        }
+
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftTextElementProperties.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftTextElementProperties
+    static func deserialize(from jsonString: String) throws -> SwiftTextElementProperties {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SerializationError.stringDecodingFailed
+        }
+        
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: []),
+              let jsonDict = json as? [String: Any] else {
+            throw SerializationError.invalidJsonString
+        }
+        
+        return try deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftTextElementProperties to JSON dictionary with proper formatting
+    static func serializeToJson(_ properties: SwiftTextElementProperties) -> [String: Any] {
+        var json: [String: Any] = [:]
+
+        // Add all non-nil properties
+        if let textSize = properties.textSize {
+            json["size"] = textSize.rawValue
+        }
+        if let textColor = properties.textColor {
+            json["color"] = textColor.rawValue
+        }
+        if let textWeight = properties.textWeight {
+            json["weight"] = textWeight.rawValue
+        }
+        if let fontType = properties.fontType {
+            json["fontType"] = fontType.rawValue
+        }
+        if let isSubtle = properties.isSubtle {
+            json["isSubtle"] = isSubtle
+        }
+
+        // Always include text and language
+        json["text"] = properties.text
+        json["language"] = properties.language
+
+        return json
+    }
+    
+    /// Serializes to JSON string
+    static func serializeToJsonString(_ properties: SwiftTextElementProperties) throws -> String {
+        let json = serializeToJson(properties)
+        let data = try JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw SerializationError.stringEncodingFailed
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftTextElementProperties Extension
+
+extension SwiftTextElementProperties {
+    // Legacy static factory methods
+    
+    /// Parses a `TextElementProperties` from a JSON dictionary.
+    static func fromJSON(_ json: [String: Any]) throws -> SwiftTextElementProperties {
+        return try SwiftTextElementPropertiesLegacySupport.deserialize(from: json)
+    }
+    
+    /// Parses a `TextElementProperties` from a JSON string.
+    static func fromJSONString(_ jsonString: String) throws -> SwiftTextElementProperties {
+        return try SwiftTextElementPropertiesLegacySupport.deserialize(from: jsonString)
+    }
+    
+    /// Serializes the properties to a JSON string
+    func toJSONString() throws -> String {
+        return try SwiftTextElementPropertiesLegacySupport.serializeToJsonString(self)
+    }
+}

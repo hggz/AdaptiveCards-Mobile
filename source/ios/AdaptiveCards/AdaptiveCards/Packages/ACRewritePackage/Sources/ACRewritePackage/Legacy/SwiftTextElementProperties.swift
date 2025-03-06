@@ -2,89 +2,70 @@ import Foundation
 
 /// Represents text element properties including text content, styling, and formatting options.
 struct SwiftTextElementProperties: Codable {
-    var text: String
-    var textSize: SwiftTextSize?
-    var textWeight: SwiftTextWeight?
-    var fontType: SwiftFontType?
-    var textColor: SwiftForegroundColor?
-    var isSubtle: Bool?
-    var language: String
-
-    init(
-        text: String = "",
-        textSize: SwiftTextSize? = nil,
-        textWeight: SwiftTextWeight? = nil,
-        fontType: SwiftFontType? = nil,
-        textColor: SwiftForegroundColor? = nil,
-        isSubtle: Bool? = nil,
-        language: String = ""
-    ) {
-        self.text = Self.processHTMLEntities(text)
-        self.textSize = textSize
-        self.textWeight = textWeight
-        self.fontType = fontType
-        self.textColor = textColor
-        self.isSubtle = isSubtle
-        self.language = language
+    // MARK: - Properties
+    
+    let text: String
+    let textSize: SwiftTextSize?
+    let textWeight: SwiftTextWeight?
+    let fontType: SwiftFontType?
+    let textColor: SwiftForegroundColor?
+    let isSubtle: Bool?
+    let language: String
+    
+    // MARK: - Codable Implementation
+    
+    enum CodingKeys: String, CodingKey {
+        case text
+        case textSize = "size"
+        case textWeight = "weight"
+        case fontType
+        case textColor = "color"
+        case isSubtle
+        case language
     }
-
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let rawText = try container.decode(String.self, forKey: .text)
+        text = SwiftTextElementProperties.processHTMLEntities(rawText)
+        
+        textSize = try container.decodeIfPresent(SwiftTextSize.self, forKey: .textSize)
+        textWeight = try container.decodeIfPresent(SwiftTextWeight.self, forKey: .textWeight)
+        fontType = try container.decodeIfPresent(SwiftFontType.self, forKey: .fontType)
+        textColor = try container.decodeIfPresent(SwiftForegroundColor.self, forKey: .textColor)
+        isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
+        language = try container.decodeIfPresent(String.self, forKey: .language) ?? ""
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        try container.encode(text, forKey: .text)
+        try container.encodeIfPresent(textSize, forKey: .textSize)
+        try container.encodeIfPresent(textWeight, forKey: .textWeight)
+        try container.encodeIfPresent(fontType, forKey: .fontType)
+        try container.encodeIfPresent(textColor, forKey: .textColor)
+        try container.encodeIfPresent(isSubtle, forKey: .isSubtle)
+        try container.encode(language, forKey: .language)
+    }
+    
+    // MARK: - Serialization to JSON
+    
     /// Serializes the `TextElementProperties` to a JSON dictionary.
     func toJSON() -> [String: Any] {
-        var json: [String: Any] = [:]
-
-        if let textSize = textSize {
-            json["size"] = textSize.rawValue
-        }
-        if let textColor = textColor {
-            json["color"] = textColor.rawValue
-        }
-        if let textWeight = textWeight {
-            json["weight"] = textWeight.rawValue
-        }
-        if let fontType = fontType {
-            json["fontType"] = fontType.rawValue
-        }
-        if let isSubtle = isSubtle {
-            json["isSubtle"] = isSubtle
-        }
-
-        json["text"] = text
-        json["language"] = language
-
-        return json
+        return SwiftTextElementPropertiesLegacySupport.serializeToJson(self)
     }
-
-    /// Parses a `TextElementProperties` from a JSON dictionary.
-    static func fromJSON(_ json: [String: Any]) throws -> SwiftTextElementProperties {
-        guard let text = json["text"] as? String else {
-            throw SwiftAdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "text")
-        }
-
-        let textSize = (json["size"] as? String).flatMap(SwiftTextSize.init)
-        let textWeight = (json["weight"] as? String).flatMap(SwiftTextWeight.init)
-        let fontType = (json["fontType"] as? String).flatMap(SwiftFontType.init)
-        let textColor = (json["color"] as? String).flatMap(SwiftForegroundColor.init)
-        let isSubtle = json["isSubtle"] as? Bool
-        let language = json["language"] as? String ?? ""
-
-        return SwiftTextElementProperties(
-            text: text,
-            textSize: textSize,
-            textWeight: textWeight,
-            fontType: fontType,
-            textColor: textColor,
-            isSubtle: isSubtle,
-            language: language
-        )
-    }
-
+    
+    // MARK: - HTML Entity Processing
+    
     /// Converts HTML entities in text to their respective characters.
     private static func processHTMLEntities(_ input: String) -> String {
         let replacements: [String: String] = [
             "&quot;": "\"",
             "&lt;": "<",
             "&gt;": ">",
-            "&nbsp;": " ",
+            "&nbsp;": " ",
             "&amp;": "&"
         ]
 
