@@ -158,3 +158,95 @@ internal extension SwiftTokenExchangeResource {
     }
 
 }
+
+enum SwiftBaseActionElementLegacySupport {
+    /// Deserializes a BaseActionElement from a JSON string.
+    /// This function is maintained for backward compatibility.
+    static func deserializeAction(from jsonString: String) throws -> SwiftBaseActionElement {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        // Ensure the JSON contains a "type" key.
+        guard let typeString = jsonDict["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        // Prepare the JSON data for decoding.
+        let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
+        let decoder = JSONDecoder()
+        
+        switch typeString {
+        case SwiftActionType.openUrl.rawValue:
+            return try decoder.decode(SwiftOpenUrlAction.self, from: data)
+        case SwiftActionType.showCard.rawValue:
+            return try decoder.decode(SwiftShowCardAction.self, from: data)
+        case SwiftActionType.submit.rawValue:
+            return try decoder.decode(SwiftSubmitAction.self, from: data)
+        case SwiftActionType.toggleVisibility.rawValue:
+            return try decoder.decode(SwiftToggleVisibilityAction.self, from: data)
+        case SwiftActionType.execute.rawValue:
+            return try decoder.decode(SwiftExecuteAction.self, from: data)
+        default:
+            // For any unknown type, decode as an UnknownAction.
+            return try decoder.decode(SwiftUnknownAction.self, from: data)
+        }
+    }
+    
+    /// Deserializes a BaseActionElement from a JSON dictionary.
+    static func deserializeAction(from originalJson: [String: Any]) throws -> SwiftBaseActionElement {
+        let data = try JSONSerialization.data(withJSONObject: originalJson, options: [])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try deserializeAction(from: jsonString)
+    }
+}
+
+extension SwiftBaseActionElement {
+    // MARK: - Deserialization Helpers
+    
+    /// Deserializes a BaseActionElement from a JSON string.
+    /// This function is crucial and remains available for backward compatibility.
+    class func deserializeAction(from jsonString: String) throws -> SwiftBaseActionElement {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        // Ensure the JSON contains a "type" key.
+        guard let typeString = jsonDict["type"] as? String else {
+            throw AdaptiveCardParseError.invalidType
+        }
+        
+        // Prepare the JSON data for decoding.
+        let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
+        let decoder = JSONDecoder()
+        
+        switch typeString {
+        case SwiftActionType.openUrl.rawValue:
+            return try decoder.decode(SwiftOpenUrlAction.self, from: data)
+        case SwiftActionType.showCard.rawValue:
+            return try decoder.decode(SwiftShowCardAction.self, from: data)
+        case SwiftActionType.submit.rawValue:
+            return try decoder.decode(SwiftSubmitAction.self, from: data)
+        case SwiftActionType.toggleVisibility.rawValue:
+            return try decoder.decode(SwiftToggleVisibilityAction.self, from: data)
+        case SwiftActionType.execute.rawValue:
+            return try decoder.decode(SwiftExecuteAction.self, from: data)
+        default:
+            // For any unknown or invalid type, decode as UnknownAction.
+            return try decoder.decode(SwiftUnknownAction.self, from: data)
+        }
+    }
+    
+    /// Deserializes a BaseActionElement from a JSON dictionary.
+    class func deserializeAction(from originalJson: [String: Any]) throws -> SwiftBaseActionElement {
+        let data = try JSONSerialization.data(withJSONObject: originalJson, options: [])
+        guard let jsonString = String(data: data, encoding: .utf8) else {
+            throw AdaptiveCardParseError.invalidJson
+        }
+        return try deserializeAction(from: jsonString)
+    }
+}

@@ -3,29 +3,52 @@ import Foundation
 /// Represents a base action in an Adaptive Card.
 /// This class is now decoupled from BaseCardElement.
 class SwiftBaseActionElement: SwiftBaseElement, SwiftAdaptiveCardElementProtocol {
-    var title: String = ""
-    var iconUrl: String = ""
-    var style: String = "default"
-    var tooltip: String = ""
-    var mode: SwiftMode = .primary
-    var isEnabled: Bool = true
-    var role: SwiftActionRole?
+    // MARK: - Properties
+    let title: String
+    let iconUrl: String
+    let style: String
+    let tooltip: String
+    let mode: SwiftMode
+    let isEnabled: Bool
+    let role: SwiftActionRole?
     
     override var typeString: String {
-        get { return super.typeString }
+        get { super.typeString }
         set { super.typeString = newValue }
     }
     
-    // MARK: - Initializers
+    // MARK: - Initializer
     
     /// Initializes a BaseActionElement using an ActionType.
-    init(type: SwiftActionType, id: String? = nil) {
-        // Use the action type’s rawValue as the type string.
-        self.role = (type == .openUrl ? .link : .button)
+    /// Default property values are provided so that the synthesized Codable methods can work without additional custom initializers.
+    init(type: SwiftActionType,
+         id: String? = nil,
+         title: String = "",
+         iconUrl: String = "",
+         style: String = "default",
+         tooltip: String = "",
+         mode: SwiftMode = .primary,
+         isEnabled: Bool = true,
+         role: SwiftActionRole? = nil) {
+        
+        // Compute role if not provided.
+        let computedRole: SwiftActionRole? = role ?? (type == .openUrl ? .link : .button)
+        self.title = title
+        self.iconUrl = iconUrl
+        self.style = style
+        self.tooltip = tooltip
+        self.mode = mode
+        self.isEnabled = isEnabled
+        self.role = computedRole
         super.init(typeString: type.rawValue, id: id)
     }
     
-    /// Required initializer for decoding.
+    // MARK: - Codable Implementation
+    
+    private enum CodingKeys: String, CodingKey {
+        case title, iconUrl, style, tooltip, mode, isEnabled, role
+    }
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
@@ -37,7 +60,7 @@ class SwiftBaseActionElement: SwiftBaseElement, SwiftAdaptiveCardElementProtocol
         self.role = try container.decodeIfPresent(SwiftActionRole.self, forKey: .role)
         try super.init(from: decoder)
         
-        // Only keep non-standard keys in additionalProperties
+        // Legacy support: Filter out keys already represented by properties.
         if var additional = self.additionalProperties {
             let knownKeys = Set(["title", "iconUrl", "style", "tooltip", "mode", "isEnabled", "role", "type", "id"])
             additional = additional.filter { !knownKeys.contains($0.key) }
@@ -45,7 +68,6 @@ class SwiftBaseActionElement: SwiftBaseElement, SwiftAdaptiveCardElementProtocol
         }
     }
     
-    /// Encodes the BaseActionElement.
     override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(title, forKey: .title)
@@ -58,76 +80,26 @@ class SwiftBaseActionElement: SwiftBaseElement, SwiftAdaptiveCardElementProtocol
         try super.encode(to: encoder)
     }
     
-    enum CodingKeys: String, CodingKey {
-        case title, iconUrl, style, tooltip, mode, isEnabled, role
-    }
+    // MARK: - JSON Conversion
     
-    // MARK: - Deserialization Helpers
-    
-    /// Deserializes a BaseActionElement from a JSON string.
-    /// This function is crucial and remains available for backward compatibility.
-    class func deserializeAction(from jsonString: String) throws -> SwiftBaseActionElement {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw AdaptiveCardParseError.invalidJson
-        }
-        // Ensure the JSON contains a "type" key.
-        guard let typeString = jsonDict["type"] as? String else {
-            throw AdaptiveCardParseError.invalidType
-        }
-        
-        // Prepare the JSON data for decoding.
-        let data = try JSONSerialization.data(withJSONObject: jsonDict, options: [])
-        let decoder = JSONDecoder()
-        
-        switch typeString {
-        case SwiftActionType.openUrl.rawValue:
-            return try decoder.decode(SwiftOpenUrlAction.self, from: data)
-        case SwiftActionType.showCard.rawValue:
-            return try decoder.decode(SwiftShowCardAction.self, from: data)
-        case SwiftActionType.submit.rawValue:
-            return try decoder.decode(SwiftSubmitAction.self, from: data)
-        case SwiftActionType.toggleVisibility.rawValue:
-            return try decoder.decode(SwiftToggleVisibilityAction.self, from: data)
-        case SwiftActionType.execute.rawValue:
-            return try decoder.decode(SwiftExecuteAction.self, from: data)
-        default:
-            // For any unknown or invalid type, decode as UnknownAction.
-            return try decoder.decode(SwiftUnknownAction.self, from: data)
-        }
-    }
-    
-    /// Deserializes a BaseActionElement from a JSON dictionary.
-    class func deserializeAction(from originalJson: [String: Any]) throws -> SwiftBaseActionElement {
-        let data = try JSONSerialization.data(withJSONObject: originalJson, options: [])
-        guard let jsonString = String(data: data, encoding: .utf8) else {
-            throw AdaptiveCardParseError.invalidJson
-        }
-        return try deserializeAction(from: jsonString)
-    }
-    
-    
+    /// Converts this action into a JSON dictionary.
     override func toJSON() -> [String: Any] {
-        // Start with just the type
         var json: [String: Any] = ["type": typeString]
-        
-        // Add ONLY additional properties
         if let additionalProps = additionalProperties {
             for (key, value) in additionalProps {
                 json[key] = value.value
             }
         }
-        
         return json
     }
     
+    /// Serializes the action into a JSON object.
     override func serializeToJsonValue() throws -> [String: Any] {
-        // Use toJSON as the base to ensure consistency
         return toJSON()
     }
 }
 
+// Utility extension for debugging (can remain here or be moved if desired).
 extension Dictionary where Key == String, Value == Any {
     func debugPrint(label: String) {
         print("\n=== \(label) ===")
