@@ -432,3 +432,138 @@ extension SwiftTableColumnDefinition {
         return try SwiftTableColumnDefinitionLegacySupport.deserialize(from: jsonString, context: context)
     }
 }
+
+// MARK: - Consolidated SwiftTableRow Legacy Support
+
+/// Unified legacy support for SwiftTableRow parsing and serialization
+enum SwiftTableRowLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftTableRow
+    static func deserialize(from value: [String: Any], context: SwiftParseContext) throws -> SwiftTableRow {
+        // Retrieve the id property using the expected key from AdaptiveCardSchemaKey.
+        let idProperty = value[SwiftAdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
+        let internalId = SwiftInternalId.next()
+        
+        // Push element to context
+        context.pushElement(idJsonProperty: idProperty, internalId: internalId)
+        
+        // Create a new row and populate its properties
+        let tableRow = SwiftTableRow()
+        
+        // Parse horizontal alignment
+        tableRow.horizontalCellContentAlignment = try SwiftParseUtil.getOptionalEnumValue(
+            from: value,
+            key: "horizontalCellContentAlignment",
+            converter: SwiftHorizontalAlignment.fromString
+        )
+        
+        // Parse vertical alignment
+        tableRow.verticalCellContentAlignment = try SwiftParseUtil.getOptionalEnumValue(
+            from: value,
+            key: "verticalCellContentAlignment",
+            converter: SwiftVerticalContentAlignment.fromString
+        )
+        
+        // Parse style
+        tableRow.style = try SwiftParseUtil.getEnumValue(
+            from: value,
+            key: "style",
+            defaultValue: .none,
+            converter: SwiftContainerStyle.fromString
+        )
+        
+        // Parse cells
+        tableRow.cells = try SwiftParseUtil.getElementCollectionOfSingleType(
+            from: value,
+            key: "cells",
+            context: context,
+            defaultValue: [],
+            converter: { (context: SwiftParseContext, json: [String: Any]) throws -> SwiftTableCell in
+                return try SwiftTableCell.deserialize(from: json, context: context)
+            }
+        )
+        
+        // Clean up and return
+        tableRow.additionalProperties = nil
+        context.popElement()
+        
+        return tableRow
+    }
+    
+    /// Deserializes string into a SwiftTableRow
+    static func deserialize(from jsonString: String, context: SwiftParseContext) throws -> SwiftTableRow {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        return try deserialize(from: jsonDict, context: context)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftTableRow to JSON dictionary with proper formatting
+    static func serializeToJson(_ tableRow: SwiftTableRow, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Add cells if present
+        if !tableRow.cells.isEmpty {
+            json["cells"] = try tableRow.cells.map { try $0.serializeToJsonValue() }
+        }
+        
+        // Add style if not default with proper capitalization
+        if tableRow.style != .none {
+            json["style"] = tableRow.style.rawValue  // Uses proper capitalization
+        }
+        
+        // Add alignments if present
+        if let horizontal = tableRow.horizontalCellContentAlignment {
+            json["horizontalCellContentAlignment"] = horizontal.rawValue
+        }
+        if let vertical = tableRow.verticalCellContentAlignment {
+            json["verticalCellContentAlignment"] = vertical.rawValue.capitalized
+        }
+        
+        return json
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses TableRow elements in an Adaptive Card.
+struct SwiftTableRowParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.tableRow)
+        return try SwiftTableRowLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftTableRowLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftTableRowLegacySupport.deserialize(from: value, context: context)
+    }
+}
+
+// MARK: - SwiftTableRow Extension
+
+internal extension SwiftTableRow {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftTableRowLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Static Factory Methods
+    
+    /// Deserializes a `TableRow` from a JSON dictionary.
+    static func deserialize(from json: [String: Any], context: SwiftParseContext) throws -> SwiftTableRow {
+        return try SwiftTableRowLegacySupport.deserialize(from: json, context: context)
+    }
+    
+    /// Deserializes a `TableRow` from a JSON string.
+    static func deserialize(from jsonString: String, context: SwiftParseContext) throws -> SwiftTableRow {
+        return try SwiftTableRowLegacySupport.deserialize(from: jsonString, context: context)
+    }
+}

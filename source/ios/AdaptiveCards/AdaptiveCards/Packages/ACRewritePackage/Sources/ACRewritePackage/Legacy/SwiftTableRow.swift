@@ -2,6 +2,8 @@ import Foundation
 
 /// Represents a TableRow in an Adaptive Card.
 class SwiftTableRow: SwiftBaseCardElement {
+    // MARK: - Properties
+    
     /// The style of the row.
     var style: SwiftContainerStyle
     
@@ -14,11 +16,14 @@ class SwiftTableRow: SwiftBaseCardElement {
     /// The collection of table cells in the row.
     var cells: [SwiftTableCell]
     
+    /// Indicates if this row is not connected to a parent table.
     var isOrphaned: Bool = true
     
     override var elementTypeVal: SwiftCardElementType {
         return isOrphaned ? .unknown : .tableRow
     }
+    
+    // MARK: - Initializers
     
     /// Initializes a new `TableRow` with default values.
     init() {
@@ -29,14 +34,27 @@ class SwiftTableRow: SwiftBaseCardElement {
         super.init(type: .tableRow)
     }
     
+    // MARK: - Codable Implementation
+    
+    private enum CodingKeys: String, CodingKey {
+        case style
+        case horizontalCellContentAlignment
+        case verticalCellContentAlignment
+        case cells
+    }
+    
     /// Decodes a `TableRow` from JSON.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.style = try container.decodeIfPresent(SwiftContainerStyle.self, forKey: .style) ?? .none
-        self.horizontalCellContentAlignment = try container.decodeIfPresent(SwiftHorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
-        self.verticalCellContentAlignment = try container.decodeIfPresent(SwiftVerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
-        self.cells = try container.decodeIfPresent([SwiftTableCell].self, forKey: .cells) ?? []
-        super.init(type: .tableRow)
+        
+        // Decode properties before super.init
+        style = try container.decodeIfPresent(SwiftContainerStyle.self, forKey: .style) ?? .none
+        horizontalCellContentAlignment = try container.decodeIfPresent(SwiftHorizontalAlignment.self, forKey: .horizontalCellContentAlignment)
+        verticalCellContentAlignment = try container.decodeIfPresent(SwiftVerticalContentAlignment.self, forKey: .verticalCellContentAlignment)
+        cells = try container.decodeIfPresent([SwiftTableCell].self, forKey: .cells) ?? []
+        
+        // Call super.init
+        try super.init(from: decoder)
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -50,8 +68,7 @@ class SwiftTableRow: SwiftBaseCardElement {
         
         // Encode style with proper capitalization if not .none
         if style != .none {
-            let styleString = style.rawValue  // Use rawValue directly to preserve case
-            try container.encode(styleString, forKey: .style)
+            try container.encode(style.rawValue, forKey: .style)
         }
         
         // Encode alignments if present
@@ -63,90 +80,10 @@ class SwiftTableRow: SwiftBaseCardElement {
         }
     }
     
-    /// Sets the collection of cells.
-    func setCells(_ value: [SwiftTableCell]) {
-        self.cells = value
-    }
-    
-    /// Deserializes a `TableRow` from a JSON dictionary.
-    static func deserialize(from json: [String: Any], context: SwiftParseContext) throws -> SwiftTableRow {
-        // Retrieve the id property using the expected key from AdaptiveCardSchemaKey.
-        let idProperty = json[SwiftAdaptiveCardSchemaKey.id.rawValue] as? String ?? ""
-        let internalId = SwiftInternalId.next()
-        
-        // Note: Adjust the parameter labels to match your ParseContext API.
-        context.pushElement(idJsonProperty: idProperty, internalId: internalId)
-        
-        let tableRow = SwiftTableRow()
-        tableRow.horizontalCellContentAlignment = try SwiftParseUtil.getOptionalEnumValue(
-            from: json,
-            key: CodingKeys.horizontalCellContentAlignment.rawValue,
-            converter: SwiftHorizontalAlignment.fromString
-        )
-        tableRow.verticalCellContentAlignment = try SwiftParseUtil.getOptionalEnumValue(
-            from: json,
-            key: CodingKeys.verticalCellContentAlignment.rawValue,
-            converter: SwiftVerticalContentAlignment.fromString
-        )
-        tableRow.style = try SwiftParseUtil.getEnumValue(
-            from: json,
-            key: CodingKeys.style.rawValue,
-            defaultValue: .none,
-            converter: SwiftContainerStyle.fromString
-        )
-        tableRow.cells = try SwiftParseUtil.getElementCollectionOfSingleType(
-            from: json,
-            key: CodingKeys.cells.rawValue,
-            context: context,
-            defaultValue: [],
-            converter: { (context: SwiftParseContext, json: [String: Any]) throws -> SwiftTableCell in
-                return try SwiftTableCell.deserialize(from: json, context: context)
-            }
-        )
-        tableRow.additionalProperties = nil
-        context.popElement()
-        
-        return tableRow
-    }
-    
-    /// Deserializes a `TableRow` from a JSON string.
-    static func deserialize(from jsonString: String, context: SwiftParseContext) throws -> SwiftTableRow {
-        guard let jsonData = jsonString.data(using: .utf8),
-              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
-              let jsonDict = jsonObject as? [String: Any] else {
-            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
-        }
-        return try deserialize(from: jsonDict, context: context)
-    }
-    
-    private enum CodingKeys: String, CodingKey {
-        case style
-        case horizontalCellContentAlignment
-        case verticalCellContentAlignment
-        case cells
-    }
+    // MARK: - Serialization to JSON
     
     override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        
-        // Add cells if present
-        if !cells.isEmpty {
-            json["cells"] = try cells.map { try $0.serializeToJsonValue() }
-        }
-        
-        // Add style if not default with proper capitalization
-        if style != .none {
-            json["style"] = style.rawValue  // Uses proper capitalization
-        }
-        
-        // Add alignments if present
-        if let horizontal = horizontalCellContentAlignment {
-            json["horizontalCellContentAlignment"] = horizontal.rawValue
-        }
-        if let vertical = verticalCellContentAlignment {
-            json["verticalCellContentAlignment"] = vertical.rawValue.capitalized
-        }
-        
-        return json
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
 }
