@@ -578,3 +578,261 @@ extension SwiftAuthCardButton {
         return SwiftAuthCardButtonLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftLayout Legacy Support
+
+/// Unified legacy support for SwiftLayout parsing and serialization
+enum SwiftLayoutLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON data into a SwiftLayout
+    static func deserialize(from json: Data) throws -> SwiftLayout {
+        return try JSONDecoder().decode(SwiftLayout.self, from: json)
+    }
+    
+    /// Deserializes JSON dictionary into a SwiftLayout
+    static func deserialize(from json: [String: Any]) -> SwiftLayout? {
+        guard let data = try? JSONSerialization.data(withJSONObject: json, options: []) else {
+            return nil
+        }
+        return try? deserialize(from: data)
+    }
+    
+    /// Deserializes string into a SwiftLayout
+    static func deserializeFromString(_ jsonString: String) throws -> SwiftLayout {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "Invalid JSON string", code: -1, userInfo: nil)
+        }
+        return try deserialize(from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftLayout to JSON string
+    static func serialize(_ layout: SwiftLayout) throws -> String {
+        let jsonData = try JSONEncoder().encode(layout)
+        return String(data: jsonData, encoding: .utf8) ?? "{}"
+    }
+    
+    /// Converts a SwiftLayout to JSON dictionary
+    static func serializeToJson(_ layout: SwiftLayout) -> [String: Any] {
+        return layout.serializeToJsonValue()
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ layout: SwiftLayout) throws -> String {
+        let json = serializeToJson(layout)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftLayout Extension
+
+extension SwiftLayout {
+    // Static factory methods
+    static func deserialize(from json: Data) throws -> SwiftLayout {
+        return try SwiftLayoutLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserializeFromString(_ jsonString: String) throws -> SwiftLayout {
+        return try SwiftLayoutLegacySupport.deserializeFromString(jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftLayout? {
+        return SwiftLayoutLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftLayout? {
+        return try? SwiftLayoutLegacySupport.deserializeFromString(jsonString)
+    }
+    
+    // JSON conversion utilities
+    func serialize() throws -> String {
+        return try SwiftLayoutLegacySupport.serialize(self)
+    }
+    
+    func toJSON() -> [String: Any] {
+        return SwiftLayoutLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftLayoutLegacySupport.serializeToJsonString(self)
+    }
+    
+    // MARK: - Validation Methods
+    /// Determines if this layout should be serialized
+    func shouldSerialize() -> Bool {
+        return true
+    }
+    
+    /// Checks if the layout meets the target width requirement
+    func meetsTargetWidthRequirement(hostWidth: SwiftHostWidth) -> Bool {
+        if targetWidth == .default || hostWidth == .default {
+            return true
+        }
+
+        switch targetWidth {
+        case .wide:
+            return hostWidth == .wide
+        case .standard:
+            return hostWidth == .standard
+        case .narrow:
+            return hostWidth == .narrow
+        case .veryNarrow:
+            return hostWidth == .veryNarrow
+        case .atLeastWide:
+            return hostWidth >= .wide
+        case .atLeastStandard:
+            return hostWidth >= .standard
+        case .atLeastNarrow:
+            return hostWidth >= .narrow
+        case .atLeastVeryNarrow:
+            return hostWidth >= .veryNarrow
+        case .atMostWide:
+            return hostWidth <= .wide
+        case .atMostStandard:
+            return hostWidth <= .standard
+        case .atMostNarrow:
+            return hostWidth <= .narrow
+        case .atMostVeryNarrow:
+            return hostWidth <= .veryNarrow
+        default:
+            return true
+        }
+    }
+    
+    // MARK: - Serialization to JSON
+    /// Serializes to JSON dictionary
+    func serializeToJsonValue() -> [String: Any] {
+        var json: [String: Any] = [:]
+
+        if targetWidth != .default {
+            json["targetWidth"] = targetWidth.rawValue
+        }
+
+        if layoutContainerType != .stack {
+            json["layout"] = layoutContainerType.rawValue
+        }
+
+        return json
+    }
+    
+    convenience init(fromFlowLayout flow: SwiftFlowLayout) {
+        self.init()
+        self.layoutContainerType = .flow
+        // Copy additional properties from flow if needed.
+    }
+    
+    /// Conversion initializer to create a generic Layout from an AreaGridLayout.
+    convenience init(fromAreaGridLayout areaGrid: SwiftAreaGridLayout) {
+        self.init()
+        self.layoutContainerType = .areaGrid
+        // Copy additional properties from areaGrid if needed.
+    }
+}
+
+// MARK: - Consolidated SwiftAreaGridLayout Legacy Support
+
+/// Unified legacy support for SwiftAreaGridLayout parsing and serialization
+enum SwiftAreaGridLayoutLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftAreaGridLayout
+    static func deserialize(from json: [String: Any]) -> SwiftAreaGridLayout {
+        let instance = SwiftAreaGridLayout()
+        
+        if let columnArray = json["columns"] as? [String] {
+            instance.columns = columnArray
+        }
+        
+        if let areaArray = json["areas"] as? [[String: Any]] {
+            instance.areas = areaArray.map { SwiftGridArea.deserialize(from: $0) }
+        }
+        
+        if let rowSpacingStr = json["rowSpacing"] as? String,
+           let spacingEnum = SwiftSpacing(rawValue: rowSpacingStr) {
+            instance.rowSpacing = spacingEnum
+        }
+        
+        if let columnSpacingStr = json["columnSpacing"] as? String,
+           let spacingEnum = SwiftSpacing(rawValue: columnSpacingStr) {
+            instance.columnSpacing = spacingEnum
+        }
+        
+        // Set the layout container type
+        instance.layoutContainerType = .areaGrid
+        
+        // Handle parent class properties from the base class
+        if let targetWidthStr = json["targetWidth"] as? String,
+           let targetWidthEnum = SwiftTargetWidthType(rawValue: targetWidthStr) {
+            instance.targetWidth = targetWidthEnum
+        }
+        
+        return instance
+    }
+    
+    /// Deserializes string into a SwiftAreaGridLayout
+    static func deserialize(from jsonString: String) -> SwiftAreaGridLayout? {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonDict = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            return nil
+        }
+        return deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftAreaGridLayout to JSON dictionary
+    static func serializeToJson(_ layout: SwiftAreaGridLayout) -> [String: Any] {
+        return layout.serializeToJson()
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ layout: SwiftAreaGridLayout) throws -> String {
+        let json = serializeToJson(layout)
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(json, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert JSON to string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftAreaGridLayout Extension
+
+extension SwiftAreaGridLayout {
+    // Static factory methods
+    class func deserialize(from json: [String: Any]) -> SwiftAreaGridLayout {
+        return SwiftAreaGridLayoutLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) -> SwiftAreaGridLayout? {
+        return SwiftAreaGridLayoutLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // MARK: - Serialization to JSON
+    func serializeToJson() -> [String: Any] {
+        var json = super.serializeToJsonValue()
+        
+        if !areas.isEmpty {
+            json["areas"] = areas.map { $0.serializeToJson() }
+        }
+        if !columns.isEmpty {
+            json["columns"] = columns
+        }
+        if rowSpacing != .default {
+            json["rowSpacing"] = rowSpacing.rawValue
+        }
+        if columnSpacing != .default {
+            json["columnSpacing"] = columnSpacing.rawValue
+        }
+        
+        return json
+    }
+}
