@@ -276,3 +276,95 @@ extension SwiftChoiceInput {
         return try? SwiftChoiceInputLegacySupport.deserialize(from: jsonString)
     }
 }
+
+// MARK: - Consolidated SwiftChoicesData Legacy Support
+
+/// Unified legacy support for SwiftChoicesData parsing and serialization
+enum SwiftChoicesDataLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftChoicesData using Codable
+    static func deserialize(from json: [String: Any]) throws -> SwiftChoicesData {
+        let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftChoicesData.self, from: jsonData)
+    }
+    
+    /// Deserializes string into a SwiftChoicesData
+    static func deserialize(from jsonString: String) throws -> SwiftChoicesData {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            throw NSError(domain: "ChoicesData", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string"])
+        }
+        return try JSONDecoder().decode(SwiftChoicesData.self, from: jsonData)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Serializes a SwiftChoicesData to JSON string using Codable
+    static func serializeToJson(_ choicesData: SwiftChoicesData) -> String? {
+        guard let jsonData = try? JSONEncoder().encode(choicesData) else {
+            return nil
+        }
+        return String(data: jsonData, encoding: .utf8)
+    }
+    
+    /// Converts to JSON dictionary
+    static func toJsonDictionary(_ choicesData: SwiftChoicesData) throws -> [String: Any] {
+        guard let jsonData = try? JSONEncoder().encode(choicesData),
+              let json = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            throw EncodingError.invalidValue(choicesData, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON dictionary"))
+        }
+        return json
+    }
+    
+    /// Converts to JSON string with pretty printing
+    static func serializeToJsonString(_ choicesData: SwiftChoicesData) throws -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let jsonData = try encoder.encode(choicesData)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            throw EncodingError.invalidValue(choicesData, EncodingError.Context(
+                codingPath: [], debugDescription: "Failed to convert to JSON string"))
+        }
+        return jsonString
+    }
+}
+
+// MARK: - SwiftChoicesData Extension
+
+extension SwiftChoicesData {
+    // Validation methods
+    func shouldSerialize() -> Bool {
+        return choicesDataType != "Data.Query" && !dataset.isEmpty
+    }
+    
+    // Serialization helpers
+    func serializeToJson() -> String? {
+        return SwiftChoicesDataLegacySupport.serializeToJson(self)
+    }
+    
+    func toJSON() throws -> [String: Any] {
+        return try SwiftChoicesDataLegacySupport.toJsonDictionary(self)
+    }
+    
+    func toJSONString() throws -> String {
+        return try SwiftChoicesDataLegacySupport.serializeToJsonString(self)
+    }
+    
+    // Static factory methods
+    static func deserialize(from json: [String: Any]) throws -> SwiftChoicesData {
+        return try SwiftChoicesDataLegacySupport.deserialize(from: json)
+    }
+    
+    static func deserialize(from jsonString: String) throws -> SwiftChoicesData {
+        return try SwiftChoicesDataLegacySupport.deserialize(from: jsonString)
+    }
+    
+    static func fromJSON(_ json: [String: Any]) -> SwiftChoicesData? {
+        return try? SwiftChoicesDataLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftChoicesData? {
+        return try? SwiftChoicesDataLegacySupport.deserialize(from: jsonString)
+    }
+}
