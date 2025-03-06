@@ -324,3 +324,91 @@ internal extension SwiftFactSet {
         self.knownProperties.insert("facts")
     }
 }
+
+// MARK: - Consolidated SwiftGridArea Legacy Support
+
+/// Unified legacy support for SwiftGridArea parsing and serialization
+enum SwiftGridAreaLegacySupport {
+    // MARK: - Legacy Array Support
+    
+    /// Converts an array of dictionaries to an array of SwiftGridArea objects
+    static func deserializeArray(from arrayOfDicts: [[String: Any]]) -> [SwiftGridArea] {
+        return arrayOfDicts.map { dict in
+            do {
+                return try deserialize(from: dict)
+            } catch {
+                // Return default grid area if deserialization fails
+                return SwiftGridArea(name: "", row: 1, column: 1, rowSpan: 1, columnSpan: 1)
+            }
+        }
+    }
+    
+    /// Serializes an array of SwiftGridArea objects to an array of dictionaries
+    static func serializeArray(_ gridAreas: [SwiftGridArea]) -> [[String: Any]] {
+        return gridAreas.map { serializeToJson($0) }
+    }
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftGridArea
+    static func deserialize(from value: [String: Any]) throws -> SwiftGridArea {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftGridArea.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftGridArea
+    static func deserialize(from jsonString: String) throws -> SwiftGridArea {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftGridArea.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftGridArea to JSON dictionary
+    static func serializeToJson(_ gridArea: SwiftGridArea) -> [String: Any] {
+        return [
+            "name": gridArea.name,
+            "row": gridArea.row,
+            "column": gridArea.column,
+            "rowSpan": gridArea.rowSpan,
+            "columnSpan": gridArea.columnSpan
+        ]
+    }
+    
+    /// Converts a SwiftGridArea to JSON string
+    static func serializeToString(_ gridArea: SwiftGridArea) -> String {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: serializeToJson(gridArea), options: .prettyPrinted)
+            return String(data: jsonData, encoding: .utf8) ?? "{}"
+        } catch {
+            return "{}"
+        }
+    }
+}
+
+// MARK: - SwiftGridArea Extension
+
+extension SwiftGridArea {
+    // Static factory methods
+    static func fromJSON(_ json: [String: Any]) -> SwiftGridArea? {
+        guard !json.isEmpty else { return nil }
+        return try? SwiftGridAreaLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) -> SwiftGridArea? {
+        return try? SwiftGridAreaLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // Legacy compatibility methods - direct replacements for original code
+    static func deserialize(from json: [String: Any]) -> SwiftGridArea {
+        do {
+            return try SwiftGridAreaLegacySupport.deserialize(from: json)
+        } catch {
+            // Replicate original fallback behavior
+            return SwiftGridArea(name: "", row: 1, column: 1, rowSpan: 1, columnSpan: 1)
+        }
+    }
+}
