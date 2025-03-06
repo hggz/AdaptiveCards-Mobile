@@ -2,110 +2,73 @@ import Foundation
 
 /// Represents rich text element properties including formatting styles such as italic, strikethrough, and underline.
 struct SwiftRichTextElementProperties: Codable {
-    var text: String
-    var textSize: SwiftTextSize?
-    var textWeight: SwiftTextWeight?
-    var fontType: SwiftFontType?
-    var textColor: SwiftForegroundColor?
-    var isSubtle: Bool?
-    var language: String
-    var italic: Bool
-    var strikethrough: Bool
-    var underline: Bool
-
-    init(
-        text: String = "",
-        textSize: SwiftTextSize? = nil,
-        textWeight: SwiftTextWeight? = nil,
-        fontType: SwiftFontType? = nil,
-        textColor: SwiftForegroundColor? = nil,
-        isSubtle: Bool? = nil,
-        language: String = "",
-        italic: Bool = false,
-        strikethrough: Bool = false,
-        underline: Bool = false
-    ) {
-        self.text = Self.processHTMLEntities(text)
-        self.textSize = textSize
-        self.textWeight = textWeight
-        self.fontType = fontType
-        self.textColor = textColor
-        self.isSubtle = isSubtle
-        self.language = language
-        self.italic = italic
-        self.strikethrough = strikethrough
-        self.underline = underline
+    // MARK: - Properties
+    let text: String
+    let textSize: SwiftTextSize?
+    let textWeight: SwiftTextWeight?
+    let fontType: SwiftFontType?
+    let textColor: SwiftForegroundColor?
+    let isSubtle: Bool?
+    let language: String
+    let italic: Bool
+    let strikethrough: Bool
+    let underline: Bool
+    
+    // MARK: - Codable Implementation
+    
+    private enum CodingKeys: String, CodingKey {
+        case text
+        case textSize = "size"
+        case textWeight = "weight"
+        case fontType
+        case textColor = "color"
+        case isSubtle
+        case language
+        case italic
+        case strikethrough
+        case underline
     }
-
-    /// Serializes the `RichTextElementProperties` to a JSON dictionary.
-    func toJSON() -> [String: Any] {
-        var json: [String: Any] = [:]
-
-        if let textSize = textSize {
-            json["size"] = textSize.rawValue
-        }
-        if let textColor = textColor {
-            json["color"] = textColor.rawValue
-        }
-        if let textWeight = textWeight {
-            json["weight"] = textWeight.rawValue
-        }
-        if let fontType = fontType {
-            json["fontType"] = fontType.rawValue
-        }
-        if let isSubtle = isSubtle {
-            json["isSubtle"] = isSubtle
-        }
-
-        json["text"] = text
-        json["language"] = language
-        json["italic"] = italic
-        json["strikethrough"] = strikethrough
-        json["underline"] = underline
-
-        return json
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let rawText = try container.decodeIfPresent(String.self, forKey: .text) ?? ""
+        text = Self.processHTMLEntities(rawText)
+        textSize = try container.decodeIfPresent(SwiftTextSize.self, forKey: .textSize)
+        textWeight = try container.decodeIfPresent(SwiftTextWeight.self, forKey: .textWeight)
+        fontType = try container.decodeIfPresent(SwiftFontType.self, forKey: .fontType)
+        textColor = try container.decodeIfPresent(SwiftForegroundColor.self, forKey: .textColor)
+        isSubtle = try container.decodeIfPresent(Bool.self, forKey: .isSubtle)
+        language = try container.decodeIfPresent(String.self, forKey: .language) ?? ""
+        italic = try container.decodeIfPresent(Bool.self, forKey: .italic) ?? false
+        strikethrough = try container.decodeIfPresent(Bool.self, forKey: .strikethrough) ?? false
+        underline = try container.decodeIfPresent(Bool.self, forKey: .underline) ?? false
     }
-
-    /// Parses a `RichTextElementProperties` from a JSON dictionary.
-    static func fromJSON(_ json: [String: Any]) throws -> SwiftRichTextElementProperties {
-        guard let text = json["text"] as? String else {
-            throw SwiftAdaptiveCardParseException(statusCode: .requiredPropertyMissing, message: "text")
-        }
-
-        let textSize = (json["size"] as? String).flatMap(SwiftTextSize.init)
-        let textWeight = (json["weight"] as? String).flatMap(SwiftTextWeight.init)
-        let fontType = (json["fontType"] as? String).flatMap(SwiftFontType.init)
-        let textColor = (json["color"] as? String).flatMap(SwiftForegroundColor.init)
-        let isSubtle = json["isSubtle"] as? Bool
-        let language = json["language"] as? String ?? ""
-        let italic = json["italic"] as? Bool ?? false
-        let strikethrough = json["strikethrough"] as? Bool ?? false
-        let underline = json["underline"] as? Bool ?? false
-
-        return SwiftRichTextElementProperties(
-            text: text,
-            textSize: textSize,
-            textWeight: textWeight,
-            fontType: fontType,
-            textColor: textColor,
-            isSubtle: isSubtle,
-            language: language,
-            italic: italic,
-            strikethrough: strikethrough,
-            underline: underline
-        )
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(text, forKey: .text)
+        try container.encodeIfPresent(textSize, forKey: .textSize)
+        try container.encodeIfPresent(textWeight, forKey: .textWeight)
+        try container.encodeIfPresent(fontType, forKey: .fontType)
+        try container.encodeIfPresent(textColor, forKey: .textColor)
+        try container.encodeIfPresent(isSubtle, forKey: .isSubtle)
+        try container.encode(language, forKey: .language)
+        try container.encode(italic, forKey: .italic)
+        try container.encode(strikethrough, forKey: .strikethrough)
+        try container.encode(underline, forKey: .underline)
     }
-
-    /// Converts HTML entities in text to their respective characters.
+    
+    // MARK: - HTML Entity Processing
     private static func processHTMLEntities(_ input: String) -> String {
         let replacements: [String: String] = [
             "&quot;": "\"",
             "&lt;": "<",
             "&gt;": ">",
-            "&nbsp;": " ",
+            "&nbsp;": " ",
             "&amp;": "&"
         ]
-
+        
         var output = input
         for (entity, replacement) in replacements {
             output = output.replacingOccurrences(of: entity, with: replacement)

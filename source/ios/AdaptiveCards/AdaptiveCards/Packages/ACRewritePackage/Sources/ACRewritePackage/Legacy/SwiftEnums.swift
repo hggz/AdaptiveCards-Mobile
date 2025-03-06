@@ -1180,3 +1180,8 @@ extension RawRepresentable where Self: Codable, RawValue == String {
         return Self(rawValue: s) ?? Self(rawValue: s.capitalized) ?? Self(rawValue: s.lowercased())
     }
 }
+
+// Error type for parsing failures.
+enum ParsingError: Error {
+    case invalidType(expected: String, found: String)
+}

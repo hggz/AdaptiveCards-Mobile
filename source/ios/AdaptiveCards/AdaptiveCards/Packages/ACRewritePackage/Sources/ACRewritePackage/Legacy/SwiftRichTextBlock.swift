@@ -2,26 +2,11 @@ import Foundation
 
 /// Represents a rich text block with inline elements.
 class SwiftRichTextBlock: SwiftBaseCardElement {
-    var horizontalAlignment: SwiftHorizontalAlignment?
-    var inlines: [Any] // Changed to [Any] to support both TextRun and String
+    // MARK: - Properties
+    let horizontalAlignment: SwiftHorizontalAlignment?
+    let inlines: [Any] // Supports both TextRun and String
     
-    init(id: String? = nil,
-         horizontalAlignment: SwiftHorizontalAlignment? = nil,
-         inlines: [Any] = [],
-         spacing: SwiftSpacing? = nil,
-         height: SwiftHeightType? = nil,
-         separator: Bool? = nil,
-         isVisible: Bool = true) {
-        
-        self.horizontalAlignment = horizontalAlignment
-        self.inlines = inlines
-        super.init(type: .richTextBlock,
-                   spacing: spacing,
-                   height: height,
-                   separator: separator,
-                   isVisible: isVisible,
-                   id: id)
-    }
+    // MARK: - Codable Implementation
     
     private enum CodingKeys: String, CodingKey {
         case horizontalAlignment
@@ -33,9 +18,9 @@ class SwiftRichTextBlock: SwiftBaseCardElement {
         
         // Decode horizontalAlignment
         if let alignmentString = try container.decodeIfPresent(String.self, forKey: .horizontalAlignment) {
-            self.horizontalAlignment = SwiftHorizontalAlignment(rawValue: alignmentString.lowercased())
+            horizontalAlignment = SwiftHorizontalAlignment(rawValue: alignmentString.lowercased())
         } else {
-            self.horizontalAlignment = nil
+            horizontalAlignment = nil
         }
         
         // Decode inlines array
@@ -56,8 +41,13 @@ class SwiftRichTextBlock: SwiftBaseCardElement {
             }
         }
         
-        self.inlines = inlinesArray
+        inlines = inlinesArray
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
     
     override func encode(to encoder: Encoder) throws {
@@ -78,58 +68,9 @@ class SwiftRichTextBlock: SwiftBaseCardElement {
         }
     }
     
+    // MARK: - Serialization to JSON
     override func serializeToJsonValue() throws -> [String: Any] {
-        var json = try super.serializeToJsonValue()
-        json["type"] = "RichTextBlock"
-        
-        if let alignment = horizontalAlignment {
-            json["horizontalAlignment"] = alignment.rawValue
-        }
-        
-        // Change the map to return Any instead of [String: Any]
-        json["inlines"] = inlines.map { inline -> Any in
-            if let textRun = inline as? SwiftTextRun {
-                return textRun.serializeToJson()
-            } else if let stringValue = inline as? String {
-                return stringValue
-            }
-            return [:]
-        }
-        
-        return json
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
-}
-
-struct SwiftRichTextBlockParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        let data = try JSONSerialization.data(withJSONObject: value)
-        return try JSONDecoder().decode(SwiftRichTextBlock.self, from: data)
-    }
-    
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        guard let data = value.data(using: .utf8) else {
-            throw AdaptiveCardParseError.invalidJson
-        }
-        return try JSONDecoder().decode(SwiftRichTextBlock.self, from: data)
-    }
-}
-/// Helper function to dispatch inline deserialization based on the "type" field.
-func deserializeInline(from json: [String: Any]) throws -> SwiftInline {
-    guard let typeString = json["type"] as? String,
-          let type = SwiftInlineElementType(rawValue: typeString) else {
-        throw ParsingError.invalidType(expected: "Inline", found: "Missing type")
-    }
-    
-    switch type {
-    case .textRun:
-        guard let inline = try? SwiftTextRun.deserialize(from: json) else {
-            throw ParsingError.invalidType(expected: "TextRun", found: "Invalid data")
-        }
-        return inline
-    }
-}
-
-/// Error type for parsing failures.
-enum ParsingError: Error {
-    case invalidType(expected: String, found: String)
 }

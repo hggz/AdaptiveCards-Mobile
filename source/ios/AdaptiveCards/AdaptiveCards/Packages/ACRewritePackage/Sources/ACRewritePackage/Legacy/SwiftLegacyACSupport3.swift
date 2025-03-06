@@ -1107,3 +1107,278 @@ extension SwiftRefresh {
         return SwiftRefreshLegacySupport.serializeToJsonString(self)
     }
 }
+
+// MARK: - Consolidated SwiftRichTextBlock Legacy Support
+
+/// Unified legacy support for SwiftRichTextBlock parsing and serialization
+enum SwiftRichTextBlockLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftRichTextBlock
+    static func deserialize(from value: [String: Any], context: SwiftParseContext? = nil) throws -> SwiftRichTextBlock {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        return try decoder.decode(SwiftRichTextBlock.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftRichTextBlock
+    static func deserialize(from jsonString: String) throws -> SwiftRichTextBlock {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftRichTextBlock.self, from: data)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftRichTextBlock to JSON dictionary with proper formatting
+    static func serializeToJson(_ richTextBlock: SwiftRichTextBlock, baseJson: [String: Any]) throws -> [String: Any] {
+        var json = baseJson
+        
+        // Set required properties
+        json["type"] = "RichTextBlock"
+        
+        // Add optional properties
+        if let alignment = richTextBlock.horizontalAlignment {
+            json["horizontalAlignment"] = alignment.rawValue
+        }
+        
+        // Process inlines
+        json["inlines"] = richTextBlock.inlines.map { inline -> Any in
+            if let textRun = inline as? SwiftTextRun {
+                return textRun.serializeToJson()
+            } else if let stringValue = inline as? String {
+                return stringValue
+            }
+            return [:]
+        }
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ richTextBlock: SwiftRichTextBlock) -> String {
+        do {
+            // Use the full serialization path for consistency
+            let baseJson = try richTextBlock.serializeToJsonValue()
+            let jsonData = try JSONSerialization.data(withJSONObject: baseJson, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(baseJson, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+    
+    /// Helper function to dispatch inline deserialization based on the "type" field.
+    static func deserializeInline(from json: [String: Any]) throws -> SwiftInline {
+        guard let typeString = json["type"] as? String,
+              let type = SwiftInlineElementType(rawValue: typeString) else {
+            throw ParsingError.invalidType(expected: "Inline", found: "Missing type")
+        }
+        
+        switch type {
+        case .textRun:
+            guard let inline = try? SwiftTextRun.deserialize(from: json) else {
+                throw ParsingError.invalidType(expected: "TextRun", found: "Invalid data")
+            }
+            return inline
+        }
+    }
+}
+
+// MARK: - Parser Implementation
+
+/// Parses RichTextBlock elements in an Adaptive Card
+struct SwiftRichTextBlockParser: SwiftBaseCardElementParser {
+    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        try SwiftParseUtil.expectTypeString(value, expected: SwiftCardElementType.richTextBlock)
+        return try SwiftRichTextBlockLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserializeWithoutCheckingType(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRichTextBlockLegacySupport.deserialize(from: value, context: context)
+    }
+    
+    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftRichTextBlockLegacySupport.deserialize(from: value)
+    }
+}
+
+// MARK: - SwiftRichTextBlock Extension
+
+internal extension SwiftRichTextBlock {
+    /// Serializes to legacy JSON format
+    func serializeToLegacyJsonFormat(superResult: [String: Any]) throws -> [String: Any] {
+        return try SwiftRichTextBlockLegacySupport.serializeToJson(self, baseJson: superResult)
+    }
+    
+    // MARK: - Known Properties
+    func populateKnownPropertiesSet() {
+        self.knownProperties.insert("horizontalAlignment")
+        self.knownProperties.insert("inlines")
+    }
+}
+
+// Legacy static methods and factory method for backward compatibility
+extension SwiftRichTextBlock {
+    static func deserialize(fromString jsonString: String) throws -> SwiftRichTextBlock {
+        return try SwiftRichTextBlockLegacySupport.deserialize(from: jsonString)
+    }
+    
+    /// Factory method for creating SwiftRichTextBlock instances
+    static func create(id: String? = nil,
+                       horizontalAlignment: SwiftHorizontalAlignment? = nil,
+                       inlines: [Any] = [],
+                       spacing: SwiftSpacing? = nil,
+                       height: SwiftHeightType? = nil,
+                       separator: Bool? = nil,
+                       isVisible: Bool = true) -> SwiftRichTextBlock {
+        
+        // Create a JSON dictionary with all properties
+        var json: [String: Any] = [
+            "type": "RichTextBlock",
+            "isVisible": isVisible
+        ]
+        
+        // Add optional properties
+        if let id = id { json["id"] = id }
+        if let horizontalAlignment = horizontalAlignment { json["horizontalAlignment"] = horizontalAlignment.rawValue }
+        if let spacing = spacing { json["spacing"] = spacing.rawValue }
+        if let height = height { json["height"] = height.rawValue }
+        if let separator = separator { json["separator"] = separator }
+        
+        // Handle inlines - this is complex due to heterogeneous array
+        var inlinesArray: [Any] = []
+        for inline in inlines {
+            if let textRun = inline as? SwiftTextRun {
+                inlinesArray.append(textRun.serializeToJson())
+            } else if let stringValue = inline as? String {
+                inlinesArray.append(stringValue)
+            }
+        }
+        json["inlines"] = inlinesArray
+        
+        // Use JSON deserialization to create the instance
+        do {
+            return try SwiftRichTextBlockLegacySupport.deserialize(from: json)
+        } catch {
+            // Create a minimal instance if deserialization fails
+            var minimalJson: [String: Any] = [
+                "type": "RichTextBlock",
+                "inlines": [],
+                "isVisible": true
+            ]
+            if let id = id { minimalJson["id"] = id }
+            
+            // This should almost never fail, but we need a fallback
+            return try! SwiftRichTextBlockLegacySupport.deserialize(from: minimalJson)
+        }
+    }
+}
+
+// MARK: - Consolidated SwiftRichTextElementProperties Legacy Support
+
+/// Unified legacy support for SwiftRichTextElementProperties parsing and serialization
+enum SwiftRichTextElementPropertiesLegacySupport {
+    // MARK: - Parsing Functions
+    
+    /// Deserializes JSON into a SwiftRichTextElementProperties
+    /// Deserializes JSON into a SwiftRichTextElementProperties
+    static func deserialize(from value: [String: Any]) throws -> SwiftRichTextElementProperties {
+        // Convert dictionary to JSON data
+        let data = try JSONSerialization.data(withJSONObject: value, options: [])
+        let decoder = JSONDecoder()
+        
+        // Use the existing Codable implementation
+        return try decoder.decode(SwiftRichTextElementProperties.self, from: data)
+    }
+    
+    /// Deserializes string into a SwiftRichTextElementProperties
+    static func deserialize(from jsonString: String) throws -> SwiftRichTextElementProperties {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftJSONError.missingKey("Invalid JSON string")
+        }
+        
+        guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw SwiftJSONError.missingKey("Unable to parse JSON string")
+        }
+        
+        return try deserialize(from: jsonDict)
+    }
+    
+    // MARK: - Serialization Functions
+    
+    /// Converts a SwiftRichTextElementProperties to JSON dictionary
+    static func serializeToJson(_ properties: SwiftRichTextElementProperties) -> [String: Any] {
+        var json: [String: Any] = [:]
+        
+        // Add non-nil optional properties
+        if let textSize = properties.textSize {
+            json["size"] = textSize.rawValue
+        }
+        if let textColor = properties.textColor {
+            json["color"] = textColor.rawValue
+        }
+        if let textWeight = properties.textWeight {
+            json["weight"] = textWeight.rawValue
+        }
+        if let fontType = properties.fontType {
+            json["fontType"] = fontType.rawValue
+        }
+        if let isSubtle = properties.isSubtle {
+            json["isSubtle"] = isSubtle
+        }
+        
+        // Add required and default properties
+        json["text"] = properties.text
+        json["language"] = properties.language
+        json["italic"] = properties.italic
+        json["strikethrough"] = properties.strikethrough
+        json["underline"] = properties.underline
+        
+        return json
+    }
+    
+    /// Converts to JSON string
+    static func serializeToJsonString(_ properties: SwiftRichTextElementProperties) -> String {
+        do {
+            let json = serializeToJson(properties)
+            let jsonData = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                throw EncodingError.invalidValue(json, EncodingError.Context(
+                    codingPath: [], debugDescription: "Failed to convert JSON to string"))
+            }
+            return jsonString
+        } catch {
+            return "{}"
+        }
+    }
+}
+
+// MARK: - SwiftRichTextElementProperties Extension
+
+extension SwiftRichTextElementProperties {
+    // Static factory methods for backward compatibility
+    static func fromJSON(_ json: [String: Any]) throws -> SwiftRichTextElementProperties {
+        return try SwiftRichTextElementPropertiesLegacySupport.deserialize(from: json)
+    }
+    
+    static func fromJSONString(_ jsonString: String) throws -> SwiftRichTextElementProperties? {
+        return try SwiftRichTextElementPropertiesLegacySupport.deserialize(from: jsonString)
+    }
+    
+    // Serialization to string
+    func toJSONString() -> String {
+        return SwiftRichTextElementPropertiesLegacySupport.serializeToJsonString(self)
+    }
+    
+    // MARK: - Serialization to JSON
+    func toJSON() -> [String: Any] {
+        return SwiftRichTextElementPropertiesLegacySupport.serializeToJson(self)
+    }
+}
