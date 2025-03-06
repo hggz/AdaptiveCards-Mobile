@@ -250,3 +250,275 @@ extension SwiftBaseActionElement {
         return try deserializeAction(from: jsonString)
     }
 }
+
+enum SwiftExecuteActionLegacySupport {
+    /// Sets the `dataJson` property from a JSON string.
+    static func setDataJson(for action: SwiftExecuteAction, from jsonString: String) {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            return
+        }
+        // Convert [String: Any] into [String: AnyCodable]
+        action.dataJson = jsonDict.mapValues { AnyCodable($0) }
+    }
+
+    /// Serializes the action into a legacy JSON dictionary.
+    static func serializeToJson(_ action: SwiftExecuteAction) -> [String: Any] {
+        do {
+            // Start with the base JSON from the superclass.
+            var json = try action.serializeToJsonValue()
+            
+            if let dataJson = action.dataJson {
+                // Convert [String: AnyCodable] to [String: Any] by extracting underlying values.
+                json["data"] = dataJson.mapValues { $0.value }
+            }
+            if !action.verb.isEmpty {
+                json["verb"] = action.verb
+            }
+            if action.associatedInputs != .auto {
+                json["associatedInputs"] = action.associatedInputs.rawValue
+            }
+            json["conditionallyEnabled"] = action.conditionallyEnabled
+            
+            return json
+        } catch {
+            debugPrint("execute action error serializing to json")
+            return [:]
+        }
+    }
+}
+
+final class SwiftExecuteActionParser: SwiftActionElementParser {
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftExecuteAction.self, from: data)
+    }
+
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let json = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] else {
+            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        return try deserialize(context: context, from: json)
+    }
+}
+
+enum SwiftShowCardActionLegacySupport {
+    /// Deserializes a `SwiftShowCardAction` from a JSON dictionary.
+    static func deserialize(from json: [String: Any]) throws -> SwiftShowCardAction {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftShowCardAction.self, from: data)
+    }
+    
+    /// Deserializes a `SwiftShowCardAction` from a JSON string.
+    static func deserialize(from jsonString: String) throws -> SwiftShowCardAction {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftShowCardAction.self, from: data)
+    }
+    
+    /// Serializes `SwiftShowCardAction` to a legacy JSON dictionary.
+    static func serializeToJson(_ action: SwiftShowCardAction) throws -> [String: Any] {
+        var json = [String: Any]()
+        if let card = action.card {
+            var cardJson = try card.serializeToJsonValue()
+            // Force fallback-related keys to non-nil defaults.
+            cardJson[SwiftAdaptiveCardSchemaKey.fallbackText.rawValue] = card.fallbackText ?? ""
+            cardJson[SwiftAdaptiveCardSchemaKey.speak.rawValue] = card.speak ?? ""
+            // For language, if missing, force "en".
+            cardJson["lang"] = card.language ?? "en"
+            // Ensure the sub-card JSON contains a type.
+            if cardJson["type"] == nil {
+                cardJson["type"] = "AdaptiveCard"
+            }
+            json[SwiftAdaptiveCardSchemaKey.card.rawValue] = cardJson
+        }
+        return json
+    }
+    
+    /// Serializes `SwiftShowCardAction` to a JSON string.
+    static func serialize(_ action: SwiftShowCardAction) throws -> String {
+        let json = try serializeToJson(action)
+        return try SwiftParseUtil.jsonToString(json)
+    }
+}
+
+enum SwiftOpenUrlActionLegacySupport {
+    /// Deserializes a `SwiftOpenUrlAction` from a JSON dictionary.
+    static func deserialize(from json: [String: Any]) throws -> SwiftOpenUrlAction {
+        let data = try JSONSerialization.data(withJSONObject: json, options: [])
+        return try JSONDecoder().decode(SwiftOpenUrlAction.self, from: data)
+    }
+    
+    /// Deserializes a `SwiftOpenUrlAction` from a JSON string.
+    static func deserialize(from jsonString: String) throws -> SwiftOpenUrlAction {
+        guard let data = jsonString.data(using: .utf8) else {
+            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        return try JSONDecoder().decode(SwiftOpenUrlAction.self, from: data)
+    }
+}
+
+struct OpenUrlActionParser: SwiftActionElementParser {
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftOpenUrlActionLegacySupport.deserialize(from: json)
+    }
+    
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftOpenUrlActionLegacySupport.deserialize(from: jsonString)
+    }
+}
+
+enum SwiftSubmitActionLegacySupport {
+    /// Creates a SwiftSubmitAction from a JSON dictionary.
+    static func make(from json: [String: Any]) throws -> SwiftSubmitAction {
+        let dataJson: Any?
+        if let data = json[SwiftAdaptiveCardSchemaKey.data.rawValue] {
+            if let dataDict = data as? [String: Any] {
+                dataJson = dataDict
+            } else {
+                dataJson = data
+            }
+        } else {
+            dataJson = nil
+        }
+        
+        let associatedInputsString = json[SwiftAdaptiveCardSchemaKey.associatedInputs.rawValue] as? String ?? "auto"
+        let associatedInputs = SwiftAssociatedInputs(rawValue: associatedInputsString) ?? .auto
+        let conditionallyEnabled = json[SwiftAdaptiveCardSchemaKey.conditionallyEnabled.rawValue] as? Bool ?? false
+        
+        let title = json["title"] as? String
+        let iconUrl = json["iconUrl"] as? String
+        let style = json["style"] as? String ?? "default"
+        let tooltip = json["tooltip"] as? String
+        let mode = (json["mode"] as? String).flatMap { SwiftMode(rawValue: $0) } ?? .primary
+        let isEnabled = json["isEnabled"] as? Bool ?? true
+        let id = json["id"] as? String
+        
+        let action = SwiftSubmitAction(
+            dataJson: dataJson,
+            associatedInputs: associatedInputs,
+            conditionallyEnabled: conditionallyEnabled,
+            title: title,
+            iconUrl: iconUrl,
+            style: style,
+            tooltip: tooltip,
+            mode: mode,
+            isEnabled: isEnabled,
+            id: id
+        )
+        
+        // Set additional properties for any keys not in the known set.
+        var additionalProps: [String: Any] = [:]
+        for (key, value) in json {
+            if !SwiftSubmitAction.knownProperties.contains(key) {
+                additionalProps[key] = value
+            }
+        }
+        if !additionalProps.isEmpty {
+            action.additionalProperties = additionalProps.mapValues { AnyCodable($0) }
+        }
+        
+        return action
+    }
+    
+    /// Returns a legacy-formatted JSON dictionary for the given SubmitAction, merging with the provided base JSON.
+    static func serializeToJsonValue(_ action: SwiftSubmitAction, superResult: [String: Any]) throws -> [String: Any] {
+        var json = superResult
+        
+        json["type"] = "Action.Submit"
+        
+        // Include the data, preserving its original format.
+        if let dataJson = action.dataJson {
+            json[SwiftAdaptiveCardSchemaKey.data.rawValue] = dataJson
+        }
+        
+        if action.associatedInputs != .auto {
+            json[SwiftAdaptiveCardSchemaKey.associatedInputs.rawValue] = action.associatedInputs.rawValue
+        }
+        
+        // Include title if present.
+        if !action.title.isEmpty {
+            json["title"] = action.title
+        }
+        
+        // Merge in any additional properties.
+        if let additionalProps = action.additionalProperties, !additionalProps.isEmpty {
+            for (key, value) in additionalProps {
+                json[key] = value.value
+            }
+        }
+        
+        return json
+    }
+}
+
+class SubmitActionParser: SwiftActionElementParser {
+    func deserialize(context: SwiftParseContext, from json: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
+        return try SwiftSubmitActionLegacySupport.make(from: json)
+    }
+    
+    func deserialize(fromString jsonString: String, context: SwiftParseContext) throws -> any SwiftAdaptiveCardElementProtocol {
+        guard let jsonData = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []),
+              let jsonDict = jsonObject as? [String: Any] else {
+            throw SwiftAdaptiveCardParseException(statusCode: .invalidJson, message: "Invalid JSON string")
+        }
+        return try deserialize(context: context, from: jsonDict)
+    }
+}
+
+extension SwiftSubmitAction {
+    /// Creates a SubmitAction from a JSON dictionary.
+    /// (Renamed from “deserialize(from:)” to avoid conflicting with BaseActionElement’s extension.)
+    static func make(from json: [String: Any]) throws -> SwiftSubmitAction {
+        let dataJson: Any?
+        if let data = json[SwiftAdaptiveCardSchemaKey.data.rawValue] {
+            if let dataDict = data as? [String: Any] {
+                dataJson = dataDict
+            } else {
+                dataJson = data
+            }
+        } else {
+            dataJson = nil
+        }
+        
+        let associatedInputsString = json[SwiftAdaptiveCardSchemaKey.associatedInputs.rawValue] as? String ?? "auto"
+        let associatedInputs = SwiftAssociatedInputs(rawValue: associatedInputsString) ?? .auto
+        let conditionallyEnabled = json[SwiftAdaptiveCardSchemaKey.conditionallyEnabled.rawValue] as? Bool ?? false
+        
+        let title = json["title"] as? String
+        let iconUrl = json["iconUrl"] as? String
+        let style = json["style"] as? String ?? "default"
+        let tooltip = json["tooltip"] as? String
+        let mode = (json["mode"] as? String).flatMap { SwiftMode(rawValue: $0) } ?? .primary
+        let isEnabled = json["isEnabled"] as? Bool ?? true
+        let id = json["id"] as? String
+        
+        let action = SwiftSubmitAction(dataJson: dataJson,
+                                  associatedInputs: associatedInputs,
+                                  conditionallyEnabled: conditionallyEnabled,
+                                  title: title,
+                                  iconUrl: iconUrl,
+                                  style: style,
+                                  tooltip: tooltip,
+                                  mode: mode,
+                                  isEnabled: isEnabled,
+                                  id: id)
+        
+        // Filter and set additional properties
+        var additionalProps: [String: Any] = [:]
+        for (key, value) in json {
+            if !Self.knownProperties.contains(key) {
+                additionalProps[key] = value
+            }
+        }
+        if !additionalProps.isEmpty {
+            action.additionalProperties = additionalProps.mapValues { AnyCodable($0) }
+        }
+        
+        return action
+    }
+}
