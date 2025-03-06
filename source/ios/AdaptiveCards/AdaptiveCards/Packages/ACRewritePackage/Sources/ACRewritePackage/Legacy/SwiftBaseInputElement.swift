@@ -21,50 +21,6 @@ class SwiftBaseInputElement: SwiftBaseCardElement {
         case errorMessage
         case valueChangedAction
     }
-    
-    /// Designated initializer.
-    /// - Parameters:
-    ///   - type: The type of card element (inherited from BaseCardElement).
-    ///   - id: An optional identifier.
-    ///   - label: Optional label text.
-    ///   - isRequired: Whether the input is required (default is `false`).
-    ///   - errorMessage: Optional error message.
-    ///   - valueChangedAction: Optional action for value change events.
-    ///   - spacing: Optional spacing setting.
-    ///   - height: Optional height type.
-    ///   - targetWidth: Optional target width type.
-    ///   - separator: Optional flag indicating whether a separator should be shown.
-    ///   - isVisible: Visibility flag (default is `true`).
-    ///   - areaGridName: Optional grid name.
-    init(
-        type: SwiftCardElementType,
-        id: String? = nil,
-        label: String? = nil,
-        isRequired: Bool = false,
-        errorMessage: String? = nil,
-        valueChangedAction: SwiftValueChangedAction? = nil,
-        spacing: SwiftSpacing? = nil,
-        height: SwiftHeightType? = nil,
-        targetWidth: SwiftTargetWidthType? = nil,
-        separator: Bool? = nil,
-        isVisible: Bool = true,
-        areaGridName: String? = nil
-    ) {
-        self.label = label
-        self.isRequired = isRequired
-        self.errorMessage = errorMessage
-        self.valueChangedAction = valueChangedAction
-        super.init(
-            type: type,
-            spacing: spacing,
-            height: height,
-            targetWidth: targetWidth,
-            separator: separator,
-            isVisible: isVisible,
-            areaGridName: areaGridName,
-            id: id
-        )
-    }
 
     /// Decodes properties from the given decoder.
     required init(from decoder: Decoder) throws {

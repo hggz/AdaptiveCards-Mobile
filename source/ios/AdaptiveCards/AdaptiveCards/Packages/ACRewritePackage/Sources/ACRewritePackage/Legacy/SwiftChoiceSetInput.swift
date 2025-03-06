@@ -1,16 +1,18 @@
 import Foundation
 
 /// Represents a ChoiceSetInput in an Adaptive Card.
-/// Now implemented as a class that extends BaseCardElement so that it can be parsed directly.
 class SwiftChoiceSetInput: SwiftBaseInputElement {
-    var isMultiSelect: Bool
-    var choiceSetStyle: SwiftChoiceSetStyle
-    var choices: [SwiftChoiceInput]
-    var choicesData: SwiftChoicesData?
-    var value: String
-    var wrap: Bool
-    var placeholder: String
+    // MARK: - Properties
+    let isMultiSelect: Bool
+    let choiceSetStyle: SwiftChoiceSetStyle
+    let choices: [SwiftChoiceInput]
+    let choicesData: SwiftChoicesData?
+    let value: String
+    let wrap: Bool
+    let placeholder: String
 
+    // MARK: - Codable Implementation
+    
     private enum CodingKeys: String, CodingKey {
         case isMultiSelect  = "isMultiSelect"
         case choiceSetStyle = "style"
@@ -20,39 +22,24 @@ class SwiftChoiceSetInput: SwiftBaseInputElement {
         case wrap           = "wrap"
         case placeholder    = "placeholder"
     }
-    /// Designated initializer.
-    init(
-        isMultiSelect: Bool = false,
-        choiceSetStyle: SwiftChoiceSetStyle = .compact,
-        choices: [SwiftChoiceInput] = [],
-        choicesData: SwiftChoicesData? = nil,
-        value: String = "",
-        wrap: Bool = false,
-        placeholder: String = "",
-        id: String? = nil
-    ) {
-        self.isMultiSelect = isMultiSelect
-        self.choiceSetStyle = choiceSetStyle
-        self.choices = choices
-        self.choicesData = choicesData
-        self.value = value
-        self.wrap = wrap
-        self.placeholder = placeholder
-        // Initialize the BaseCardElement with a type that represents a ChoiceSetInput.
-        super.init(type: .choiceSetInput, id: id)
-    }
 
-    /// Required initializer for Codable conformance.
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.isMultiSelect  = try container.decodeIfPresent(Bool.self,  forKey: .isMultiSelect)  ?? false
-        self.choiceSetStyle = try container.decodeIfPresent(SwiftChoiceSetStyle.self, forKey: .choiceSetStyle) ?? .compact
-        self.choices        = try container.decodeIfPresent([SwiftChoiceInput].self, forKey: .choices) ?? []
-        self.choicesData    = try container.decodeIfPresent(SwiftChoicesData.self, forKey: .choicesData)
-        self.value          = try container.decodeIfPresent(String.self, forKey: .value) ?? ""
-        self.wrap           = try container.decodeIfPresent(Bool.self,  forKey: .wrap)  ?? false
-        self.placeholder    = try container.decodeIfPresent(String.self, forKey: .placeholder) ?? ""
+        
+        // Decode all properties before super.init
+        isMultiSelect  = try container.decodeIfPresent(Bool.self, forKey: .isMultiSelect) ?? false
+        choiceSetStyle = try container.decodeIfPresent(SwiftChoiceSetStyle.self, forKey: .choiceSetStyle) ?? .compact
+        choices        = try container.decodeIfPresent([SwiftChoiceInput].self, forKey: .choices) ?? []
+        choicesData    = try container.decodeIfPresent(SwiftChoicesData.self, forKey: .choicesData)
+        value          = try container.decodeIfPresent(String.self, forKey: .value) ?? ""
+        wrap           = try container.decodeIfPresent(Bool.self, forKey: .wrap) ?? false
+        placeholder    = try container.decodeIfPresent(String.self, forKey: .placeholder) ?? ""
+        
+        // Call super.init after initializing all properties
         try super.init(from: decoder)
+        
+        // Set up known properties
+        populateKnownPropertiesSet()
     }
 
     override func encode(to encoder: Encoder) throws {
@@ -64,25 +51,23 @@ class SwiftChoiceSetInput: SwiftBaseInputElement {
         try container.encode(value, forKey: .value)
         try container.encode(wrap, forKey: .wrap)
         try container.encode(placeholder, forKey: .placeholder)
+        
         try super.encode(to: encoder)
     }
-
-    /// Serializes the instance to a JSON string.
-    func serializeToJson() -> String? {
-        guard let jsonData = try? JSONEncoder().encode(self) else { return nil }
-        return String(data: jsonData, encoding: .utf8)
-    }
-}
-
-/// Parses a ChoiceSetInput element from JSON.
-struct SwiftChoiceSetInputParser: SwiftBaseCardElementParser {
-    func deserialize(context: SwiftParseContext, value: [String: Any]) throws -> any SwiftAdaptiveCardElementProtocol {
-        // Use the new class-based deserialization.
-        return try SwiftChoiceSetInput.deserialize(from: value)
+    
+    // MARK: - Serialization to JSON
+    override func serializeToJsonValue() throws -> [String: Any] {
+        let json = try super.serializeToJsonValue()
+        return try serializeToLegacyJsonFormat(superResult: json)
     }
     
-    func deserialize(fromString context: SwiftParseContext, value: String) throws -> any SwiftAdaptiveCardElementProtocol {
-        let jsonDict = try SwiftParseUtil.getJsonDictionary(from: value)
-        return try deserialize(context: context, value: jsonDict)
+    override func populateKnownPropertiesSet() {
+        self.knownProperties.insert("isMultiSelect")
+        self.knownProperties.insert("style")
+        self.knownProperties.insert("choices")
+        self.knownProperties.insert("choicesData")
+        self.knownProperties.insert("value")
+        self.knownProperties.insert("wrap")
+        self.knownProperties.insert("placeholder")
     }
 }
