@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import ACRewritePackage
+import SwiftAdaptiveCards
 
 public protocol Convertible {
     associatedtype Target
