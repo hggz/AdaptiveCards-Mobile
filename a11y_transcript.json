@@ -1,1692 +1,5014 @@
 [
   {
-    "scenario": "auto_activity_initial",
-    "platform": "ios",
-    "source": "XCUIElement (UIAccessibility API)",
+    "scenario": "showcard_collapsed",
     "nodes": [
       {
         "index": 1,
-        "label": "Available Sample JSONs",
-        "value": "",
-        "role": "textView",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          26,
-          50,
-          376,
-          75
+          44,
+          106,
+          401,
+          180
         ],
-        "voiceover_reads": "Available Sample JSONs.  textView"
+        "focusable": true
       },
       {
         "index": 2,
-        "label": "Back",
-        "value": "",
-        "role": "button",
+        "label": "EXPENSE APPROVAL",
+        "class": "View",
         "bounds": [
-          26,
-          108,
-          80,
-          145
+          55,
+          275,
+          667,
+          338
         ],
-        "voiceover_reads": "Back.  button"
+        "focusable": true
       },
       {
         "index": 3,
-        "label": "OrderDelivery.json",
-        "value": "",
-        "role": "text",
+        "label": "Pending",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          689,
+          275,
+          1025,
+          357
         ],
-        "voiceover_reads": "OrderDelivery.json.  text"
+        "focusable": true
       },
       {
         "index": 4,
-        "label": "OrderConfirmation.json",
-        "value": "",
-        "role": "text",
+        "label": "Trip to UAE",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          434,
+          623,
+          508
         ],
-        "voiceover_reads": "OrderConfirmation.json.  text"
+        "focusable": true
       },
       {
         "index": 5,
-        "label": "NestedFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "EXPORT AS PDF link",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          645,
+          434,
+          998,
+          566
         ],
-        "voiceover_reads": "NestedFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 6,
-        "label": "NestedFallbackRoot.json",
-        "value": "",
-        "role": "text",
+        "label": "ER-13052",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          574,
+          1025,
+          612
         ],
-        "voiceover_reads": "NestedFallbackRoot.json.  text"
+        "focusable": true
       },
       {
         "index": 7,
-        "label": "NestedFallbackBody.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted By",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          694,
+          413,
+          738
         ],
-        "voiceover_reads": "NestedFallbackBody.json.  text"
+        "focusable": true
       },
       {
         "index": 8,
-        "label": "MultiColumnFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Matt Hidinger matt@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          694,
+          918,
+          738
         ],
-        "voiceover_reads": "MultiColumnFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 9,
-        "label": "InputsWithValidation.json",
-        "value": "",
-        "role": "text",
+        "label": "Duration",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          738,
+          413,
+          782
         ],
-        "voiceover_reads": "InputsWithValidation.json.  text"
+        "focusable": true
       },
       {
         "index": 10,
-        "label": "InputFormWithRTL.json",
-        "value": "",
-        "role": "text",
+        "label": "2019/06/19 - 2019/06/25",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          738,
+          918,
+          782
         ],
-        "voiceover_reads": "InputFormWithRTL.json.  text"
+        "focusable": true
       },
       {
         "index": 11,
-        "label": "InputForm.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted On",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          782,
+          413,
+          826
         ],
-        "voiceover_reads": "InputForm.json.  text"
+        "focusable": true
       },
       {
         "index": 12,
-        "label": "ImageGallery.json",
-        "value": "",
-        "role": "text",
+        "label": "2019/04/14",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          782,
+          918,
+          826
         ],
-        "voiceover_reads": "ImageGallery.json.  text"
+        "focusable": true
       },
       {
         "index": 13,
-        "label": "FoodOrder.json",
-        "value": "",
-        "role": "text",
+        "label": "Reimbursable Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          826,
+          413,
+          870
         ],
-        "voiceover_reads": "FoodOrder.json.  text"
+        "focusable": true
       },
       {
         "index": 14,
-        "label": "FluentIcon.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 404.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          826,
+          918,
+          870
         ],
-        "voiceover_reads": "FluentIcon.json.  text"
+        "focusable": true
       },
       {
         "index": 15,
-        "label": "FluentIcon.RTL.json",
-        "value": "",
-        "role": "text",
+        "label": "Awaiting approval from",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          870,
+          413,
+          914
         ],
-        "voiceover_reads": "FluentIcon.RTL.json.  text"
+        "focusable": true
       },
       {
         "index": 16,
-        "label": "FlightUpdateTable.json",
-        "value": "",
-        "role": "text",
+        "label": "Thomas thomas@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          870,
+          918,
+          914
         ],
-        "voiceover_reads": "FlightUpdateTable.json.  text"
+        "focusable": true
       },
       {
         "index": 17,
-        "label": "FlightUpdate.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted to",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          914,
+          413,
+          958
         ],
-        "voiceover_reads": "FlightUpdate.json.  text"
+        "focusable": true
       },
       {
         "index": 18,
-        "label": "FlightItinerary.json",
-        "value": "",
-        "role": "text",
+        "label": "David david@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          914,
+          918,
+          958
         ],
-        "voiceover_reads": "FlightItinerary.json.  text"
+        "focusable": true
       },
       {
         "index": 19,
-        "label": "FlightDetails.json",
-        "value": "",
-        "role": "text",
+        "label": "DATE",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1095,
+          135,
+          1139
         ],
-        "voiceover_reads": "FlightDetails.json.  text"
+        "focusable": true
       },
       {
         "index": 20,
-        "label": "FallbackAction.json",
-        "value": "",
-        "role": "text",
+        "label": "CATEGORY",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          217,
+          1095,
+          863,
+          1139
         ],
-        "voiceover_reads": "FallbackAction.json.  text"
+        "focusable": true
       },
       {
         "index": 21,
-        "label": "Fallback.json",
-        "value": "",
-        "role": "text",
+        "label": "AMOUNT",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          885,
+          1095,
+          1025,
+          1139
         ],
-        "voiceover_reads": "Fallback.json.  text"
+        "focusable": true
       },
       {
         "index": 22,
-        "label": "ExpenseReport.json",
-        "value": "",
-        "role": "text",
+        "label": "06/19",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1216,
+          145,
+          1260
         ],
-        "voiceover_reads": "ExpenseReport.json.  text"
+        "focusable": true
       },
       {
         "index": 23,
-        "label": "DynamicText.json",
-        "value": "",
-        "role": "text",
+        "label": "Air Travel Expense",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1216,
+          856,
+          1260
         ],
-        "voiceover_reads": "DynamicText.json.  text"
+        "focusable": true
       },
       {
         "index": 24,
-        "label": "DynamicActions.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 300",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          878,
+          1216,
+          962,
+          1260
         ],
-        "voiceover_reads": "DynamicActions.json.  text"
+        "focusable": true
       },
       {
         "index": 25,
-        "label": "ContainerFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Air Travel Expense $300 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1216,
+          1025,
+          1271
         ],
-        "voiceover_reads": "ContainerFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 26,
-        "label": "ContainerAreaGrid9.json",
-        "value": "",
-        "role": "text",
+        "label": "06/19",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1293,
+          145,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid9.json.  text"
+        "focusable": true
       },
       {
         "index": 27,
-        "label": "ContainerAreaGrid8.json",
-        "value": "",
-        "role": "text",
+        "label": "Auto Mobile Expense",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1293,
+          856,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid8.json.  text"
+        "focusable": true
       },
       {
         "index": 28,
-        "label": "ContainerAreaGrid7.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 100",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          878,
+          1293,
+          962,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid7.json.  text"
+        "focusable": true
       },
       {
         "index": 29,
-        "label": "ContainerAreaGrid6.json",
-        "value": "",
-        "role": "text",
+        "label": "Auto Mobile Expense $100 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1293,
+          1025,
+          1348
         ],
-        "voiceover_reads": "ContainerAreaGrid6.json.  text"
+        "focusable": true
       },
       {
         "index": 30,
-        "label": "ContainerAreaGrid5.json",
-        "value": "",
-        "role": "text",
+        "label": "06/25",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1370,
+          145,
+          1414
         ],
-        "voiceover_reads": "ContainerAreaGrid5.json.  text"
+        "focusable": true
       },
       {
         "index": 31,
-        "label": "ContainerAreaGrid4.json",
-        "value": "",
-        "role": "text",
+        "label": "Excess Baggage Cost",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1370,
+          847,
+          1414
         ],
-        "voiceover_reads": "ContainerAreaGrid4.json.  text"
+        "focusable": true
       },
       {
         "index": 32,
-        "label": "ContainerAreaGrid3.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 4.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          869,
+          1370,
+          962,
+          1414
         ],
-        "voiceover_reads": "ContainerAreaGrid3.json.  text"
+        "focusable": true
       },
       {
         "index": 33,
-        "label": "ContainerAreaGrid2.json",
-        "value": "",
-        "role": "text",
+        "label": "Excess Baggage Cost $50.38 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1370,
+          1025,
+          1425
         ],
-        "voiceover_reads": "ContainerAreaGrid2.json.  text"
+        "focusable": true
       },
       {
         "index": 34,
-        "label": "ContainerAreaGrid11.json",
-        "value": "",
-        "role": "text",
+        "label": "Total Expense Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1509,
+          766,
+          1553
         ],
-        "voiceover_reads": "ContainerAreaGrid11.json.  text"
+        "focusable": true
       },
       {
         "index": 35,
-        "label": "ContainerAreaGrid10.json",
-        "value": "",
-        "role": "text",
+        "label": "404.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          788,
+          1509,
+          1025,
+          1553
         ],
-        "voiceover_reads": "ContainerAreaGrid10.json.  text"
+        "focusable": true
       },
       {
         "index": 36,
-        "label": "ContainerAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "Non-reimbursable Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1553,
+          766,
+          1597
         ],
-        "voiceover_reads": "ContainerAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 37,
-        "label": "ConditionallyEnabled.json",
-        "value": "",
-        "role": "text",
+        "label": "(-) 0.00",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          788,
+          1553,
+          1025,
+          1597
         ],
-        "voiceover_reads": "ConditionallyEnabled.json.  text"
+        "focusable": true
       },
       {
         "index": 38,
-        "label": "CompoundButtonSample.json",
-        "value": "",
-        "role": "text",
+        "label": "Advance Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1597,
+          766,
+          1641
         ],
-        "voiceover_reads": "CompoundButtonSample.json.  text"
+        "focusable": true
       },
       {
         "index": 39,
-        "label": "ColumnSetWithDifferentWidths.json",
-        "value": "",
-        "role": "text",
+        "label": "(-) 0.00",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          788,
+          1597,
+          1025,
+          1641
         ],
-        "voiceover_reads": "ColumnSetWithDifferentWidths.json.  text"
+        "focusable": true
       },
       {
         "index": 40,
-        "label": "ColumnAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "Amount to be Reimbursed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1718,
+          849,
+          1762
         ],
-        "voiceover_reads": "ColumnAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 41,
-        "label": "Carousel.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 404.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          871,
+          1718,
+          1003,
+          1762
         ],
-        "voiceover_reads": "Carousel.json.  text"
+        "focusable": true
       },
       {
         "index": 42,
-        "label": "CalendarReminder.json",
-        "value": "",
-        "role": "text",
+        "label": "Show history",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1839,
+          1025,
+          1883
         ],
-        "voiceover_reads": "CalendarReminder.json.  text"
+        "focusable": true
       },
       {
         "index": 43,
-        "label": "ApplicationLogin.json",
-        "value": "",
-        "role": "text",
+        "label": "Show history",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1839,
+          1025,
+          1883
         ],
-        "voiceover_reads": "ApplicationLogin.json.  text"
+        "focusable": true
       },
       {
         "index": 44,
-        "label": "Agenda.json",
-        "value": "",
-        "role": "text",
+        "label": "APPROVE",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1905,
+          297,
+          2037
         ],
-        "voiceover_reads": "Agenda.json.  text"
+        "focusable": true
       },
       {
         "index": 45,
-        "label": "AdaptiveCardFlowLayoutWithInputElements.json",
-        "value": "",
-        "role": "text",
+        "label": "REJECT",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          221
+          324,
+          1905,
+          566,
+          2037
         ],
-        "voiceover_reads": "AdaptiveCardFlowLayoutWithInputElements.json.  text"
+        "focusable": true
       },
       {
         "index": 46,
-        "label": "AdaptiveCardFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Test cases",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          0,
+          2054,
+          360,
+          2208
         ],
-        "voiceover_reads": "AdaptiveCardFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 47,
-        "label": "ActivityUpdate.json",
-        "value": "",
-        "role": "text",
+        "label": "Test cases",
+        "class": "View",
         "bounds": [
-          36,
-          156,
-          325,
-          200
+          100,
+          2145,
+          259,
+          2189
         ],
-        "voiceover_reads": "ActivityUpdate.json.  text"
+        "focusable": true
       },
       {
         "index": 48,
-        "label": "EDIT",
-        "value": "",
-        "role": "button",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          333,
-          163,
-          366,
-          193
+          360,
+          2054,
+          720,
+          2208
         ],
-        "voiceover_reads": "EDIT.  button"
+        "focusable": true
       },
       {
         "index": 49,
-        "label": "Delete All Cards",
-        "value": "",
-        "role": "button",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          16,
-          208,
-          196,
-          236
+          412,
+          2138,
+          667,
+          2191
         ],
-        "voiceover_reads": "Delete All Cards.  button"
+        "focusable": true
       },
       {
         "index": 50,
-        "label": "AdaptiveCardAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "Inputs",
+        "class": "View",
         "bounds": [
-          36,
-          200,
-          366,
-          244
+          720,
+          2054,
+          1080,
+          2208
         ],
-        "voiceover_reads": "AdaptiveCardAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 51,
-        "label": "Delete All Cards",
-        "value": "",
-        "role": "text",
+        "label": "Inputs",
+        "class": "View",
         "bounds": [
-          51,
-          213,
-          161,
-          231
+          854,
+          2145,
+          946,
+          2189
         ],
-        "voiceover_reads": "Delete All Cards.  text"
+        "focusable": true
       },
       {
         "index": 52,
-        "label": "A11y",
-        "value": "",
-        "role": "button",
+        "label": "11:37 PM",
+        "class": "View",
         "bounds": [
-          206,
-          208,
-          386,
-          236
+          22,
+          0,
+          138,
+          66
         ],
-        "voiceover_reads": "A11y.  button"
+        "focusable": true
       },
       {
         "index": 53,
-        "label": "A11y",
-        "value": "",
-        "role": "text",
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
         "bounds": [
-          280,
-          213,
-          311,
-          231
+          138,
+          0,
+          199,
+          66
         ],
-        "voiceover_reads": "A11y.  text"
+        "focusable": true
       },
       {
         "index": 54,
-        "label": "Enable Custom Control",
-        "value": "",
-        "role": "text",
+        "label": "Wifi signal full.",
+        "class": "View",
         "bounds": [
-          151,
-          249,
-          326,
-          269
+          931,
+          2,
+          979,
+          63
         ],
-        "voiceover_reads": "Enable Custom Control.  text"
+        "focusable": true
       },
       {
         "index": 55,
-        "label": " ",
-        "value": "",
-        "role": "text",
+        "label": "Phone two bars.",
+        "class": "View",
         "bounds": [
-          16,
-          283,
-          386,
-          303
+          979,
+          2,
+          1020,
+          63
         ],
-        "voiceover_reads": " .  text"
+        "focusable": true
       },
       {
         "index": 56,
-        "label": "Publish Adaptive Card schema",
-        "value": "",
-        "role": "textView",
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
         "bounds": [
-          24,
-          319,
-          378,
-          339
+          1037,
+          0,
+          1058,
+          66
         ],
-        "voiceover_reads": "Publish Adaptive Card schema.  textView"
+        "focusable": true
       },
       {
         "index": 57,
-        "label": "Matt Hidinger",
-        "value": "",
-        "role": "image",
+        "label": "Back",
+        "class": "View",
         "bounds": [
-          24,
-          350,
-          64,
-          390
+          125,
+          2208,
+          332,
+          2340
         ],
-        "voiceover_reads": "Matt Hidinger.  image"
+        "focusable": true
       },
       {
         "index": 58,
-        "label": "Matt Hidinger",
-        "value": "",
-        "role": "textView",
+        "label": "Overview",
+        "class": "View",
         "bounds": [
-          74,
-          350,
-          378,
-          367
+          746,
+          2208,
+          954,
+          2340
         ],
-        "voiceover_reads": "Matt Hidinger.  textView"
+        "focusable": true
       },
       {
         "index": 59,
-        "label": "Created Feb 14, 2017",
-        "value": "",
-        "role": "textView",
+        "label": "Home",
+        "class": "View",
         "bounds": [
-          74,
-          367,
-          378,
-          384
+          430,
+          2208,
+          650,
+          2340
         ],
-        "voiceover_reads": "Created Feb 14, 2017.  textView"
-      },
-      {
-        "index": 60,
-        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-        "value": "",
-        "role": "textView",
-        "bounds": [
-          24,
-          400,
-          378,
-          467
-        ],
-        "voiceover_reads": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation..  textView"
-      },
-      {
-        "index": 61,
-        "label": "Set due date",
-        "value": "card collapsed",
-        "role": "button",
-        "bounds": [
-          24,
-          555,
-          378,
-          593
-        ],
-        "voiceover_reads": "Set due date, card collapsed.  button"
-      },
-      {
-        "index": 62,
-        "label": "Comment",
-        "value": "card collapsed",
-        "role": "button",
-        "bounds": [
-          24,
-          608,
-          378,
-          646
-        ],
-        "voiceover_reads": "Comment, card collapsed.  button"
-      },
-      {
-        "index": 63,
-        "label": "OK",
-        "value": "",
-        "role": "button",
-        "bounds": [
-          24,
-          682,
-          378,
-          720
-        ],
-        "voiceover_reads": "OK.  button"
-      },
-      {
-        "index": 64,
-        "label": "Send",
-        "value": "",
-        "role": "button",
-        "bounds": [
-          24,
-          682,
-          378,
-          720
-        ],
-        "voiceover_reads": "Send.  button"
+        "focusable": true
       }
     ]
   },
   {
-    "scenario": "auto_activity_showcard_expanded",
-    "platform": "ios",
-    "source": "XCUIElement (UIAccessibility API)",
+    "scenario": "showcard_expanded",
     "nodes": [
       {
         "index": 1,
-        "label": "Available Sample JSONs",
-        "value": "",
-        "role": "textView",
+        "label": "11:38 PM",
+        "class": "View",
         "bounds": [
-          26,
-          50,
-          376,
-          75
+          22,
+          0,
+          138,
+          66
         ],
-        "voiceover_reads": "Available Sample JSONs.  textView"
+        "focusable": true
       },
       {
         "index": 2,
-        "label": "Back",
-        "value": "",
-        "role": "button",
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
         "bounds": [
-          26,
-          108,
-          80,
-          145
+          138,
+          0,
+          199,
+          66
         ],
-        "voiceover_reads": "Back.  button"
+        "focusable": true
       },
       {
         "index": 3,
-        "label": "OrderDelivery.json",
-        "value": "",
-        "role": "text",
+        "label": "Wifi signal full.",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          931,
+          2,
+          979,
+          63
         ],
-        "voiceover_reads": "OrderDelivery.json.  text"
+        "focusable": true
       },
       {
         "index": 4,
-        "label": "OrderConfirmation.json",
-        "value": "",
-        "role": "text",
+        "label": "Phone two bars.",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          979,
+          2,
+          1020,
+          63
         ],
-        "voiceover_reads": "OrderConfirmation.json.  text"
+        "focusable": true
       },
       {
         "index": 5,
-        "label": "NestedFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          1037,
+          0,
+          1058,
+          66
         ],
-        "voiceover_reads": "NestedFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 6,
-        "label": "NestedFallbackRoot.json",
-        "value": "",
-        "role": "text",
+        "label": "Back",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          125,
+          2208,
+          332,
+          2340
         ],
-        "voiceover_reads": "NestedFallbackRoot.json.  text"
+        "focusable": true
       },
       {
         "index": 7,
-        "label": "NestedFallbackBody.json",
-        "value": "",
-        "role": "text",
+        "label": "Overview",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          746,
+          2208,
+          954,
+          2340
         ],
-        "voiceover_reads": "NestedFallbackBody.json.  text"
+        "focusable": true
       },
       {
         "index": 8,
-        "label": "MultiColumnFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Home",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          430,
+          2208,
+          650,
+          2340
         ],
-        "voiceover_reads": "MultiColumnFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 9,
-        "label": "InputsWithValidation.json",
-        "value": "",
-        "role": "text",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          44,
+          106,
+          401,
+          180
         ],
-        "voiceover_reads": "InputsWithValidation.json.  text"
+        "focusable": true
       },
       {
         "index": 10,
-        "label": "InputFormWithRTL.json",
-        "value": "",
-        "role": "text",
+        "label": "EXPENSE APPROVAL",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          275,
+          667,
+          338
         ],
-        "voiceover_reads": "InputFormWithRTL.json.  text"
+        "focusable": true
       },
       {
         "index": 11,
-        "label": "InputForm.json",
-        "value": "",
-        "role": "text",
+        "label": "Pending",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          689,
+          275,
+          1025,
+          357
         ],
-        "voiceover_reads": "InputForm.json.  text"
+        "focusable": true
       },
       {
         "index": 12,
-        "label": "ImageGallery.json",
-        "value": "",
-        "role": "text",
+        "label": "Trip to UAE",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          434,
+          623,
+          508
         ],
-        "voiceover_reads": "ImageGallery.json.  text"
+        "focusable": true
       },
       {
         "index": 13,
-        "label": "FoodOrder.json",
-        "value": "",
-        "role": "text",
+        "label": "EXPORT AS PDF link",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          645,
+          434,
+          998,
+          566
         ],
-        "voiceover_reads": "FoodOrder.json.  text"
+        "focusable": true
       },
       {
         "index": 14,
-        "label": "FluentIcon.json",
-        "value": "",
-        "role": "text",
+        "label": "ER-13052",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          574,
+          1025,
+          612
         ],
-        "voiceover_reads": "FluentIcon.json.  text"
+        "focusable": true
       },
       {
         "index": 15,
-        "label": "FluentIcon.RTL.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted By",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          694,
+          413,
+          738
         ],
-        "voiceover_reads": "FluentIcon.RTL.json.  text"
+        "focusable": true
       },
       {
         "index": 16,
-        "label": "FlightUpdateTable.json",
-        "value": "",
-        "role": "text",
+        "label": "Matt Hidinger matt@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          694,
+          918,
+          738
         ],
-        "voiceover_reads": "FlightUpdateTable.json.  text"
+        "focusable": true
       },
       {
         "index": 17,
-        "label": "FlightUpdate.json",
-        "value": "",
-        "role": "text",
+        "label": "Duration",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          738,
+          413,
+          782
         ],
-        "voiceover_reads": "FlightUpdate.json.  text"
+        "focusable": true
       },
       {
         "index": 18,
-        "label": "FlightItinerary.json",
-        "value": "",
-        "role": "text",
+        "label": "2019/06/19 - 2019/06/25",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          738,
+          918,
+          782
         ],
-        "voiceover_reads": "FlightItinerary.json.  text"
+        "focusable": true
       },
       {
         "index": 19,
-        "label": "FlightDetails.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted On",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          782,
+          413,
+          826
         ],
-        "voiceover_reads": "FlightDetails.json.  text"
+        "focusable": true
       },
       {
         "index": 20,
-        "label": "FallbackAction.json",
-        "value": "",
-        "role": "text",
+        "label": "2019/04/14",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          782,
+          918,
+          826
         ],
-        "voiceover_reads": "FallbackAction.json.  text"
+        "focusable": true
       },
       {
         "index": 21,
-        "label": "Fallback.json",
-        "value": "",
-        "role": "text",
+        "label": "Reimbursable Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          826,
+          413,
+          870
         ],
-        "voiceover_reads": "Fallback.json.  text"
+        "focusable": true
       },
       {
         "index": 22,
-        "label": "ExpenseReport.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 404.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          826,
+          918,
+          870
         ],
-        "voiceover_reads": "ExpenseReport.json.  text"
+        "focusable": true
       },
       {
         "index": 23,
-        "label": "DynamicText.json",
-        "value": "",
-        "role": "text",
+        "label": "Awaiting approval from",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          870,
+          413,
+          914
         ],
-        "voiceover_reads": "DynamicText.json.  text"
+        "focusable": true
       },
       {
         "index": 24,
-        "label": "DynamicActions.json",
-        "value": "",
-        "role": "text",
+        "label": "Thomas thomas@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          870,
+          918,
+          914
         ],
-        "voiceover_reads": "DynamicActions.json.  text"
+        "focusable": true
       },
       {
         "index": 25,
-        "label": "ContainerFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Submitted to",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          914,
+          413,
+          958
         ],
-        "voiceover_reads": "ContainerFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 26,
-        "label": "ContainerAreaGrid9.json",
-        "value": "",
-        "role": "text",
+        "label": "David david@contoso.com",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          413,
+          914,
+          918,
+          958
         ],
-        "voiceover_reads": "ContainerAreaGrid9.json.  text"
+        "focusable": true
       },
       {
         "index": 27,
-        "label": "ContainerAreaGrid8.json",
-        "value": "",
-        "role": "text",
+        "label": "DATE",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1095,
+          135,
+          1139
         ],
-        "voiceover_reads": "ContainerAreaGrid8.json.  text"
+        "focusable": true
       },
       {
         "index": 28,
-        "label": "ContainerAreaGrid7.json",
-        "value": "",
-        "role": "text",
+        "label": "CATEGORY",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          217,
+          1095,
+          863,
+          1139
         ],
-        "voiceover_reads": "ContainerAreaGrid7.json.  text"
+        "focusable": true
       },
       {
         "index": 29,
-        "label": "ContainerAreaGrid6.json",
-        "value": "",
-        "role": "text",
+        "label": "AMOUNT",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          885,
+          1095,
+          1025,
+          1139
         ],
-        "voiceover_reads": "ContainerAreaGrid6.json.  text"
+        "focusable": true
       },
       {
         "index": 30,
-        "label": "ContainerAreaGrid5.json",
-        "value": "",
-        "role": "text",
+        "label": "06/19",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1216,
+          145,
+          1260
         ],
-        "voiceover_reads": "ContainerAreaGrid5.json.  text"
+        "focusable": true
       },
       {
         "index": 31,
-        "label": "ContainerAreaGrid4.json",
-        "value": "",
-        "role": "text",
+        "label": "Air Travel Expense",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1216,
+          856,
+          1260
         ],
-        "voiceover_reads": "ContainerAreaGrid4.json.  text"
+        "focusable": true
       },
       {
         "index": 32,
-        "label": "ContainerAreaGrid3.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 300",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          878,
+          1216,
+          962,
+          1260
         ],
-        "voiceover_reads": "ContainerAreaGrid3.json.  text"
+        "focusable": true
       },
       {
         "index": 33,
-        "label": "ContainerAreaGrid2.json",
-        "value": "",
-        "role": "text",
+        "label": "Air Travel Expense $300 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1216,
+          1025,
+          1271
         ],
-        "voiceover_reads": "ContainerAreaGrid2.json.  text"
+        "focusable": true
       },
       {
         "index": 34,
-        "label": "ContainerAreaGrid11.json",
-        "value": "",
-        "role": "text",
+        "label": "06/19",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1293,
+          145,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid11.json.  text"
+        "focusable": true
       },
       {
         "index": 35,
-        "label": "ContainerAreaGrid10.json",
-        "value": "",
-        "role": "text",
+        "label": "Auto Mobile Expense",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1293,
+          856,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid10.json.  text"
+        "focusable": true
       },
       {
         "index": 36,
-        "label": "ContainerAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 100",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          878,
+          1293,
+          962,
+          1337
         ],
-        "voiceover_reads": "ContainerAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 37,
-        "label": "ConditionallyEnabled.json",
-        "value": "",
-        "role": "text",
+        "label": "Auto Mobile Expense $100 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1293,
+          1025,
+          1348
         ],
-        "voiceover_reads": "ConditionallyEnabled.json.  text"
+        "focusable": true
       },
       {
         "index": 38,
-        "label": "CompoundButtonSample.json",
-        "value": "",
-        "role": "text",
+        "label": "06/25",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1370,
+          145,
+          1414
         ],
-        "voiceover_reads": "CompoundButtonSample.json.  text"
+        "focusable": true
       },
       {
         "index": 39,
-        "label": "ColumnSetWithDifferentWidths.json",
-        "value": "",
-        "role": "text",
+        "label": "Excess Baggage Cost",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          200,
+          1370,
+          847,
+          1414
         ],
-        "voiceover_reads": "ColumnSetWithDifferentWidths.json.  text"
+        "focusable": true
       },
       {
         "index": 40,
-        "label": "ColumnAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "$ 4.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          869,
+          1370,
+          962,
+          1414
         ],
-        "voiceover_reads": "ColumnAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 41,
-        "label": "Carousel.json",
-        "value": "",
-        "role": "text",
+        "label": "Excess Baggage Cost $50.38 collapsed",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          970,
+          1370,
+          1025,
+          1425
         ],
-        "voiceover_reads": "Carousel.json.  text"
+        "focusable": true
       },
       {
         "index": 42,
-        "label": "CalendarReminder.json",
-        "value": "",
-        "role": "text",
+        "label": "Total Expense Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1509,
+          766,
+          1553
         ],
-        "voiceover_reads": "CalendarReminder.json.  text"
+        "focusable": true
       },
       {
         "index": 43,
-        "label": "ApplicationLogin.json",
-        "value": "",
-        "role": "text",
+        "label": "404.30",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          788,
+          1509,
+          1025,
+          1553
         ],
-        "voiceover_reads": "ApplicationLogin.json.  text"
+        "focusable": true
       },
       {
         "index": 44,
-        "label": "Agenda.json",
-        "value": "",
-        "role": "text",
+        "label": "Non-reimbursable Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1553,
+          766,
+          1597
         ],
-        "voiceover_reads": "Agenda.json.  text"
+        "focusable": true
       },
       {
         "index": 45,
-        "label": "AdaptiveCardFlowLayoutWithInputElements.json",
-        "value": "",
-        "role": "text",
+        "label": "(-) 0.00",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          221
+          788,
+          1553,
+          1025,
+          1597
         ],
-        "voiceover_reads": "AdaptiveCardFlowLayoutWithInputElements.json.  text"
+        "focusable": true
       },
       {
         "index": 46,
-        "label": "AdaptiveCardFlowLayout.json",
-        "value": "",
-        "role": "text",
+        "label": "Advance Amount",
+        "class": "View",
         "bounds": [
-          16,
-          156,
-          346,
-          200
+          55,
+          1597,
+          766,
+          1641
         ],
-        "voiceover_reads": "AdaptiveCardFlowLayout.json.  text"
+        "focusable": true
       },
       {
         "index": 47,
-        "label": "ActivityUpdate.json",
-        "value": "",
-        "role": "text",
+        "label": "(-) 0.00",
+        "class": "View",
         "bounds": [
-          36,
-          156,
-          325,
-          200
+          788,
+          1597,
+          1025,
+          1641
         ],
-        "voiceover_reads": "ActivityUpdate.json.  text"
+        "focusable": true
       },
       {
         "index": 48,
-        "label": "EDIT",
-        "value": "",
-        "role": "button",
+        "label": "Amount to be Reimbursed",
+        "class": "View",
         "bounds": [
-          333,
-          163,
-          366,
-          193
+          55,
+          1718,
+          849,
+          1762
         ],
-        "voiceover_reads": "EDIT.  button"
+        "focusable": true
       },
       {
         "index": 49,
-        "label": "Delete All Cards",
-        "value": "",
-        "role": "button",
+        "label": "$ 404.30",
+        "class": "View",
         "bounds": [
-          16,
-          208,
-          196,
-          236
+          871,
+          1718,
+          1003,
+          1762
         ],
-        "voiceover_reads": "Delete All Cards.  button"
+        "focusable": true
       },
       {
         "index": 50,
-        "label": "AdaptiveCardAreaGrid.json",
-        "value": "",
-        "role": "text",
+        "label": "Show history",
+        "class": "View",
         "bounds": [
-          36,
-          200,
-          366,
-          244
+          55,
+          1839,
+          1025,
+          1883
         ],
-        "voiceover_reads": "AdaptiveCardAreaGrid.json.  text"
+        "focusable": true
       },
       {
         "index": 51,
-        "label": "Delete All Cards",
-        "value": "",
-        "role": "text",
+        "label": "Show history",
+        "class": "View",
         "bounds": [
-          51,
-          213,
-          161,
-          231
+          55,
+          1839,
+          1025,
+          1883
         ],
-        "voiceover_reads": "Delete All Cards.  text"
+        "focusable": true
       },
       {
         "index": 52,
-        "label": "A11y",
-        "value": "",
-        "role": "button",
+        "label": "APPROVE",
+        "class": "View",
         "bounds": [
-          206,
-          208,
-          386,
-          236
+          55,
+          1905,
+          297,
+          2037
         ],
-        "voiceover_reads": "A11y.  button"
+        "focusable": true
       },
       {
         "index": 53,
-        "label": "A11y",
-        "value": "",
-        "role": "text",
+        "label": "REJECT",
+        "class": "View",
         "bounds": [
-          280,
-          213,
-          311,
-          231
+          324,
+          1905,
+          566,
+          2037
         ],
-        "voiceover_reads": "A11y.  text"
+        "focusable": true
       },
       {
         "index": 54,
-        "label": "Enable Custom Control",
-        "value": "",
-        "role": "text",
+        "label": "Please specify an appropriate reason for rejection required",
+        "class": "View",
         "bounds": [
-          151,
-          249,
-          326,
-          269
+          110,
+          2136,
+          970,
+          2180
         ],
-        "voiceover_reads": "Enable Custom Control.  text"
+        "focusable": true
       },
       {
         "index": 55,
-        "label": " ",
-        "value": "",
-        "role": "text",
+        "label": " Please specify an appropriate reason for rejection  required",
+        "class": "View",
         "bounds": [
-          16,
-          283,
-          386,
-          303
+          110,
+          2202,
+          970,
+          2208
         ],
-        "voiceover_reads": " .  text"
+        "focusable": true
       },
       {
         "index": 56,
-        "label": "Publish Adaptive Card schema",
-        "value": "",
-        "role": "textView",
+        "label": "Test cases",
+        "class": "View",
         "bounds": [
-          24,
-          319,
-          378,
-          339
+          0,
+          2054,
+          360,
+          2208
         ],
-        "voiceover_reads": "Publish Adaptive Card schema.  textView"
+        "focusable": true
       },
       {
         "index": 57,
-        "label": "Matt Hidinger",
-        "value": "",
-        "role": "image",
+        "label": "Test cases",
+        "class": "View",
         "bounds": [
-          24,
-          350,
-          64,
-          390
+          100,
+          2145,
+          259,
+          2189
         ],
-        "voiceover_reads": "Matt Hidinger.  image"
+        "focusable": true
       },
       {
         "index": 58,
-        "label": "Matt Hidinger",
-        "value": "",
-        "role": "textView",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          74,
-          350,
-          378,
-          367
+          360,
+          2054,
+          720,
+          2208
         ],
-        "voiceover_reads": "Matt Hidinger.  textView"
+        "focusable": true
       },
       {
         "index": 59,
-        "label": "Created Feb 14, 2017",
-        "value": "",
-        "role": "textView",
+        "label": "Rendered card",
+        "class": "View",
         "bounds": [
-          74,
-          367,
-          378,
-          384
+          412,
+          2138,
+          667,
+          2191
         ],
-        "voiceover_reads": "Created Feb 14, 2017.  textView"
+        "focusable": true
       },
       {
         "index": 60,
-        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
-        "value": "",
-        "role": "textView",
+        "label": "Inputs",
+        "class": "View",
         "bounds": [
-          24,
-          400,
-          378,
-          467
+          720,
+          2054,
+          1080,
+          2208
         ],
-        "voiceover_reads": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation..  textView"
+        "focusable": true
       },
       {
         "index": 61,
-        "label": "Set due date",
-        "value": "card collapsed",
-        "role": "button",
+        "label": "Inputs",
+        "class": "View",
         "bounds": [
-          24,
-          555,
-          378,
-          593
+          854,
+          2145,
+          946,
+          2189
         ],
-        "voiceover_reads": "Set due date, card collapsed.  button"
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "showcard_collapsed_again",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
       },
       {
-        "index": 62,
-        "label": "Comment",
-        "value": "card expanded",
-        "role": "button",
+        "index": 2,
+        "label": "EXPENSE APPROVAL",
+        "class": "View",
         "bounds": [
-          24,
-          608,
-          378,
-          646
+          55,
+          275,
+          667,
+          338
         ],
-        "voiceover_reads": "Comment, card expanded.  button"
+        "focusable": true
       },
       {
-        "index": 63,
-        "label": "Add a comment",
-        "value": "",
-        "role": "textView",
+        "index": 3,
+        "label": "Pending",
+        "class": "View",
         "bounds": [
-          24,
           689,
-          378,
-          777
+          275,
+          1025,
+          357
         ],
-        "voiceover_reads": "Add a comment.  textView"
+        "focusable": true
       },
       {
-        "index": 64,
-        "label": "Send",
-        "value": "",
-        "role": "button",
+        "index": 4,
+        "label": "Trip to UAE",
+        "class": "View",
         "bounds": [
-          24,
-          682,
-          378,
-          720
+          55,
+          434,
+          623,
+          508
         ],
-        "voiceover_reads": "Send.  button"
+        "focusable": true
       },
       {
-        "index": 65,
+        "index": 5,
+        "label": "EXPORT AS PDF link",
+        "class": "View",
+        "bounds": [
+          645,
+          434,
+          998,
+          566
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": "ER-13052",
+        "class": "View",
+        "bounds": [
+          55,
+          574,
+          1025,
+          612
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Submitted By",
+        "class": "View",
+        "bounds": [
+          55,
+          694,
+          413,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Matt Hidinger matt@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          694,
+          918,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "Duration",
+        "class": "View",
+        "bounds": [
+          55,
+          738,
+          413,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "2019/06/19 - 2019/06/25",
+        "class": "View",
+        "bounds": [
+          413,
+          738,
+          918,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Submitted On",
+        "class": "View",
+        "bounds": [
+          55,
+          782,
+          413,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "2019/04/14",
+        "class": "View",
+        "bounds": [
+          413,
+          782,
+          918,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          826,
+          413,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          413,
+          826,
+          918,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "Awaiting approval from",
+        "class": "View",
+        "bounds": [
+          55,
+          870,
+          413,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "Thomas thomas@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          870,
+          918,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Submitted to",
+        "class": "View",
+        "bounds": [
+          55,
+          914,
+          413,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "David david@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          914,
+          918,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "DATE",
+        "class": "View",
+        "bounds": [
+          55,
+          1095,
+          135,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "CATEGORY",
+        "class": "View",
+        "bounds": [
+          217,
+          1095,
+          863,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "AMOUNT",
+        "class": "View",
+        "bounds": [
+          885,
+          1095,
+          1025,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1216,
+          145,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Air Travel Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1216,
+          856,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "$ 300",
+        "class": "View",
+        "bounds": [
+          878,
+          1216,
+          962,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Air Travel Expense $300 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1216,
+          1025,
+          1271
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1293,
+          145,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "Auto Mobile Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1293,
+          856,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "$ 100",
+        "class": "View",
+        "bounds": [
+          878,
+          1293,
+          962,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 29,
+        "label": "Auto Mobile Expense $100 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1293,
+          1025,
+          1348
+        ],
+        "focusable": true
+      },
+      {
+        "index": 30,
+        "label": "06/25",
+        "class": "View",
+        "bounds": [
+          55,
+          1370,
+          145,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 31,
+        "label": "Excess Baggage Cost",
+        "class": "View",
+        "bounds": [
+          200,
+          1370,
+          847,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 32,
+        "label": "$ 4.30",
+        "class": "View",
+        "bounds": [
+          869,
+          1370,
+          962,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 33,
+        "label": "Excess Baggage Cost $50.38 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1370,
+          1025,
+          1425
+        ],
+        "focusable": true
+      },
+      {
+        "index": 34,
+        "label": "Total Expense Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1509,
+          766,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 35,
+        "label": "404.30",
+        "class": "View",
+        "bounds": [
+          788,
+          1509,
+          1025,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 36,
+        "label": "Non-reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1553,
+          766,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 37,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1553,
+          1025,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 38,
+        "label": "Advance Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1597,
+          766,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 39,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1597,
+          1025,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 40,
+        "label": "Amount to be Reimbursed",
+        "class": "View",
+        "bounds": [
+          55,
+          1718,
+          849,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 41,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          871,
+          1718,
+          1003,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 42,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 43,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 44,
+        "label": "APPROVE",
+        "class": "View",
+        "bounds": [
+          55,
+          1905,
+          297,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 45,
+        "label": "REJECT",
+        "class": "View",
+        "bounds": [
+          324,
+          1905,
+          566,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 46,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 47,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 48,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 49,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 50,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 51,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 52,
+        "label": "11:38 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 53,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 54,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 55,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 56,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 57,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 58,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 59,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "validation_empty_form",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "Tell us about yourself",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          687,
+          327
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "We just need a few more details to get you booked for the trip of a lifetime!",
+        "class": "View",
+        "bounds": [
+          55,
+          349,
+          687,
+          432
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Don't worry, we'll never share or sell your information.",
+        "class": "View",
+        "bounds": [
+          55,
+          454,
+          687,
+          525
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "Your name (Last, First) required",
+        "class": "View",
+        "bounds": [
+          55,
+          547,
+          687,
+          591
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": " Your name (Last, First)  required",
+        "class": "View",
+        "bounds": [
+          55,
+          613,
+          687,
+          737
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Your email required",
+        "class": "View",
+        "bounds": [
+          55,
+          759,
+          687,
+          803
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": " Your email  required",
+        "class": "View",
+        "bounds": [
+          55,
+          825,
+          687,
+          949
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "Phone Number (xxx xxx xxxx)",
+        "class": "View",
+        "bounds": [
+          55,
+          971,
+          687,
+          1015
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": " Phone Number (xxx xxx xxxx) ",
+        "class": "View",
+        "bounds": [
+          55,
+          1037,
+          687,
+          1161
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Diver in the Great Barrier Reef",
+        "class": "View",
+        "bounds": [
+          709,
+          275,
+          1025,
+          696
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "SUBMIT",
+        "class": "View",
+        "bounds": [
+          55,
+          1183,
+          297,
+          1315
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "11:38 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "validation_error_visible",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "Tell us about yourself",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          687,
+          327
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "We just need a few more details to get you booked for the trip of a lifetime!",
+        "class": "View",
+        "bounds": [
+          55,
+          349,
+          687,
+          432
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Don't worry, we'll never share or sell your information.",
+        "class": "View",
+        "bounds": [
+          55,
+          454,
+          687,
+          525
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "Your name (Last, First) * Please enter your name in the specified format",
+        "class": "View",
+        "bounds": [
+          55,
+          547,
+          687,
+          591
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": " Your name (Last, First)  required",
+        "class": "View",
+        "bounds": [
+          55,
+          613,
+          687,
+          737
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Please enter your name in the specified format",
+        "class": "View",
+        "bounds": [
+          55,
+          759,
+          687,
+          842
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Your email * Please enter a valid email address",
+        "class": "View",
+        "bounds": [
+          55,
+          864,
+          687,
+          908
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": " Your email  required",
+        "class": "View",
+        "bounds": [
+          55,
+          930,
+          687,
+          1054
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "Please enter a valid email address",
+        "class": "View",
+        "bounds": [
+          55,
+          1076,
+          687,
+          1120
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Phone Number (xxx xxx xxxx)",
+        "class": "View",
+        "bounds": [
+          55,
+          1142,
+          687,
+          1186
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": " Phone Number (xxx xxx xxxx) ",
+        "class": "View",
+        "bounds": [
+          55,
+          1208,
+          687,
+          1332
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Diver in the Great Barrier Reef",
+        "class": "View",
+        "bounds": [
+          709,
+          275,
+          1025,
+          696
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "SUBMIT",
+        "class": "View",
+        "bounds": [
+          55,
+          1354,
+          297,
+          1486
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "11:37 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "toggle_visibility_hidden",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "EXPENSE APPROVAL",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          667,
+          338
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "Pending",
+        "class": "View",
+        "bounds": [
+          689,
+          275,
+          1025,
+          357
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Trip to UAE",
+        "class": "View",
+        "bounds": [
+          55,
+          434,
+          623,
+          508
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "EXPORT AS PDF link",
+        "class": "View",
+        "bounds": [
+          645,
+          434,
+          998,
+          566
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": "ER-13052",
+        "class": "View",
+        "bounds": [
+          55,
+          574,
+          1025,
+          612
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Submitted By",
+        "class": "View",
+        "bounds": [
+          55,
+          694,
+          413,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Matt Hidinger matt@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          694,
+          918,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "Duration",
+        "class": "View",
+        "bounds": [
+          55,
+          738,
+          413,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "2019/06/19 - 2019/06/25",
+        "class": "View",
+        "bounds": [
+          413,
+          738,
+          918,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Submitted On",
+        "class": "View",
+        "bounds": [
+          55,
+          782,
+          413,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "2019/04/14",
+        "class": "View",
+        "bounds": [
+          413,
+          782,
+          918,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          826,
+          413,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          413,
+          826,
+          918,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "Awaiting approval from",
+        "class": "View",
+        "bounds": [
+          55,
+          870,
+          413,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "Thomas thomas@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          870,
+          918,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Submitted to",
+        "class": "View",
+        "bounds": [
+          55,
+          914,
+          413,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "David david@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          914,
+          918,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "DATE",
+        "class": "View",
+        "bounds": [
+          55,
+          1095,
+          135,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "CATEGORY",
+        "class": "View",
+        "bounds": [
+          217,
+          1095,
+          863,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "AMOUNT",
+        "class": "View",
+        "bounds": [
+          885,
+          1095,
+          1025,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1216,
+          145,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Air Travel Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1216,
+          856,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "$ 300",
+        "class": "View",
+        "bounds": [
+          878,
+          1216,
+          962,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Air Travel Expense $300 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1216,
+          1025,
+          1271
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1293,
+          145,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "Auto Mobile Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1293,
+          856,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "$ 100",
+        "class": "View",
+        "bounds": [
+          878,
+          1293,
+          962,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 29,
+        "label": "Auto Mobile Expense $100 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1293,
+          1025,
+          1348
+        ],
+        "focusable": true
+      },
+      {
+        "index": 30,
+        "label": "06/25",
+        "class": "View",
+        "bounds": [
+          55,
+          1370,
+          145,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 31,
+        "label": "Excess Baggage Cost",
+        "class": "View",
+        "bounds": [
+          200,
+          1370,
+          847,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 32,
+        "label": "$ 4.30",
+        "class": "View",
+        "bounds": [
+          869,
+          1370,
+          962,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 33,
+        "label": "Excess Baggage Cost $50.38 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1370,
+          1025,
+          1425
+        ],
+        "focusable": true
+      },
+      {
+        "index": 34,
+        "label": "Total Expense Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1509,
+          766,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 35,
+        "label": "404.30",
+        "class": "View",
+        "bounds": [
+          788,
+          1509,
+          1025,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 36,
+        "label": "Non-reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1553,
+          766,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 37,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1553,
+          1025,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 38,
+        "label": "Advance Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1597,
+          766,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 39,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1597,
+          1025,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 40,
+        "label": "Amount to be Reimbursed",
+        "class": "View",
+        "bounds": [
+          55,
+          1718,
+          849,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 41,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          871,
+          1718,
+          1003,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 42,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 43,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 44,
+        "label": "APPROVE",
+        "class": "View",
+        "bounds": [
+          55,
+          1905,
+          297,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 45,
+        "label": "REJECT",
+        "class": "View",
+        "bounds": [
+          324,
+          1905,
+          566,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 46,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 47,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 48,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 49,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 50,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 51,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 52,
+        "label": "11:36 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 53,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 54,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 55,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 56,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 57,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 58,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 59,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "toggle_visibility_revealed",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "11:37 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "EXPENSE APPROVAL",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          667,
+          338
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Pending",
+        "class": "View",
+        "bounds": [
+          689,
+          275,
+          1025,
+          357
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "Trip to UAE",
+        "class": "View",
+        "bounds": [
+          55,
+          434,
+          623,
+          508
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "EXPORT AS PDF link",
+        "class": "View",
+        "bounds": [
+          645,
+          434,
+          998,
+          566
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "ER-13052",
+        "class": "View",
+        "bounds": [
+          55,
+          574,
+          1025,
+          612
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "Submitted By",
+        "class": "View",
+        "bounds": [
+          55,
+          694,
+          413,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "Matt Hidinger matt@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          694,
+          918,
+          738
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Duration",
+        "class": "View",
+        "bounds": [
+          55,
+          738,
+          413,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "2019/06/19 - 2019/06/25",
+        "class": "View",
+        "bounds": [
+          413,
+          738,
+          918,
+          782
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "Submitted On",
+        "class": "View",
+        "bounds": [
+          55,
+          782,
+          413,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "2019/04/14",
+        "class": "View",
+        "bounds": [
+          413,
+          782,
+          918,
+          826
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "Reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          826,
+          413,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          413,
+          826,
+          918,
+          870
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Awaiting approval from",
+        "class": "View",
+        "bounds": [
+          55,
+          870,
+          413,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "Thomas thomas@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          870,
+          918,
+          914
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Submitted to",
+        "class": "View",
+        "bounds": [
+          55,
+          914,
+          413,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "David david@contoso.com",
+        "class": "View",
+        "bounds": [
+          413,
+          914,
+          918,
+          958
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "DATE",
+        "class": "View",
+        "bounds": [
+          55,
+          1095,
+          135,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "CATEGORY",
+        "class": "View",
+        "bounds": [
+          217,
+          1095,
+          863,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 29,
+        "label": "AMOUNT",
+        "class": "View",
+        "bounds": [
+          885,
+          1095,
+          1025,
+          1139
+        ],
+        "focusable": true
+      },
+      {
+        "index": 30,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1216,
+          145,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 31,
+        "label": "Air Travel Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1216,
+          856,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 32,
+        "label": "$ 300",
+        "class": "View",
+        "bounds": [
+          878,
+          1216,
+          962,
+          1260
+        ],
+        "focusable": true
+      },
+      {
+        "index": 33,
+        "label": "Air Travel Expense $300 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1216,
+          1025,
+          1271
+        ],
+        "focusable": true
+      },
+      {
+        "index": 34,
+        "label": "06/19",
+        "class": "View",
+        "bounds": [
+          55,
+          1293,
+          145,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 35,
+        "label": "Auto Mobile Expense",
+        "class": "View",
+        "bounds": [
+          200,
+          1293,
+          856,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 36,
+        "label": "$ 100",
+        "class": "View",
+        "bounds": [
+          878,
+          1293,
+          962,
+          1337
+        ],
+        "focusable": true
+      },
+      {
+        "index": 37,
+        "label": "Auto Mobile Expense $100 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1293,
+          1025,
+          1348
+        ],
+        "focusable": true
+      },
+      {
+        "index": 38,
+        "label": "06/25",
+        "class": "View",
+        "bounds": [
+          55,
+          1370,
+          145,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 39,
+        "label": "Excess Baggage Cost",
+        "class": "View",
+        "bounds": [
+          200,
+          1370,
+          847,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 40,
+        "label": "$ 4.30",
+        "class": "View",
+        "bounds": [
+          869,
+          1370,
+          962,
+          1414
+        ],
+        "focusable": true
+      },
+      {
+        "index": 41,
+        "label": "Excess Baggage Cost $50.38 collapsed",
+        "class": "View",
+        "bounds": [
+          970,
+          1370,
+          1025,
+          1425
+        ],
+        "focusable": true
+      },
+      {
+        "index": 42,
+        "label": "Total Expense Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1509,
+          766,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 43,
+        "label": "404.30",
+        "class": "View",
+        "bounds": [
+          788,
+          1509,
+          1025,
+          1553
+        ],
+        "focusable": true
+      },
+      {
+        "index": 44,
+        "label": "Non-reimbursable Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1553,
+          766,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 45,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1553,
+          1025,
+          1597
+        ],
+        "focusable": true
+      },
+      {
+        "index": 46,
+        "label": "Advance Amount",
+        "class": "View",
+        "bounds": [
+          55,
+          1597,
+          766,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 47,
+        "label": "(-) 0.00",
+        "class": "View",
+        "bounds": [
+          788,
+          1597,
+          1025,
+          1641
+        ],
+        "focusable": true
+      },
+      {
+        "index": 48,
+        "label": "Amount to be Reimbursed",
+        "class": "View",
+        "bounds": [
+          55,
+          1718,
+          849,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 49,
+        "label": "$ 404.30",
+        "class": "View",
+        "bounds": [
+          871,
+          1718,
+          1003,
+          1762
+        ],
+        "focusable": true
+      },
+      {
+        "index": 50,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 51,
+        "label": "Show history",
+        "class": "View",
+        "bounds": [
+          55,
+          1839,
+          1025,
+          1883
+        ],
+        "focusable": true
+      },
+      {
+        "index": 52,
+        "label": "APPROVE",
+        "class": "View",
+        "bounds": [
+          55,
+          1905,
+          297,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 53,
+        "label": "REJECT",
+        "class": "View",
+        "bounds": [
+          324,
+          1905,
+          566,
+          2037
+        ],
+        "focusable": true
+      },
+      {
+        "index": 54,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 55,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 56,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 57,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 58,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 59,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "activity_showcard_buttons",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "Publish Adaptive Card schema",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          1025,
+          327
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          55,
+          349,
+          275,
+          569
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          297,
+          349,
+          1025,
+          393
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "Created Tue, Feb 14, 2017",
+        "class": "View",
+        "bounds": [
+          297,
+          393,
+          1025,
+          437
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+        "class": "View",
+        "bounds": [
+          55,
+          591,
+          1025,
+          752
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Board:",
+        "class": "View",
+        "bounds": [
+          55,
+          774,
+          253,
+          818
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Adaptive Card",
+        "class": "View",
+        "bounds": [
+          253,
+          774,
+          461,
+          818
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "List:",
+        "class": "View",
+        "bounds": [
+          55,
+          818,
+          253,
+          862
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "Backlog",
+        "class": "View",
+        "bounds": [
+          253,
+          818,
+          461,
+          862
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Assigned to:",
+        "class": "View",
+        "bounds": [
+          55,
+          862,
+          253,
+          906
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          253,
+          862,
+          461,
+          906
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Due date:",
+        "class": "View",
+        "bounds": [
+          55,
+          906,
+          253,
+          950
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "Not set",
+        "class": "View",
+        "bounds": [
+          253,
+          906,
+          461,
+          950
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "SET DUE DATE",
+        "class": "View",
+        "bounds": [
+          55,
+          972,
+          378,
+          1104
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "COMMENT",
+        "class": "View",
+        "bounds": [
+          405,
+          972,
+          664,
+          1104
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "11:36 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 29,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 30,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
+      }
+    ]
+  },
+  {
+    "scenario": "activity_showcard_expanded",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          44,
+          106,
+          401,
+          180
+        ],
+        "focusable": true
+      },
+      {
+        "index": 2,
+        "label": "Publish Adaptive Card schema",
+        "class": "View",
+        "bounds": [
+          55,
+          275,
+          1025,
+          327
+        ],
+        "focusable": true
+      },
+      {
+        "index": 3,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          55,
+          349,
+          275,
+          569
+        ],
+        "focusable": true
+      },
+      {
+        "index": 4,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          297,
+          349,
+          1025,
+          393
+        ],
+        "focusable": true
+      },
+      {
+        "index": 5,
+        "label": "Created Tue, Feb 14, 2017",
+        "class": "View",
+        "bounds": [
+          297,
+          393,
+          1025,
+          437
+        ],
+        "focusable": true
+      },
+      {
+        "index": 6,
+        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+        "class": "View",
+        "bounds": [
+          55,
+          591,
+          1025,
+          752
+        ],
+        "focusable": true
+      },
+      {
+        "index": 7,
+        "label": "Board:",
+        "class": "View",
+        "bounds": [
+          55,
+          774,
+          253,
+          818
+        ],
+        "focusable": true
+      },
+      {
+        "index": 8,
+        "label": "Adaptive Card",
+        "class": "View",
+        "bounds": [
+          253,
+          774,
+          461,
+          818
+        ],
+        "focusable": true
+      },
+      {
+        "index": 9,
+        "label": "List:",
+        "class": "View",
+        "bounds": [
+          55,
+          818,
+          253,
+          862
+        ],
+        "focusable": true
+      },
+      {
+        "index": 10,
+        "label": "Backlog",
+        "class": "View",
+        "bounds": [
+          253,
+          818,
+          461,
+          862
+        ],
+        "focusable": true
+      },
+      {
+        "index": 11,
+        "label": "Assigned to:",
+        "class": "View",
+        "bounds": [
+          55,
+          862,
+          253,
+          906
+        ],
+        "focusable": true
+      },
+      {
+        "index": 12,
+        "label": "Matt Hidinger",
+        "class": "View",
+        "bounds": [
+          253,
+          862,
+          461,
+          906
+        ],
+        "focusable": true
+      },
+      {
+        "index": 13,
+        "label": "Due date:",
+        "class": "View",
+        "bounds": [
+          55,
+          906,
+          253,
+          950
+        ],
+        "focusable": true
+      },
+      {
+        "index": 14,
+        "label": "Not set",
+        "class": "View",
+        "bounds": [
+          253,
+          906,
+          461,
+          950
+        ],
+        "focusable": true
+      },
+      {
+        "index": 15,
+        "label": "SET DUE DATE",
+        "class": "View",
+        "bounds": [
+          55,
+          972,
+          378,
+          1104
+        ],
+        "focusable": true
+      },
+      {
+        "index": 16,
+        "label": "COMMENT",
+        "class": "View",
+        "bounds": [
+          405,
+          972,
+          664,
+          1104
+        ],
+        "focusable": true
+      },
+      {
+        "index": 17,
+        "label": "Add a comment",
+        "class": "View",
+        "bounds": [
+          55,
+          1203,
+          1025,
+          1247
+        ],
+        "focusable": true
+      },
+      {
+        "index": 18,
+        "label": " Add a comment ",
+        "class": "View",
+        "bounds": [
+          55,
+          1269,
+          1025,
+          1509
+        ],
+        "focusable": true
+      },
+      {
+        "index": 19,
         "label": "OK",
-        "value": "",
-        "role": "button",
+        "class": "View",
         "bounds": [
-          24,
-          787,
-          378,
-          825
+          55,
+          1531,
+          297,
+          1663
         ],
-        "voiceover_reads": "OK.  button"
+        "focusable": true
+      },
+      {
+        "index": 20,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          0,
+          2054,
+          360,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 21,
+        "label": "Test cases",
+        "class": "View",
+        "bounds": [
+          100,
+          2145,
+          259,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 22,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          360,
+          2054,
+          720,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 23,
+        "label": "Rendered card",
+        "class": "View",
+        "bounds": [
+          412,
+          2138,
+          667,
+          2191
+        ],
+        "focusable": true
+      },
+      {
+        "index": 24,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          720,
+          2054,
+          1080,
+          2208
+        ],
+        "focusable": true
+      },
+      {
+        "index": 25,
+        "label": "Inputs",
+        "class": "View",
+        "bounds": [
+          854,
+          2145,
+          946,
+          2189
+        ],
+        "focusable": true
+      },
+      {
+        "index": 26,
+        "label": "11:37 PM",
+        "class": "View",
+        "bounds": [
+          22,
+          0,
+          138,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 27,
+        "label": "Android System notification: USB debugging connected",
+        "class": "View",
+        "bounds": [
+          138,
+          0,
+          199,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 28,
+        "label": "Wifi signal full.",
+        "class": "View",
+        "bounds": [
+          931,
+          2,
+          979,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 29,
+        "label": "Phone two bars.",
+        "class": "View",
+        "bounds": [
+          979,
+          2,
+          1020,
+          63
+        ],
+        "focusable": true
+      },
+      {
+        "index": 30,
+        "label": "Battery charging, 100 percent.",
+        "class": "View",
+        "bounds": [
+          1037,
+          0,
+          1058,
+          66
+        ],
+        "focusable": true
+      },
+      {
+        "index": 31,
+        "label": "Back",
+        "class": "View",
+        "bounds": [
+          125,
+          2208,
+          332,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 32,
+        "label": "Overview",
+        "class": "View",
+        "bounds": [
+          746,
+          2208,
+          954,
+          2340
+        ],
+        "focusable": true
+      },
+      {
+        "index": 33,
+        "label": "Home",
+        "class": "View",
+        "bounds": [
+          430,
+          2208,
+          650,
+          2340
+        ],
+        "focusable": true
       }
     ]
   }
