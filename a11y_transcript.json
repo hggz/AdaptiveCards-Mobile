@@ -1,0 +1,1693 @@
+[
+  {
+    "scenario": "auto_activity_initial",
+    "platform": "ios",
+    "source": "XCUIElement (UIAccessibility API)",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Available Sample JSONs",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          26,
+          50,
+          376,
+          75
+        ],
+        "voiceover_reads": "Available Sample JSONs.  textView"
+      },
+      {
+        "index": 2,
+        "label": "Back",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          26,
+          108,
+          80,
+          145
+        ],
+        "voiceover_reads": "Back.  button"
+      },
+      {
+        "index": 3,
+        "label": "OrderDelivery.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "OrderDelivery.json.  text"
+      },
+      {
+        "index": 4,
+        "label": "OrderConfirmation.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "OrderConfirmation.json.  text"
+      },
+      {
+        "index": 5,
+        "label": "NestedFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFlowLayout.json.  text"
+      },
+      {
+        "index": 6,
+        "label": "NestedFallbackRoot.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFallbackRoot.json.  text"
+      },
+      {
+        "index": 7,
+        "label": "NestedFallbackBody.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFallbackBody.json.  text"
+      },
+      {
+        "index": 8,
+        "label": "MultiColumnFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "MultiColumnFlowLayout.json.  text"
+      },
+      {
+        "index": 9,
+        "label": "InputsWithValidation.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputsWithValidation.json.  text"
+      },
+      {
+        "index": 10,
+        "label": "InputFormWithRTL.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputFormWithRTL.json.  text"
+      },
+      {
+        "index": 11,
+        "label": "InputForm.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputForm.json.  text"
+      },
+      {
+        "index": 12,
+        "label": "ImageGallery.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ImageGallery.json.  text"
+      },
+      {
+        "index": 13,
+        "label": "FoodOrder.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FoodOrder.json.  text"
+      },
+      {
+        "index": 14,
+        "label": "FluentIcon.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FluentIcon.json.  text"
+      },
+      {
+        "index": 15,
+        "label": "FluentIcon.RTL.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FluentIcon.RTL.json.  text"
+      },
+      {
+        "index": 16,
+        "label": "FlightUpdateTable.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightUpdateTable.json.  text"
+      },
+      {
+        "index": 17,
+        "label": "FlightUpdate.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightUpdate.json.  text"
+      },
+      {
+        "index": 18,
+        "label": "FlightItinerary.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightItinerary.json.  text"
+      },
+      {
+        "index": 19,
+        "label": "FlightDetails.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightDetails.json.  text"
+      },
+      {
+        "index": 20,
+        "label": "FallbackAction.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FallbackAction.json.  text"
+      },
+      {
+        "index": 21,
+        "label": "Fallback.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Fallback.json.  text"
+      },
+      {
+        "index": 22,
+        "label": "ExpenseReport.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ExpenseReport.json.  text"
+      },
+      {
+        "index": 23,
+        "label": "DynamicText.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "DynamicText.json.  text"
+      },
+      {
+        "index": 24,
+        "label": "DynamicActions.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "DynamicActions.json.  text"
+      },
+      {
+        "index": 25,
+        "label": "ContainerFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerFlowLayout.json.  text"
+      },
+      {
+        "index": 26,
+        "label": "ContainerAreaGrid9.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid9.json.  text"
+      },
+      {
+        "index": 27,
+        "label": "ContainerAreaGrid8.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid8.json.  text"
+      },
+      {
+        "index": 28,
+        "label": "ContainerAreaGrid7.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid7.json.  text"
+      },
+      {
+        "index": 29,
+        "label": "ContainerAreaGrid6.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid6.json.  text"
+      },
+      {
+        "index": 30,
+        "label": "ContainerAreaGrid5.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid5.json.  text"
+      },
+      {
+        "index": 31,
+        "label": "ContainerAreaGrid4.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid4.json.  text"
+      },
+      {
+        "index": 32,
+        "label": "ContainerAreaGrid3.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid3.json.  text"
+      },
+      {
+        "index": 33,
+        "label": "ContainerAreaGrid2.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid2.json.  text"
+      },
+      {
+        "index": 34,
+        "label": "ContainerAreaGrid11.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid11.json.  text"
+      },
+      {
+        "index": 35,
+        "label": "ContainerAreaGrid10.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid10.json.  text"
+      },
+      {
+        "index": 36,
+        "label": "ContainerAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid.json.  text"
+      },
+      {
+        "index": 37,
+        "label": "ConditionallyEnabled.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ConditionallyEnabled.json.  text"
+      },
+      {
+        "index": 38,
+        "label": "CompoundButtonSample.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "CompoundButtonSample.json.  text"
+      },
+      {
+        "index": 39,
+        "label": "ColumnSetWithDifferentWidths.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ColumnSetWithDifferentWidths.json.  text"
+      },
+      {
+        "index": 40,
+        "label": "ColumnAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ColumnAreaGrid.json.  text"
+      },
+      {
+        "index": 41,
+        "label": "Carousel.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Carousel.json.  text"
+      },
+      {
+        "index": 42,
+        "label": "CalendarReminder.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "CalendarReminder.json.  text"
+      },
+      {
+        "index": 43,
+        "label": "ApplicationLogin.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ApplicationLogin.json.  text"
+      },
+      {
+        "index": 44,
+        "label": "Agenda.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Agenda.json.  text"
+      },
+      {
+        "index": 45,
+        "label": "AdaptiveCardFlowLayoutWithInputElements.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          221
+        ],
+        "voiceover_reads": "AdaptiveCardFlowLayoutWithInputElements.json.  text"
+      },
+      {
+        "index": 46,
+        "label": "AdaptiveCardFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "AdaptiveCardFlowLayout.json.  text"
+      },
+      {
+        "index": 47,
+        "label": "ActivityUpdate.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          36,
+          156,
+          325,
+          200
+        ],
+        "voiceover_reads": "ActivityUpdate.json.  text"
+      },
+      {
+        "index": 48,
+        "label": "EDIT",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          333,
+          163,
+          366,
+          193
+        ],
+        "voiceover_reads": "EDIT.  button"
+      },
+      {
+        "index": 49,
+        "label": "Delete All Cards",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          16,
+          208,
+          196,
+          236
+        ],
+        "voiceover_reads": "Delete All Cards.  button"
+      },
+      {
+        "index": 50,
+        "label": "AdaptiveCardAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          36,
+          200,
+          366,
+          244
+        ],
+        "voiceover_reads": "AdaptiveCardAreaGrid.json.  text"
+      },
+      {
+        "index": 51,
+        "label": "Delete All Cards",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          51,
+          213,
+          161,
+          231
+        ],
+        "voiceover_reads": "Delete All Cards.  text"
+      },
+      {
+        "index": 52,
+        "label": "A11y",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          206,
+          208,
+          386,
+          236
+        ],
+        "voiceover_reads": "A11y.  button"
+      },
+      {
+        "index": 53,
+        "label": "A11y",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          280,
+          213,
+          311,
+          231
+        ],
+        "voiceover_reads": "A11y.  text"
+      },
+      {
+        "index": 54,
+        "label": "Enable Custom Control",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          151,
+          249,
+          326,
+          269
+        ],
+        "voiceover_reads": "Enable Custom Control.  text"
+      },
+      {
+        "index": 55,
+        "label": " ",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          283,
+          386,
+          303
+        ],
+        "voiceover_reads": " .  text"
+      },
+      {
+        "index": 56,
+        "label": "Publish Adaptive Card schema",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          24,
+          319,
+          378,
+          339
+        ],
+        "voiceover_reads": "Publish Adaptive Card schema.  textView"
+      },
+      {
+        "index": 57,
+        "label": "Matt Hidinger",
+        "value": "",
+        "role": "image",
+        "bounds": [
+          24,
+          350,
+          64,
+          390
+        ],
+        "voiceover_reads": "Matt Hidinger.  image"
+      },
+      {
+        "index": 58,
+        "label": "Matt Hidinger",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          74,
+          350,
+          378,
+          367
+        ],
+        "voiceover_reads": "Matt Hidinger.  textView"
+      },
+      {
+        "index": 59,
+        "label": "Created Feb 14, 2017",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          74,
+          367,
+          378,
+          384
+        ],
+        "voiceover_reads": "Created Feb 14, 2017.  textView"
+      },
+      {
+        "index": 60,
+        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          24,
+          400,
+          378,
+          467
+        ],
+        "voiceover_reads": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation..  textView"
+      },
+      {
+        "index": 61,
+        "label": "Set due date",
+        "value": "card collapsed",
+        "role": "button",
+        "bounds": [
+          24,
+          555,
+          378,
+          593
+        ],
+        "voiceover_reads": "Set due date, card collapsed.  button"
+      },
+      {
+        "index": 62,
+        "label": "Comment",
+        "value": "card collapsed",
+        "role": "button",
+        "bounds": [
+          24,
+          608,
+          378,
+          646
+        ],
+        "voiceover_reads": "Comment, card collapsed.  button"
+      },
+      {
+        "index": 63,
+        "label": "OK",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          24,
+          682,
+          378,
+          720
+        ],
+        "voiceover_reads": "OK.  button"
+      },
+      {
+        "index": 64,
+        "label": "Send",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          24,
+          682,
+          378,
+          720
+        ],
+        "voiceover_reads": "Send.  button"
+      }
+    ]
+  },
+  {
+    "scenario": "auto_activity_showcard_expanded",
+    "platform": "ios",
+    "source": "XCUIElement (UIAccessibility API)",
+    "nodes": [
+      {
+        "index": 1,
+        "label": "Available Sample JSONs",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          26,
+          50,
+          376,
+          75
+        ],
+        "voiceover_reads": "Available Sample JSONs.  textView"
+      },
+      {
+        "index": 2,
+        "label": "Back",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          26,
+          108,
+          80,
+          145
+        ],
+        "voiceover_reads": "Back.  button"
+      },
+      {
+        "index": 3,
+        "label": "OrderDelivery.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "OrderDelivery.json.  text"
+      },
+      {
+        "index": 4,
+        "label": "OrderConfirmation.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "OrderConfirmation.json.  text"
+      },
+      {
+        "index": 5,
+        "label": "NestedFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFlowLayout.json.  text"
+      },
+      {
+        "index": 6,
+        "label": "NestedFallbackRoot.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFallbackRoot.json.  text"
+      },
+      {
+        "index": 7,
+        "label": "NestedFallbackBody.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "NestedFallbackBody.json.  text"
+      },
+      {
+        "index": 8,
+        "label": "MultiColumnFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "MultiColumnFlowLayout.json.  text"
+      },
+      {
+        "index": 9,
+        "label": "InputsWithValidation.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputsWithValidation.json.  text"
+      },
+      {
+        "index": 10,
+        "label": "InputFormWithRTL.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputFormWithRTL.json.  text"
+      },
+      {
+        "index": 11,
+        "label": "InputForm.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "InputForm.json.  text"
+      },
+      {
+        "index": 12,
+        "label": "ImageGallery.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ImageGallery.json.  text"
+      },
+      {
+        "index": 13,
+        "label": "FoodOrder.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FoodOrder.json.  text"
+      },
+      {
+        "index": 14,
+        "label": "FluentIcon.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FluentIcon.json.  text"
+      },
+      {
+        "index": 15,
+        "label": "FluentIcon.RTL.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FluentIcon.RTL.json.  text"
+      },
+      {
+        "index": 16,
+        "label": "FlightUpdateTable.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightUpdateTable.json.  text"
+      },
+      {
+        "index": 17,
+        "label": "FlightUpdate.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightUpdate.json.  text"
+      },
+      {
+        "index": 18,
+        "label": "FlightItinerary.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightItinerary.json.  text"
+      },
+      {
+        "index": 19,
+        "label": "FlightDetails.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FlightDetails.json.  text"
+      },
+      {
+        "index": 20,
+        "label": "FallbackAction.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "FallbackAction.json.  text"
+      },
+      {
+        "index": 21,
+        "label": "Fallback.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Fallback.json.  text"
+      },
+      {
+        "index": 22,
+        "label": "ExpenseReport.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ExpenseReport.json.  text"
+      },
+      {
+        "index": 23,
+        "label": "DynamicText.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "DynamicText.json.  text"
+      },
+      {
+        "index": 24,
+        "label": "DynamicActions.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "DynamicActions.json.  text"
+      },
+      {
+        "index": 25,
+        "label": "ContainerFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerFlowLayout.json.  text"
+      },
+      {
+        "index": 26,
+        "label": "ContainerAreaGrid9.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid9.json.  text"
+      },
+      {
+        "index": 27,
+        "label": "ContainerAreaGrid8.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid8.json.  text"
+      },
+      {
+        "index": 28,
+        "label": "ContainerAreaGrid7.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid7.json.  text"
+      },
+      {
+        "index": 29,
+        "label": "ContainerAreaGrid6.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid6.json.  text"
+      },
+      {
+        "index": 30,
+        "label": "ContainerAreaGrid5.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid5.json.  text"
+      },
+      {
+        "index": 31,
+        "label": "ContainerAreaGrid4.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid4.json.  text"
+      },
+      {
+        "index": 32,
+        "label": "ContainerAreaGrid3.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid3.json.  text"
+      },
+      {
+        "index": 33,
+        "label": "ContainerAreaGrid2.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid2.json.  text"
+      },
+      {
+        "index": 34,
+        "label": "ContainerAreaGrid11.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid11.json.  text"
+      },
+      {
+        "index": 35,
+        "label": "ContainerAreaGrid10.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid10.json.  text"
+      },
+      {
+        "index": 36,
+        "label": "ContainerAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ContainerAreaGrid.json.  text"
+      },
+      {
+        "index": 37,
+        "label": "ConditionallyEnabled.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ConditionallyEnabled.json.  text"
+      },
+      {
+        "index": 38,
+        "label": "CompoundButtonSample.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "CompoundButtonSample.json.  text"
+      },
+      {
+        "index": 39,
+        "label": "ColumnSetWithDifferentWidths.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ColumnSetWithDifferentWidths.json.  text"
+      },
+      {
+        "index": 40,
+        "label": "ColumnAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ColumnAreaGrid.json.  text"
+      },
+      {
+        "index": 41,
+        "label": "Carousel.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Carousel.json.  text"
+      },
+      {
+        "index": 42,
+        "label": "CalendarReminder.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "CalendarReminder.json.  text"
+      },
+      {
+        "index": 43,
+        "label": "ApplicationLogin.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "ApplicationLogin.json.  text"
+      },
+      {
+        "index": 44,
+        "label": "Agenda.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "Agenda.json.  text"
+      },
+      {
+        "index": 45,
+        "label": "AdaptiveCardFlowLayoutWithInputElements.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          221
+        ],
+        "voiceover_reads": "AdaptiveCardFlowLayoutWithInputElements.json.  text"
+      },
+      {
+        "index": 46,
+        "label": "AdaptiveCardFlowLayout.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          156,
+          346,
+          200
+        ],
+        "voiceover_reads": "AdaptiveCardFlowLayout.json.  text"
+      },
+      {
+        "index": 47,
+        "label": "ActivityUpdate.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          36,
+          156,
+          325,
+          200
+        ],
+        "voiceover_reads": "ActivityUpdate.json.  text"
+      },
+      {
+        "index": 48,
+        "label": "EDIT",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          333,
+          163,
+          366,
+          193
+        ],
+        "voiceover_reads": "EDIT.  button"
+      },
+      {
+        "index": 49,
+        "label": "Delete All Cards",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          16,
+          208,
+          196,
+          236
+        ],
+        "voiceover_reads": "Delete All Cards.  button"
+      },
+      {
+        "index": 50,
+        "label": "AdaptiveCardAreaGrid.json",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          36,
+          200,
+          366,
+          244
+        ],
+        "voiceover_reads": "AdaptiveCardAreaGrid.json.  text"
+      },
+      {
+        "index": 51,
+        "label": "Delete All Cards",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          51,
+          213,
+          161,
+          231
+        ],
+        "voiceover_reads": "Delete All Cards.  text"
+      },
+      {
+        "index": 52,
+        "label": "A11y",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          206,
+          208,
+          386,
+          236
+        ],
+        "voiceover_reads": "A11y.  button"
+      },
+      {
+        "index": 53,
+        "label": "A11y",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          280,
+          213,
+          311,
+          231
+        ],
+        "voiceover_reads": "A11y.  text"
+      },
+      {
+        "index": 54,
+        "label": "Enable Custom Control",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          151,
+          249,
+          326,
+          269
+        ],
+        "voiceover_reads": "Enable Custom Control.  text"
+      },
+      {
+        "index": 55,
+        "label": " ",
+        "value": "",
+        "role": "text",
+        "bounds": [
+          16,
+          283,
+          386,
+          303
+        ],
+        "voiceover_reads": " .  text"
+      },
+      {
+        "index": 56,
+        "label": "Publish Adaptive Card schema",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          24,
+          319,
+          378,
+          339
+        ],
+        "voiceover_reads": "Publish Adaptive Card schema.  textView"
+      },
+      {
+        "index": 57,
+        "label": "Matt Hidinger",
+        "value": "",
+        "role": "image",
+        "bounds": [
+          24,
+          350,
+          64,
+          390
+        ],
+        "voiceover_reads": "Matt Hidinger.  image"
+      },
+      {
+        "index": 58,
+        "label": "Matt Hidinger",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          74,
+          350,
+          378,
+          367
+        ],
+        "voiceover_reads": "Matt Hidinger.  textView"
+      },
+      {
+        "index": 59,
+        "label": "Created Feb 14, 2017",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          74,
+          367,
+          378,
+          384
+        ],
+        "voiceover_reads": "Created Feb 14, 2017.  textView"
+      },
+      {
+        "index": 60,
+        "label": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          24,
+          400,
+          378,
+          467
+        ],
+        "voiceover_reads": "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation..  textView"
+      },
+      {
+        "index": 61,
+        "label": "Set due date",
+        "value": "card collapsed",
+        "role": "button",
+        "bounds": [
+          24,
+          555,
+          378,
+          593
+        ],
+        "voiceover_reads": "Set due date, card collapsed.  button"
+      },
+      {
+        "index": 62,
+        "label": "Comment",
+        "value": "card expanded",
+        "role": "button",
+        "bounds": [
+          24,
+          608,
+          378,
+          646
+        ],
+        "voiceover_reads": "Comment, card expanded.  button"
+      },
+      {
+        "index": 63,
+        "label": "Add a comment",
+        "value": "",
+        "role": "textView",
+        "bounds": [
+          24,
+          689,
+          378,
+          777
+        ],
+        "voiceover_reads": "Add a comment.  textView"
+      },
+      {
+        "index": 64,
+        "label": "Send",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          24,
+          682,
+          378,
+          720
+        ],
+        "voiceover_reads": "Send.  button"
+      },
+      {
+        "index": 65,
+        "label": "OK",
+        "value": "",
+        "role": "button",
+        "bounds": [
+          24,
+          787,
+          378,
+          825
+        ],
+        "voiceover_reads": "OK.  button"
+      }
+    ]
+  }
+]

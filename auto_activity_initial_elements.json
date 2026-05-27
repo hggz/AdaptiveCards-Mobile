@@ -1,0 +1,962 @@
+[
+  {
+    "frame" : {
+      "y" : 50,
+      "x" : 26,
+      "width" : 350,
+      "height" : 25.333333333333329
+    },
+    "role" : "textView",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Available Sample JSONs",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 108.33333333333333,
+      "x" : 26,
+      "width" : 54,
+      "height" : 37.999999999999986
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Back",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "OrderDelivery.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "OrderConfirmation.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "NestedFlowLayout.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "NestedFallbackRoot.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "NestedFallbackBody.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "MultiColumnFlowLayout.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "InputsWithValidation.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "InputFormWithRTL.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "InputForm.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ImageGallery.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FoodOrder.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FluentIcon.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FluentIcon.RTL.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FlightUpdateTable.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FlightUpdate.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FlightItinerary.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FlightDetails.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "FallbackAction.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "Fallback.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ExpenseReport.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "DynamicText.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "DynamicActions.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerFlowLayout.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid9.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid8.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid7.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid6.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid5.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid4.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid3.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid2.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid11.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid10.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ContainerAreaGrid.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ConditionallyEnabled.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "CompoundButtonSample.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ColumnSetWithDifferentWidths.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ColumnAreaGrid.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "Carousel.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "CalendarReminder.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "ApplicationLogin.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "Agenda.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 65
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "AdaptiveCardFlowLayoutWithInputElements.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 16,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "AdaptiveCardFlowLayout.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 156.33333333333334,
+      "x" : 36,
+      "width" : 289,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "ActivityUpdate.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 163,
+      "x" : 333,
+      "width" : 33,
+      "height" : 30
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "EDIT",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 208.33333333333334,
+      "x" : 16,
+      "width" : 180,
+      "height" : 28
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Delete All Cards",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 200.33333333333334,
+      "x" : 36,
+      "width" : 330,
+      "height" : 44
+    },
+    "role" : "text",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "AdaptiveCardAreaGrid.json",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 213.33333333333334,
+      "x" : 51,
+      "width" : 110,
+      "height" : 18
+    },
+    "role" : "text",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Delete All Cards",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 208.33333333333334,
+      "x" : 206,
+      "width" : 180,
+      "height" : 28
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "A11y",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 213.33333333333334,
+      "x" : 280.66666666666669,
+      "width" : 31,
+      "height" : 18
+    },
+    "role" : "text",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "A11y",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 249.66666666666666,
+      "x" : 151.66666666666663,
+      "width" : 175.33333333333337,
+      "height" : 20.333333333333343
+    },
+    "role" : "text",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Enable Custom Control",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 283.33333333333331,
+      "x" : 16,
+      "width" : 370,
+      "height" : 20.333333333333314
+    },
+    "role" : "text",
+    "isHittable" : true,
+    "identifier" : "SubmitActionRetrievedResults",
+    "label" : " ",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 319.66666666666669,
+      "x" : 24,
+      "width" : 354,
+      "height" : 20.333333333333314
+    },
+    "role" : "textView",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Publish Adaptive Card schema",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 350,
+      "x" : 24,
+      "width" : 40,
+      "height" : 40
+    },
+    "role" : "image",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Matt Hidinger",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 350,
+      "x" : 74,
+      "width" : 304,
+      "height" : 17
+    },
+    "role" : "textView",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Matt Hidinger",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 367,
+      "x" : 74,
+      "width" : 304,
+      "height" : 17
+    },
+    "role" : "textView",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Created Feb 14, 2017",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 400,
+      "x" : 24,
+      "width" : 354,
+      "height" : 67
+    },
+    "role" : "textView",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Now that we have defined the main rules and features of the format, we need to produce a schema and publish it to GitHub. The schema will be the starting point of our reference documentation.",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 555.33333333333326,
+      "x" : 24,
+      "width" : 354,
+      "height" : 38
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Set due date",
+    "value" : "card collapsed",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 608.33333333333326,
+      "x" : 24,
+      "width" : 354,
+      "height" : 38
+    },
+    "role" : "button",
+    "isHittable" : true,
+    "identifier" : "",
+    "label" : "Comment",
+    "value" : "card collapsed",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 682.33333333333337,
+      "x" : 24,
+      "width" : 354,
+      "height" : 38
+    },
+    "role" : "button",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "OK",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  },
+  {
+    "frame" : {
+      "y" : 682.33333333333337,
+      "x" : 24,
+      "width" : 354,
+      "height" : 38
+    },
+    "role" : "button",
+    "isHittable" : false,
+    "identifier" : "",
+    "label" : "Send",
+    "value" : "",
+    "isSelected" : false,
+    "isEnabled" : true
+  }
+]
