@@ -192,3 +192,11 @@ Toggle test: initial=54 elements -> expanded=56 -> collapsed=54 (round-trip conf
 **Scope:** Proxy-only, experimental. Vendored on 2026-05-28; inherits repo-root MIT. No nested LICENSE, no GPL per-file headers, no SSH URLs in committed Package.swift. Substrate pinned to public hggz forks (swift-nio 7c9c6861, swift-nio-extras 076c9b49, swift-nio-ssl 7f9efd53, async-http-client eaaf46ac) at the same revisions used by hggz/swiftci and hggz/giteax.
 
 **Symbol-check coverage:** The mandatory ADDENDUM-v2 §13 demo exercises Agent (init + run), Provider, FakeProvider, FakeProviderTape.toolUseTurn, FakeProviderTape.textTurn, Context, ToolDef, StreamOptions, JSONValue (Decodable round-trip), and every AgentEvent case against the canonical adaptivecards.io Hello-World JSON. The demo asserts the canonical event sequence and prints PASS adaptivecards-swiftpi-agentloop on success.
+
+## swiftbox Swift-on-Windows Kit Bridge
+
+| # | Issue | Proxy Branch | Clean Branch | Upstream PR | Fix |
+|---|-------|-------------|-------------|------------|-----|
+| 44 | swiftbox Swift-on-Windows kit drop | proxy/feat-swift-swiftbox-bridge | n/a (proxy-only) | n/a | pending |
+
+**Status:** pending. Vendored swiftbox snapshot as `source/ios-swift-swiftbox/`: the pure-Swift `SwiftboxCore` library (in-process Termux-style sandbox -- `VirtualFileSystem`, `Shell` + builtins, `SwiftboxEnvironment`). No external package dependencies, so the manifest has no `.package(url:)` lines and no SSH-alias URLs. Inherits the repo-root MIT license (no nested LICENSE, no GPL/SPDX headers); pure cross-platform Foundation (no Apple-only imports); all LF; subfolder < 1 MB. Runtime symbol-check demo `examples/adaptivecards-swiftbox-demo` (Flavor A -- store/round-trip) stores the canonical adaptivecards.io "Hello World" card in the `VirtualFileSystem`, reads it back through the filesystem API and the `Shell` `cat` builtin, asserts byte-equality, and prints `PASS adaptivecards-swiftbox-roundtrip`. Proxy-only Windows-MSVC CI (`swift-swiftbox-bridge-gate.yml`, Swift 6.3.1, no vcpkg/zlib) builds the kit then runs the smoke. No edits to existing ObjC/Java/C++.
