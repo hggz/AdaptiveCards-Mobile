@@ -175,3 +175,9 @@ Toggle test: initial=54 elements -> expanded=56 -> collapsed=54 (round-trip conf
 **Scope:** Proxy-only, experimental. Vendored on 2026-06-17; inherits repo-root MIT. No nested LICENSE, no GPL per-file headers, no SSH URLs in committed Package.swift. Substrate pinned to public hggz forks (vapor 5d21fd1e, swift-nio 7c9c6861, swift-nio-extras 076c9b49, swift-nio-ssl 7f9efd53, async-http-client eaaf46ac, websocket-kit ddfba8c) plus Yams 5.x.
 
 **Symbol-check coverage:** The mandatory ADDENDUM-v2 section 13 demo exercises Build (init), BuildStatus (.passed), AgentMessage (enum + .artifact case), AgentMessage.Artifact (init), encodeJSON(), and decode(json:) against the canonical adaptivecards.io Hello-World JSON. The demo asserts byte-identical round-trip and prints PASS adaptivecards-jenkins-roundtrip on success.
+
+## Swift-on-Windows Proxy Drops (vendored kits, proxy-only)
+
+| # | Issue | Proxy Branch | Clean Branch | Upstream PR | Fix |
+|---|-------|-------------|-------------|------------|-----|
+| 41 | hggzm#49 | proxy/feat-swift-swiftag-bridge | — | pending (proxy-only, no upstream PR planned) | Add `source/ios-swift-swiftag/` -- vendored SwiftAg snapshot (Agent / ConversableAgent / GroupChat patterns / Tool / ToolRegistry, pure Foundation, swift-tools-version:6.0) + runtime symbol-check example `adaptivecards-swiftag-demo` + Windows MSVC gate workflow |
