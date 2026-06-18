@@ -182,3 +182,13 @@ Toggle test: initial=54 elements -> expanded=56 -> collapsed=54 (round-trip conf
 |---|-------|-------------|-------------|------------|-----|
 | 41 | hggzm#49 | proxy/feat-swift-swiftag-bridge | — | pending (proxy-only, no upstream PR planned) | Add `source/ios-swift-swiftag/` -- vendored SwiftAg snapshot (Agent / ConversableAgent / GroupChat patterns / Tool / ToolRegistry, pure Foundation, swift-tools-version:6.0) + runtime symbol-check example `adaptivecards-swiftag-demo` + Windows MSVC gate workflow |
 | 43 | hggzm#55 | proxy/feat-swift-swiftsync-bridge | -- | n/a (proxy-only) | pending -- Add `source/ios-swift-swiftsync/`: vendored SwiftSyncCore snapshot (pure-Foundation rsync-style directory-sync engine; zero external deps; no SSH URLs; no Apple-only imports). Runtime symbol-check demo `adaptivecards-swiftsync-demo` (Flavor A round-trip of the canonical adaptivecards.io Hello World card via `Syncer.run()`; reads back; asserts byte-equal; prints `PASS adaptivecards-swiftsync-roundtrip`). Windows MSVC gate `swift-swiftsync-bridge-gate.yml`. No edits to existing ObjC/Java/C++ shipping code. |
+
+## Swift-on-Windows Bridge — swiftpi Agent Runtime
+
+| # | Issue | Proxy Branch | Clean Branch | Upstream PR | Fix |
+|---|-------|-------------|-------------|------------|-----|
+| 41 | Vendor the swiftpi Swift-on-Windows agent runtime as an experimental proxy-only parallel surface alongside the production ObjC/Java/C++ AdaptiveCards stack. | proxy/feat-swift-swiftpi-bridge | — | pending | source/ios-swift-swiftpi/: vendored snapshot of hggz/swiftpi (Swift 6 agent runtime over the hggz Phase-F NIO substrate) + runtime symbol-check demo at examples/adaptivecards-swiftpi-demo/ exercising the canonical adaptivecards.io Hello-World card through Agent + FakeProvider + ToolDispatcher. CI: .github/workflows/swift-swiftpi-bridge-gate.yml (Windows MSVC build + tests + smoke). No edits to existing ObjC/Java/C++ shipping code. |
+
+**Scope:** Proxy-only, experimental. Vendored on 2026-05-28; inherits repo-root MIT. No nested LICENSE, no GPL per-file headers, no SSH URLs in committed Package.swift. Substrate pinned to public hggz forks (swift-nio 7c9c6861, swift-nio-extras 076c9b49, swift-nio-ssl 7f9efd53, async-http-client eaaf46ac) at the same revisions used by hggz/swiftci and hggz/giteax.
+
+**Symbol-check coverage:** The mandatory ADDENDUM-v2 §13 demo exercises Agent (init + run), Provider, FakeProvider, FakeProviderTape.toolUseTurn, FakeProviderTape.textTurn, Context, ToolDef, StreamOptions, JSONValue (Decodable round-trip), and every AgentEvent case against the canonical adaptivecards.io Hello-World JSON. The demo asserts the canonical event sequence and prints PASS adaptivecards-swiftpi-agentloop on success.
