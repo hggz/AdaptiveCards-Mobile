@@ -24,7 +24,7 @@ public enum SwiftCIConsoleHTML {
     <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Swift CI Console</title>
+    <title>swiftci Console</title>
     <style>
       :root { --bg:#1e1e1e; --panel:#252526; --panel2:#2a2d2e; --border:#3c3c3c;
         --text:#d4d4d4; --muted:#9e9e9e; --accent:#4ec9b0; --blue:#2196f3;
@@ -54,7 +54,7 @@ public enum SwiftCIConsoleHTML {
       @keyframes sp { to { transform:rotate(360deg); } }
       @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.45; } }
 
-      /* Executor strip (Build Executor Status) */
+      /* Executor strip (Build Executor Status, labelled by peer) */
       .execbar { padding:10px 14px; border-bottom:1px solid var(--border); background:var(--panel); }
       .execbar .lbl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:7px; }
       .execs { display:flex; gap:10px; flex-wrap:wrap; }
@@ -123,7 +123,8 @@ public enum SwiftCIConsoleHTML {
     </head>
     <body>
     <header>
-      <h1><span class="gear">&#9881;</span> Swift CI Console</h1>
+      <h1><span class="gear">&#9881;</span> swiftci Console</h1>
+      <span id="prov" class="pill">provider …</span>
       <span id="ver" class="muted"></span>
       <span class="counts">
         <span class="cnt run"><span class="spin"></span><b id="cRun">0</b> running</span>
@@ -132,12 +133,13 @@ public enum SwiftCIConsoleHTML {
         <span class="cnt fail">&#10007; <b id="cFail">0</b></span>
       </span>
       <span style="flex:1"></span>
+      <span id="peer" class="muted"></span>
       <span id="health" class="pill">…</span>
       <button class="ghost" onclick="tick(true)">&#8635; Refresh</button>
     </header>
 
     <div class="execbar">
-      <div class="lbl">Executors &mdash; live job executions</div>
+      <div class="lbl">Executors <span id="execPeer" class="muted"></span> &mdash; live job executions</div>
       <div class="execs" id="execs"><div class="muted">…</div></div>
     </div>
 
@@ -384,6 +386,21 @@ public enum SwiftCIConsoleHTML {
         if(h && h.trim()==='ok'){ hp.textContent='healthy'; hp.className='pill ok'; } else { hp.textContent='down'; hp.className='pill down'; }
         const v = await jtext(api('/version'));
         if(v){ setTxt('ver', v.trim()); }
+        // Provider pill: this board is served BY swiftci, so the active CI
+        // provider is always swiftci (matches the dashboard board's chip).
+        const pp = document.getElementById('prov');
+        if(pp){ pp.textContent = 'provider: swiftci'; pp.className = 'pill ok'; }
+        // Peer label: OPTIONAL host context. When this board is embedded in a
+        // host that advertises a mesh peer at the conventional root path
+        // (/api/mesh/status), show it — exactly like the dashboard board. The
+        // fetch is ROOT-relative (not base-relative), so when embedded under a
+        // host it hits the HOST's route, and standalone swiftci (which has no
+        // such route) just leaves it empty. A graceful enhancement, not a
+        // dependency, so the same page is exact when embedded and clean when not.
+        try {
+          const m = await jget('/api/mesh/status');
+          if(m && m.self_peer_id){ setTxt('peer', 'peer '+m.self_peer_id); setTxt('execPeer', '· '+m.self_peer_id); }
+        } catch(e) {}
       }
 
       loadHead(); tick(true);
