@@ -18,7 +18,7 @@ import Vapor
 /// - `GET  /api/queue`                     → JSON snapshot of the executor's FIFO queue (Phase 22)
 public enum SwiftCIApp {
     public static let productName = "Swift CI"
-    public static let version = "0.1.0-alpha"
+    public static let version = "0.2.0"
 
     /// Phase 26: unix-seconds timestamp captured the very first time
     /// this property is read in the lifetime of the process. Exposed
@@ -27,6 +27,17 @@ public enum SwiftCIApp {
     /// the standard Prometheus `process_start_time_seconds` shape
     /// without pulling a full procfs collector.
     public static let processStartTimeUnixSeconds: Double = Date().timeIntervalSince1970
+
+    /// HTTP response for swiftci's built-in web console (the real-time
+    /// activity board). Served at `/console` always, and at `/` when no
+    /// static `publicDirectory` is mounted.
+    static func consoleResponse() -> Response {
+        Response(
+            status: .ok,
+            headers: HTTPHeaders([("content-type", "text/html; charset=utf-8")]),
+            body: .init(data: Data(SwiftCIConsoleHTML.html.utf8))
+        )
+    }
 
     /// Configure routes on `app`, using `store` to persist jobs and
     /// `executor` to run builds. The executor must already be started.
@@ -67,10 +78,21 @@ public enum SwiftCIApp {
             app.middleware.use(FileMiddleware(publicDirectory: dir))
             // FileMiddleware in this kit version doesn't auto-resolve
             // `/` to `index.html` — redirect explicitly so the bare
-            // hostname lands on the SPA. If no public dir is set, `/`
-            // remains a 404 (operators can still hit /health, /version).
+            // hostname lands on the SPA.
             app.get { req in req.redirect(to: "/index.html", redirectType: .permanent) }
+        } else {
+            // No static SPA mounted: serve swiftci's own built-in web
+            // console (the real-time activity board) at the bare hostname
+            // so `/` is a useful page instead of a 404.
+            app.get { _ in Self.consoleResponse() }
         }
+        // swiftci's built-in web console is ALWAYS reachable at /console,
+        // regardless of whether a static publicDirectory is mounted. A host
+        // (e.g. TinyDashboard) reverse-proxies this into an iframe — the
+        // same relationship the dashboard has with Jenkins. The board reads
+        // swiftci's own open GET API; mutations (trigger) still require the
+        // admin Bearer token, which a proxy injects.
+        app.get("console") { _ in Self.consoleResponse() }
 
         // The text "<product> <version>\n" banner is exposed at
         // /version so it stays curl-able as a smoke check.
