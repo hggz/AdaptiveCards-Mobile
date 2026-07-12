@@ -1,0 +1,15 @@
+appId: com.example.app
+name: Login smoke
+tags: [smoke, auth]
+env:
+  USER: alice
+  PASS: secret
+commandTimeout: 10000
+flowTimeout: 60000
+waitForIdleTimeout: 3000
+---
+- launchApp: com.example.app
+- tapOn: "Login"
+- inputText: "${USER}"
+- assertVisible: "Welcome"
+- back

@@ -1,0 +1,17 @@
+appId: com.example
+---
+- tapOn:
+    id: "login_button"
+- tapOn:
+    text: "Sign In"
+    index: 0
+    enabled: true
+- tapOn:
+    point: "50%,50%"
+- assertVisible:
+    text: "Hello"
+    checked: true
+- tapOn:
+    css: ".btn-primary"
+- tapOn:
+    xpath: "//button[@id='ok']"

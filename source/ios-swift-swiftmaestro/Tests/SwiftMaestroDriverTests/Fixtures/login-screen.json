@@ -1,0 +1,33 @@
+{
+  "platform": "android",
+  "root": {
+    "className": "FrameLayout",
+    "bounds": { "x": 0, "y": 0, "width": 1080, "height": 1920 },
+    "children": [
+      { "text": "Profile", "resourceId": "com.example:id/header", "bounds": { "x": 40, "y": 100, "width": 300, "height": 60 } },
+      { "text": "Username", "bounds": { "x": 40, "y": 200, "width": 300, "height": 50 } },
+      {
+        "resourceId": "com.example:id/username",
+        "className": "EditText",
+        "clickable": true,
+        "enabled": true,
+        "bounds": { "x": 40, "y": 260, "width": 1000, "height": 80 },
+        "children": [
+          { "text": "alice", "bounds": { "x": 50, "y": 270, "width": 200, "height": 60 } }
+        ]
+      },
+      { "text": "Edit", "bounds": { "x": 40, "y": 360, "width": 100, "height": 50 } },
+      {
+        "text": "Login",
+        "accessibilityId": "loginButton",
+        "clickable": true,
+        "enabled": true,
+        "checked": false,
+        "bounds": { "x": 400, "y": 500, "width": 280, "height": 90 }
+      },
+      { "text": "Disabled", "enabled": false, "bounds": { "x": 40, "y": 620, "width": 200, "height": 60 } },
+      { "text": "Remember me", "checked": true, "bounds": { "x": 40, "y": 700, "width": 300, "height": 60 } },
+      { "text": "Ghost", "visible": false, "bounds": { "x": 40, "y": 800, "width": 200, "height": 60 } }
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+# Golden report fixtures are recorded here on first test run and compared
+# byte-for-byte thereafter. This directory is excluded from the SwiftPM target.

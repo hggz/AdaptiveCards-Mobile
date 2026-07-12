@@ -1,0 +1,4 @@
+appId: com.example
+name: Self cycle
+---
+- runFlow: loop.yaml

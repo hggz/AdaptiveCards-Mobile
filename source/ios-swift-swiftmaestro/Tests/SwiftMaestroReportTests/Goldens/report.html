@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>swiftmaestro report</title>
+<style>
+body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:2rem;color:#222}
+h1{font-size:1.4rem}table{border-collapse:collapse;width:100%;margin:1rem 0}
+th,td{border:1px solid #ddd;padding:.4rem .6rem;text-align:left;font-size:.9rem}
+th{background:#f4f4f4}.passed{color:#137333}.failed{color:#c5221f}
+.error{color:#c5221f}.skipped{color:#8a6d00}.pill{font-weight:600}
+</style>
+</head>
+<body>
+<h1>swiftmaestro report <span class="pill failed">failed</span></h1>
+<p>Started: 2023-11-14T22:13:20Z</p>
+<p>Total: 2 &middot; Passed: 1 &middot; Failed: 1 &middot; Skipped: 0 &middot; Duration: 1.794s</p>
+<h2>Login smoke <span class="pill passed">passed</span></h2>
+<p>appId: com.example.app &middot; tags: smoke, auth</p>
+<table>
+<tr><th>#</th><th>Command</th><th>Status</th><th>Duration</th><th>Message</th></tr>
+<tr><td>1</td><td>launchApp</td><td class="passed">passed</td><td>0.800s</td><td></td></tr>
+<tr><td>2</td><td>tap Login</td><td class="passed">passed</td><td>0.200s</td><td></td></tr>
+<tr><td>3</td><td>assertVisible</td><td class="passed">passed</td><td>0.234s</td><td></td></tr>
+</table>
+<h2>Checkout <span class="pill failed">failed</span></h2>
+<p>appId: com.example.app &middot; tags: smoke</p>
+<table>
+<tr><th>#</th><th>Command</th><th>Status</th><th>Duration</th><th>Message</th></tr>
+<tr><td>1</td><td>launchApp</td><td class="passed">passed</td><td>0.300s</td><td></td></tr>
+<tr><td>2</td><td>tap Pay</td><td class="failed">failed</td><td>0.260s</td><td>element not found: text=&quot;Pay&quot;</td></tr>
+<tr><td>3</td><td>assertVisible</td><td class="skipped">skipped</td><td>0.000s</td><td></td></tr>
+</table>
+</body>
+</html>

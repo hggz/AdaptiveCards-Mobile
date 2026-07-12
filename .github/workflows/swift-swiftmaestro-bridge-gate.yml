@@ -1,0 +1,99 @@
+# proxy-only — do NOT cherry-pick this workflow to any clean/* branch
+# or to any PR targeting microsoft/main. Lives only on hggz proxy branches.
+name: swift-swiftmaestro-bridge gate
+
+on:
+  push:
+    branches:
+      - 'proxy/feat-swift-swiftmaestro-bridge'
+      - 'proxy/integration'
+    paths:
+      - 'source/ios-swift-swiftmaestro/**'
+      - '.github/workflows/swift-swiftmaestro-bridge-gate.yml'
+  pull_request:
+    branches: [ 'proxy/integration' ]
+    paths:
+      - 'source/ios-swift-swiftmaestro/**'
+      - '.github/workflows/swift-swiftmaestro-bridge-gate.yml'
+  workflow_dispatch:
+
+jobs:
+  windows-msvc:
+    name: Windows MSVC / Swift 6.3.1
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Manual checkout with protectNTFS=false
+        env:
+          REPO: ${{ github.repository }}
+          REF: ${{ github.sha }}
+        run: |
+          git config --global core.protectNTFS false
+          git init .
+          git remote add origin "https://github.com/$env:REPO.git"
+          git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin $env:REF
+          git checkout --progress --force $env:REF
+          if ($LASTEXITCODE -ne 0) { throw 'checkout failed' }
+          git rev-parse HEAD
+
+      - name: Install Swift 6.3.1
+        uses: compnerd/gha-setup-swift@main
+        with:
+          swift-version: 'swift-6.3.1-release'
+          swift-build: '6.3.1-RELEASE'
+
+      - name: Toolchain and static compliance
+        working-directory: source/ios-swift-swiftmaestro
+        run: |
+          swift --version
+          $forbidden = Get-ChildItem Sources,Tests,examples -Recurse -File -Filter *.swift |
+            Select-String -Pattern '^import (Darwin|UIKit|AppKit|CoreFoundation|Combine|os\.)'
+          if ($forbidden) { $forbidden; throw 'Apple-only imports found' }
+          $manifests = Get-ChildItem . -Recurse -File -Filter Package.swift
+          if ($manifests | Select-String -Pattern 'git@|github\.com-hggz') {
+            throw 'private/SSH dependency URL found'
+          }
+          $junk = Get-ChildItem . -Recurse -Force | Where-Object {
+            $_.Name -in @('.build','.swiftpm','Package.resolved','vcpkg_installed','LICENSE')
+          }
+          if ($junk) { $junk.FullName; throw 'forbidden vendored artifact found' }
+
+      - name: Install zlib (vcpkg manifest)
+        working-directory: source/ios-swift-swiftmaestro
+        run: |
+          $triplet = 'x64-windows-static-md'
+          & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" install --triplet $triplet
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg install failed' }
+          $inc = (Resolve-Path "vcpkg_installed\$triplet\include").Path
+          $lib = (Resolve-Path "vcpkg_installed\$triplet\lib").Path
+          "ZLIB_INC=$inc" | Out-File $env:GITHUB_ENV -Append -Encoding ascii
+          "ZLIB_LIB=$lib" | Out-File $env:GITHUB_ENV -Append -Encoding ascii
+
+      - name: Build vendored runtime
+        working-directory: source/ios-swift-swiftmaestro
+        run: |
+          swift build -c debug --scratch-path D:\b\sma-kit `
+            -Xcc "-I$env:ZLIB_INC" `
+            -Xswiftc "-I$env:ZLIB_INC" `
+            -Xlinker "/LIBPATH:$env:ZLIB_LIB"
+          if ($LASTEXITCODE -ne 0) { throw 'kit build failed' }
+
+      - name: Test vendored runtime
+        working-directory: source/ios-swift-swiftmaestro
+        run: |
+          swift test --parallel --scratch-path D:\b\sma-kit `
+            -Xcc "-I$env:ZLIB_INC" `
+            -Xswiftc "-I$env:ZLIB_INC" `
+            -Xlinker "/LIBPATH:$env:ZLIB_LIB"
+          if ($LASTEXITCODE -ne 0) { throw 'kit tests failed' }
+
+      - name: Build and run Adaptive Cards symbol check
+        working-directory: source/ios-swift-swiftmaestro/examples/adaptivecards-swiftmaestro-demo
+        run: |
+          ./smoke.ps1 `
+            -ZlibInc "$env:ZLIB_INC" `
+            -ZlibLib "$env:ZLIB_LIB" `
+            -ScratchPath D:\b\sma-demo
+          if ($LASTEXITCODE -ne 0) { throw 'runtime symbol check failed' }

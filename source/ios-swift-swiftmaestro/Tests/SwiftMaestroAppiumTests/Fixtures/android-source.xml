@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hierarchy rotation="0">
+  <node index="0" text="" resource-id="" class="android.widget.FrameLayout" content-desc="" clickable="false" enabled="true" bounds="[0,0][1080,1920]">
+    <node index="0" text="Login" resource-id="com.example:id/login" class="android.widget.Button" content-desc="login-button" clickable="true" enabled="true" bounds="[400,500][680,590]"/>
+  </node>
+</hierarchy>

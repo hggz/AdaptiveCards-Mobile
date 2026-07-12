@@ -1,0 +1,19 @@
+appId: com.example
+---
+- tapOn:
+    text: "Edit"
+    below:
+      text: "Profile"
+- tapOn:
+    text: "Delete"
+    rightOf:
+      id: "row_1"
+- assertVisible:
+    text: "Child"
+    childOf:
+      id: "container"
+- tapOn:
+    text: "X"
+    containsDescendants:
+      - text: "A"
+      - text: "B"

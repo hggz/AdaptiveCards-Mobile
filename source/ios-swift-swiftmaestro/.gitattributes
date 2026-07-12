@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.c -text
+*.h -text
+Sources/SwiftMaestroJSEngine/duktape.c whitespace=-trailing-space
+Sources/SwiftMaestroJSEngine/include/duktape.h whitespace=-trailing-space
+Sources/SwiftMaestroJSEngine/include/duk_config.h whitespace=-trailing-space

@@ -1,0 +1,8 @@
+appId: com.example
+---
+- tapOn: "Login"
+  optional: true
+  label: "tap the login button"
+- assertVisible:
+    text: "Home"
+    label: "home visible"

@@ -1,0 +1,5 @@
+appId: com.example
+name: Unknown command
+---
+- launchApp: com.example
+- frobnicateWidget: "whatever"

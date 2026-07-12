@@ -1,0 +1,106 @@
+[
+  {
+    "uuid": "swiftmaestro-0",
+    "historyId": "swiftmaestro-0",
+    "name": "Login smoke",
+    "fullName": "flows/login.yaml",
+    "status": "passed",
+    "stage": "finished",
+    "start": 1700000000000,
+    "stop": 1700000001234,
+    "labels": [
+      {
+        "name": "suite",
+        "value": "swiftmaestro"
+      },
+      {
+        "name": "package",
+        "value": "com.example.app"
+      },
+      {
+        "name": "tag",
+        "value": "smoke"
+      },
+      {
+        "name": "tag",
+        "value": "auth"
+      }
+    ],
+    "steps": [
+      {
+        "name": "launchApp",
+        "status": "passed",
+        "stage": "finished",
+        "start": 1700000000000,
+        "stop": 1700000000800
+      },
+      {
+        "name": "tap Login",
+        "status": "passed",
+        "stage": "finished",
+        "start": 1700000000800,
+        "stop": 1700000001000
+      },
+      {
+        "name": "assertVisible",
+        "status": "passed",
+        "stage": "finished",
+        "start": 1700000001000,
+        "stop": 1700000001234
+      }
+    ]
+  },
+  {
+    "uuid": "swiftmaestro-1",
+    "historyId": "swiftmaestro-1",
+    "name": "Checkout",
+    "fullName": "flows/checkout.yaml",
+    "status": "failed",
+    "statusDetails": {
+      "message": "element not found: text=\"Pay\""
+    },
+    "stage": "finished",
+    "start": 1700000000000,
+    "stop": 1700000000560,
+    "labels": [
+      {
+        "name": "suite",
+        "value": "swiftmaestro"
+      },
+      {
+        "name": "package",
+        "value": "com.example.app"
+      },
+      {
+        "name": "tag",
+        "value": "smoke"
+      }
+    ],
+    "steps": [
+      {
+        "name": "launchApp",
+        "status": "passed",
+        "stage": "finished",
+        "start": 1700000000000,
+        "stop": 1700000000300
+      },
+      {
+        "name": "tap Pay",
+        "status": "failed",
+        "stage": "finished",
+        "start": 1700000000300,
+        "stop": 1700000000560,
+        "statusDetails": {
+          "message": "element not found: text=\"Pay\""
+        }
+      },
+      {
+        "name": "assertVisible",
+        "status": "skipped",
+        "stage": "finished",
+        "start": 1700000000560,
+        "stop": 1700000000560
+      }
+    ]
+  }
+]

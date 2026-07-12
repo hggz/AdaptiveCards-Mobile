@@ -1,0 +1,11 @@
+appId: com.example
+name: Login smoke
+tags: [smoke]
+env:
+  USER: alice
+---
+- launchApp: com.example
+- assertVisible: "Welcome"
+- tapOn: "Login"
+- inputText: "${USER}"
+- back

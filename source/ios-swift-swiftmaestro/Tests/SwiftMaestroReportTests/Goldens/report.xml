@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="swiftmaestro" tests="6" failures="1" skipped="1" time="1.794">
+  <testsuite name="Login smoke" tests="3" failures="0" skipped="0" time="1.234" timestamp="2023-11-14T22:13:20Z">
+    <testcase name="launchApp" classname="Login smoke" time="0.800"/>
+    <testcase name="tap Login" classname="Login smoke" time="0.200"/>
+    <testcase name="assertVisible" classname="Login smoke" time="0.234"/>
+  </testsuite>
+  <testsuite name="Checkout" tests="3" failures="1" skipped="1" time="0.560" timestamp="2023-11-14T22:13:20Z">
+    <testcase name="launchApp" classname="Checkout" time="0.300"/>
+    <testcase name="tap Pay" classname="Checkout" time="0.260">
+      <failure message="element not found: text=&quot;Pay&quot;" type="AssertionError">element not found: text=&quot;Pay&quot;</failure>
+    </testcase>
+    <testcase name="assertVisible" classname="Checkout" time="0.000">
+      <skipped/>
+    </testcase>
+  </testsuite>
+</testsuites>
