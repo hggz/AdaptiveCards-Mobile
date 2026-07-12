@@ -1,0 +1,12 @@
+appId: com.example
+---
+- swipe:
+    direction: LEFT
+- swipe:
+    start: "10%,50%"
+    end: "90%,50%"
+    duration: 400
+- swipe:
+    from:
+      id: "card"
+    direction: UP

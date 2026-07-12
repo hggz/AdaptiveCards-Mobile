@@ -1,0 +1,8 @@
+name: Web checkout
+tags: [web]
+---
+- openLink: "https://shop.example.com"
+- tapOn:
+    css: "#add-to-cart"
+- assertVisible:
+    xpath: "//h1[text()='Cart']"

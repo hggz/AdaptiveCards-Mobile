@@ -1,0 +1,41 @@
+appId: com.example.app
+name: All commands
+---
+- launchApp:
+    appId: com.example.app
+    clearState: true
+    arguments:
+      isTest: true
+      count: 3
+- stopApp
+- killApp: com.other.app
+- clearState
+- clearKeychain
+- doubleTapOn: "Item"
+- longPressOn:
+    text: "Hold me"
+- inputText: "hello world"
+- eraseText: 5
+- copyTextFrom:
+    id: "field"
+- pasteText
+- assertNotVisible: "Spinner"
+- assertTrue: "${count == 3}"
+- scroll
+- scrollUntilVisible:
+    element:
+      text: "Bottom"
+    direction: DOWN
+    timeout: 20000
+- pressKey: enter
+- hideKeyboard
+- openLink: "https://example.com"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: "home"
+- startRecording: "rec"
+- stopRecording
+- setLocation:
+    latitude: 12.34
+    longitude: 56.78
+- evalScript: "${output.token = 'x'}"

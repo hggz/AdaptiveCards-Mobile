@@ -1,0 +1,84 @@
+{
+  "summary": {
+    "total": 2,
+    "passed": 1,
+    "failed": 1,
+    "skipped": 0,
+    "durationMs": 1794,
+    "startedAt": "2023-11-14T22:13:20Z",
+    "success": false
+  },
+  "flows": [
+    {
+      "name": "Login smoke",
+      "file": "flows/login.yaml",
+      "appId": "com.example.app",
+      "tags": [
+        "smoke",
+        "auth"
+      ],
+      "device": "emulator-5554",
+      "status": "passed",
+      "durationMs": 1234,
+      "message": null,
+      "steps": [
+        {
+          "command": "launchApp",
+          "label": null,
+          "status": "passed",
+          "durationMs": 800,
+          "message": null
+        },
+        {
+          "command": "tapOn",
+          "label": "tap Login",
+          "status": "passed",
+          "durationMs": 200,
+          "message": null
+        },
+        {
+          "command": "assertVisible",
+          "label": null,
+          "status": "passed",
+          "durationMs": 234,
+          "message": null
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "file": "flows/checkout.yaml",
+      "appId": "com.example.app",
+      "tags": [
+        "smoke"
+      ],
+      "device": "emulator-5554",
+      "status": "failed",
+      "durationMs": 560,
+      "message": "element not found: text=\"Pay\"",
+      "steps": [
+        {
+          "command": "launchApp",
+          "label": null,
+          "status": "passed",
+          "durationMs": 300,
+          "message": null
+        },
+        {
+          "command": "tapOn",
+          "label": "tap Pay",
+          "status": "failed",
+          "durationMs": 260,
+          "message": "element not found: text=\"Pay\""
+        },
+        {
+          "command": "assertVisible",
+          "label": null,
+          "status": "skipped",
+          "durationMs": 0,
+          "message": null
+        }
+      ]
+    }
+  ]
+}

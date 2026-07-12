@@ -1,0 +1,6 @@
+appId: com.example
+name: Valid main
+---
+- launchApp: com.example
+- runFlow: subflow.yaml
+- assertVisible: "Done"

@@ -1,0 +1,6 @@
+// Publish only the shim API to Swift. Duktape's headers (duktape.h /
+// duk_config.h) stay internal to the C sources and are not imported into Swift.
+module SwiftMaestroJSEngine {
+    header "smjs.h"
+    export *
+}

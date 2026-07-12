@@ -1,0 +1,19 @@
+appId: com.example
+---
+- runFlow:
+    commands:
+      - tapOn: "A"
+      - tapOn: "B"
+- repeat:
+    times: 3
+    commands:
+      - tapOn: "Next"
+- retry:
+    maxRetries: 2
+    commands:
+      - assertVisible: "Loaded"
+- runFlow:
+    when:
+      visible: "Popup"
+    commands:
+      - tapOn: "Dismiss"

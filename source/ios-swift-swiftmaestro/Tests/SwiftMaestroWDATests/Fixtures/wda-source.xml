@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XCUIElementTypeApplication type="XCUIElementTypeApplication" name="com.example" enabled="true" visible="true" x="0" y="0" width="390" height="844">
+  <XCUIElementTypeWindow type="XCUIElementTypeWindow" enabled="true" visible="true" x="0" y="0" width="390" height="844">
+    <XCUIElementTypeStaticText type="XCUIElementTypeStaticText" name="welcome" label="Welcome" enabled="true" visible="true" x="20" y="60" width="180" height="40"/>
+    <XCUIElementTypeButton type="XCUIElementTypeButton" name="loginButton" label="Login &amp; Continue" enabled="true" focused="false" selected="false" visible="true" accessible="true" x="100.4" y="400.2" width="190.2" height="48.8"/>
+  </XCUIElementTypeWindow>
+</XCUIElementTypeApplication>

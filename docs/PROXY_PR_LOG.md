@@ -193,6 +193,20 @@ Toggle test: initial=54 elements -> expanded=56 -> collapsed=54 (round-trip conf
 
 **Symbol-check coverage:** The mandatory ADDENDUM-v2 §13 demo exercises Agent (init + run), Provider, FakeProvider, FakeProviderTape.toolUseTurn, FakeProviderTape.textTurn, Context, ToolDef, StreamOptions, JSONValue (Decodable round-trip), and every AgentEvent case against the canonical adaptivecards.io Hello-World JSON. The demo asserts the canonical event sequence and prints PASS adaptivecards-swiftpi-agentloop on success.
 
+## Swift-on-Windows Bridge — swiftmaestro Flow Runtime
+
+| # | Description | Proxy Branch | Clean Branch | Status | Detail |
+|---|-------------|--------------|--------------|--------|--------|
+| 45 | Vendor the importable swiftmaestro flow runtime as a proxy-only parallel surface. | proxy/feat-swift-swiftmaestro-bridge | — | pending (hggz fork only) | `source/ios-swift-swiftmaestro/` provides flow, driver, report, JavaScript, runner, Browser/CDP, DeviceLab, WDA, and Appium library products. Its canonical-card runtime demo exercises parser → selector → executor → Duktape → driver → JSON report and prints `PASS adaptivecards-swiftmaestro-runtime`. Windows MSVC CI builds, runs 188 hermetic tests, and executes the symbol check. No edits to existing ObjC/Java/C++ shipping code. |
+
+**Scope:** Vendored from `hggz/swiftmaestro` as of 2026-07-12. All importable
+host transports are included; only the CLI, fixture harness, and repository
+smoke applications are omitted. Integrators may use a bundled backend or
+supply a `Driver`. Public dependencies use HTTPS hggz substrate pins. The
+translated maestro-runner material remains Apache-2.0, Duktape remains MIT,
+and new integration glue is under the repository-root MIT license; complete
+terms and attribution are retained in the subdirectory `NOTICE.md`.
+
 ## swiftbox Swift-on-Windows Kit Bridge
 
 | # | Issue | Proxy Branch | Clean Branch | Upstream PR | Fix |

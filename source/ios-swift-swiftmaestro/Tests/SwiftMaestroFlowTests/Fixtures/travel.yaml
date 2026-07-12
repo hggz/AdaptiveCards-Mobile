@@ -1,0 +1,10 @@
+appId: com.example
+---
+- travel:
+    points:
+      - "0.0,0.0"
+      - "1.5,1.5"
+    speed: 7900
+- addMedia:
+    - "image1.png"
+    - "image2.png"

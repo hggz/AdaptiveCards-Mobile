@@ -1,0 +1,7 @@
+appId: com.example
+name: Missing references
+---
+- runScript: does-not-exist.js
+- runFlow: nope.yaml
+- addMedia:
+    - "missing.png"
