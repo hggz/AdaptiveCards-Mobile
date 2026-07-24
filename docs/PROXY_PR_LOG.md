@@ -31,6 +31,7 @@ Track every PR merged into `proxy/integration` that needs replication to
 | 13 | #29 | 2025-07-15 | fix: render ProgressBar with accessible role and value info for TalkBack | `e338d0ef` | upstream-pr | [#36](https://github.com/hggzm/Teams-AdaptiveCards-Mobile/pull/36) | [#524](https://github.com/microsoft/Teams-AdaptiveCards-Mobile/pull/524) |
 | 14 | #50 | 2026-05-28 | feat(swift-swiftka-bridge): initial proxy drop | `af480172` | pending | — | — |
 | 15 | #48 | 2026-06-18 | feat(swift-swiftharness-bridge): land on proxy/integration | `6930f25b` | pending | — | — |
+| 16 | #5 | 2026-07-24 | feat(swift-llvmwasm-bridge): land on proxy/integration | `f01e7b92` | pending | — | — |
 
 ## Clean Branch Strategy
 
