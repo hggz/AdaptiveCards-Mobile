@@ -32,6 +32,7 @@ let package = Package(
     products: [
         .library(name: "SwiftPiCore", targets: ["SwiftPiCore"]),
         .library(name: "SwiftPiProviders", targets: ["SwiftPiProviders"]),
+        .library(name: "SwiftPiRelay", targets: ["SwiftPiRelay"]),
         .library(name: "SwiftPiTools", targets: ["SwiftPiTools"]),
         .library(name: "SwiftPiSession", targets: ["SwiftPiSession"]),
         .library(name: "SwiftPiStreaming", targets: ["SwiftPiStreaming"]),
@@ -91,11 +92,25 @@ let package = Package(
             dependencies: ["SwiftPiTools", "SwiftPiCore"]
         ),
 
+        // SwiftPiRelay carries the transport-injected provider. It has
+        // NO package dependencies on purpose: that is what lets the same
+        // agent code compile for wasm32-unknown-wasip1, where the NIO /
+        // BoringSSL stack cannot build. Do not add a dependency here.
+        .target(
+            name: "SwiftPiRelay",
+            dependencies: ["SwiftPiCore", "SwiftPiStreaming"]
+        ),
+        .testTarget(
+            name: "SwiftPiRelayTests",
+            dependencies: ["SwiftPiRelay", "SwiftPiCore"]
+        ),
+
         .target(
             name: "SwiftPiProviders",
             dependencies: [
                 "SwiftPiCore",
                 "SwiftPiStreaming",
+                "SwiftPiRelay",
                 .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
@@ -108,6 +123,7 @@ let package = Package(
                 "SwiftPiProviders",
                 "SwiftPiCore",
                 "SwiftPiStreaming",
+                "SwiftPiRelay",
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOHTTP1", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
