@@ -583,7 +583,7 @@ jobs:
             try:
               name = "NativeBaseline-" + os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"] + "-cold-" + str(index)
               invoke(["xcrun", "simctl", "create", name, selection["deviceType"]["identifier"], selection["runtime"]["identifier"]], run / "create.log")
-              device_id = str(uuid.UUID((run / "create.log").read_text().strip()))
+              device_id = str(uuid.UUID((run / "create.log").read_text().strip())).upper()
               if device_id in owned:
                 raise RuntimeError("Simulator UUID was reused")
               owned.append(device_id)
@@ -593,7 +593,7 @@ jobs:
               destination = "platform=iOS Simulator,id=" + device_id
               common = ["xcodebuild", "-project", str(root / "source/NativeBaseline.xcodeproj"), "-scheme", "NativeBaseline", "-configuration", "Debug", "-sdk", "iphonesimulator", "-destination", destination, "-destination-timeout", "120", "-derivedDataPath", str(derived), "CODE_SIGN_IDENTITY=", "CODE_SIGNING_REQUIRED=NO", "CODE_SIGNING_ALLOWED=NO", "ARCHS=" + environment["runnerArchitecture"], "ONLY_ACTIVE_ARCH=YES"]
               if not built:
-                invoke(common + ["build-for-testing", "-resultBundlePath", str(evidence / "simulator-build.xcresult")], evidence / "logs/simulator-build.log", timeout=600)
+                invoke(common + ["build-for-testing", "-resultBundlePath", str(run / "simulator-build.xcresult")], run / "simulator-build.log", timeout=600)
                 invoke(["xcrun", "lipo", "-archs", str(app / "NativeBaseline")], evidence / "logs/simulator-architecture.log")
                 if (evidence / "logs/simulator-architecture.log").read_text().strip() != environment["runnerArchitecture"]:
                   raise RuntimeError("Simulator product does not match the native runner architecture")
