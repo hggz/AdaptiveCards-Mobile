@@ -332,7 +332,7 @@ jobs:
               accessibility.name = "baseline-\(state)-accessibility.txt"
               accessibility.lifetime = .keepAlways
               add(accessibility)
-              let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+              let screenshot = XCTAttachment(data: XCUIScreen.main.screenshot().pngRepresentation, uniformTypeIdentifier: "public.png")
               screenshot.name = "baseline-\(state).png"
               screenshot.lifetime = .keepAlways
               add(screenshot)
@@ -440,7 +440,7 @@ jobs:
             destination = source / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(data)
-          print("Generated six embedded native project files")
+          print("Generated native project")
           PY
 
       - name: Pin generated native sources before Apple builds
