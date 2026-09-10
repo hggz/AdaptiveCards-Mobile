@@ -74,7 +74,7 @@ jobs:
       run:
         shell: bash
     env:
-      BASELINE_ROOT: ${{ runner.temp }}/native-ios-baseline
+      BASELINE_ROOT: ${{ github.workspace }}/.native-ios-baseline
       EXPECTED_APP_SOURCE_SHA256: ${{ inputs.expected_app_source_sha256 || '' }}
     steps:
       - name: Check out only this workflow at the triggering commit
