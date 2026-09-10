@@ -485,13 +485,14 @@ jobs:
           import subprocess
 
           evidence = Path(os.environ["BASELINE_ROOT"]) / "evidence"
-          def capture(name, command):
-            result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
-            (evidence / "logs" / (name + ".stdout")).write_text(result.stdout, encoding="utf-8")
-            (evidence / "logs" / (name + ".stderr")).write_text(result.stderr, encoding="utf-8")
+          def capture(name, command, timeout=90):
+            stdout = evidence / "logs" / (name + ".stdout")
+            stderr = evidence / "logs" / (name + ".stderr")
+            with stdout.open("wb") as output, stderr.open("wb") as errors:
+              result = subprocess.run(command, stdout=output, stderr=errors, timeout=timeout)
             result.check_returncode()
-            return result.stdout.strip()
-          runtimes = json.loads(capture("runtimes", ["xcrun", "simctl", "list", "runtimes", "--json"]))["runtimes"]
+            return stdout.read_text(encoding="utf-8").strip()
+          runtimes = json.loads(capture("runtimes", ["xcrun", "simctl", "list", "runtimes", "--json"], timeout=180))["runtimes"]
           device_types = json.loads(capture("device-types", ["xcrun", "simctl", "list", "devicetypes", "--json"]))["devicetypes"]
           def version(runtime):
             parts = tuple(int(part) for part in runtime["version"].split("."))
