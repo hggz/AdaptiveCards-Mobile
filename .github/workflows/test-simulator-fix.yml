@@ -1,10 +1,19 @@
-name: Test iOS CI Simulator Fix
+name: Native iOS Baseline and Simulator Fix
 
 on:
+  push:
+    branches: [test-app]
   workflow_dispatch:
+    inputs:
+      expected_app_source_sha256:
+        description: 'Optional SHA-256 of the exact embedded App.swift UTF-8 bytes'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   test-default-destination:
+    if: github.ref != 'refs/heads/test-app'
     name: 'Test destinationPlatformOption default'
     runs-on: macos-15
     steps:
@@ -50,3 +59,765 @@ jobs:
           CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
           2>&1 | tail -20
         echo "EXIT_CODE=$?"
+
+  native-uikit-baseline:
+    name: Primitive UIKit / two cold iPhones
+    if: github.ref == 'refs/heads/test-app' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    concurrency:
+      group: native-uikit-baseline-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: false
+    defaults:
+      run:
+        shell: bash
+    env:
+      BASELINE_ROOT: ${{ runner.temp }}/native-ios-baseline
+      EXPECTED_APP_SOURCE_SHA256: ${{ inputs.expected_app_source_sha256 || '' }}
+    steps:
+      - name: Check out only this workflow at the triggering commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: /.github/workflows/test-simulator-fix.yml
+          sparse-checkout-cone-mode: false
+
+      - name: Generate embedded app, UI tests, project and source manifest
+        id: generate
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import plistlib
+          import re
+          import xml.etree.ElementTree as ET
+
+          APP_SOURCE = r'''import UIKit
+
+          @main
+          final class AppDelegate: UIResponder, UIApplicationDelegate {
+            var window: UIWindow?
+
+            func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+              let window = UIWindow(frame: UIScreen.main.bounds)
+              window.overrideUserInterfaceStyle = .light
+              window.rootViewController = BaselineViewController()
+              window.makeKeyAndVisible()
+              self.window = window
+              return true
+            }
+          }
+
+          final class BaselineViewController: UIViewController, UITextFieldDelegate {
+            private let titleLabel = UILabel()
+            private let countLabel = UILabel()
+            private let incrementButton = UIButton(type: .system)
+            private let resetButton = UIButton(type: .system)
+            private let input = UITextField()
+            private let submitButton = UIButton(type: .system)
+            private let submittedLabel = UILabel()
+            private var count = 0
+
+            override func viewDidLoad() {
+              super.viewDidLoad()
+              view.backgroundColor = .systemBackground
+              titleLabel.text = "Native UIKit Baseline"
+              titleLabel.font = .preferredFont(forTextStyle: .title2)
+              titleLabel.accessibilityIdentifier = "baseline.title"
+              countLabel.text = "Count: 0"
+              countLabel.font = .preferredFont(forTextStyle: .largeTitle)
+              countLabel.accessibilityIdentifier = "baseline.count"
+              configure(incrementButton, title: "Increment", symbol: "plus", identifier: "baseline.increment")
+              configure(resetButton, title: "Reset", symbol: "arrow.counterclockwise", identifier: "baseline.reset")
+              configure(submitButton, title: "Submit", symbol: "paperplane", identifier: "baseline.submit")
+              incrementButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
+              resetButton.addTarget(self, action: #selector(reset), for: .touchUpInside)
+              submitButton.addTarget(self, action: #selector(submit), for: .touchUpInside)
+              input.accessibilityIdentifier = "baseline.input"
+              input.accessibilityLabel = "Message"
+              input.placeholder = "Message"
+              input.borderStyle = .roundedRect
+              input.font = .preferredFont(forTextStyle: .body)
+              input.autocorrectionType = .no
+              input.autocapitalizationType = .none
+              input.spellCheckingType = .no
+              input.returnKeyType = .done
+              input.delegate = self
+              submittedLabel.text = "Submitted: (none)"
+              submittedLabel.font = .preferredFont(forTextStyle: .body)
+              submittedLabel.numberOfLines = 0
+              submittedLabel.accessibilityIdentifier = "baseline.submitted"
+              let actions = UIStackView(arrangedSubviews: [incrementButton, resetButton])
+              actions.spacing = 12
+              actions.distribution = .fillEqually
+              let stack = UIStackView(arrangedSubviews: [titleLabel, countLabel, actions, input, submitButton, submittedLabel])
+              stack.axis = .vertical
+              stack.spacing = 16
+              stack.translatesAutoresizingMaskIntoConstraints = false
+              view.addSubview(stack)
+              NSLayoutConstraint.activate([
+                stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+                stack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
+                stack.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -24),
+                stack.bottomAnchor.constraint(lessThanOrEqualTo: view.keyboardLayoutGuide.topAnchor, constant: -16),
+                actions.heightAnchor.constraint(equalToConstant: 48),
+                input.heightAnchor.constraint(equalToConstant: 48),
+                submitButton.heightAnchor.constraint(equalToConstant: 48)
+              ])
+            }
+
+            override func viewDidLayoutSubviews() {
+              super.viewDidLayoutSubviews()
+              writeLayoutMetadata()
+            }
+
+            private func configure(_ button: UIButton, title: String, symbol: String, identifier: String) {
+              var configuration = UIButton.Configuration.tinted()
+              configuration.title = title
+              configuration.image = UIImage(systemName: symbol)
+              configuration.imagePadding = 8
+              configuration.baseForegroundColor = .systemBlue
+              button.configuration = configuration
+              button.accessibilityIdentifier = identifier
+            }
+
+            @objc private func increment() {
+              count += 1
+              countLabel.text = "Count: \(count)"
+              view.layoutIfNeeded()
+              writeLayoutMetadata()
+            }
+
+            @objc private func reset() {
+              count = 0
+              countLabel.text = "Count: 0"
+              view.layoutIfNeeded()
+              writeLayoutMetadata()
+            }
+
+            @objc private func submit() {
+              view.endEditing(true)
+              submittedLabel.text = "Submitted: \(input.text ?? "")"
+              view.layoutIfNeeded()
+              writeLayoutMetadata()
+            }
+
+            func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+              textField.resignFirstResponder()
+              return true
+            }
+
+            private func writeLayoutMetadata() {
+              guard let window = view.window else { return }
+              func rect(_ frame: CGRect) -> [String: Double] {
+                ["x": Double(frame.minX), "y": Double(frame.minY), "width": Double(frame.width), "height": Double(frame.height)]
+              }
+              let screen = window.screen
+              let controls: [UIView] = [titleLabel, countLabel, incrementButton, resetButton, input, submitButton, submittedLabel]
+              let model: [String: Any] = [
+                "kind": "native-app-layout", "schemaVersion": 1,
+                "count": count, "submittedLabel": submittedLabel.text ?? "",
+                "systemVersion": UIDevice.current.systemVersion,
+                "operatingSystemVersion": ProcessInfo.processInfo.operatingSystemVersionString,
+                "interfaceStyle": traitCollection.userInterfaceStyle == .light ? "light" : "other",
+                "screenBounds": rect(screen.bounds), "nativeScreenBounds": rect(screen.nativeBounds),
+                "scale": Double(screen.scale), "nativeScale": Double(screen.nativeScale),
+                "safeAreaBounds": rect(view.convert(view.bounds.inset(by: view.safeAreaInsets), to: window)),
+                "safeAreaInsets": ["top": Double(view.safeAreaInsets.top), "left": Double(view.safeAreaInsets.left), "bottom": Double(view.safeAreaInsets.bottom), "right": Double(view.safeAreaInsets.right)],
+                "controls": controls.map { control -> [String: Any] in
+                  ["identifier": control.accessibilityIdentifier ?? "", "frame": rect(control.convert(control.bounds, to: window)), "enabled": (control as? UIControl)?.isEnabled ?? true, "hidden": control.isHidden, "alpha": Double(control.alpha)]
+                }
+              ]
+              do {
+                let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let data = try JSONSerialization.data(withJSONObject: model, options: [.prettyPrinted, .sortedKeys])
+                try data.write(to: directory.appendingPathComponent("native-layout.json"), options: .atomic)
+              } catch {
+                NSLog("Native baseline metadata failed: %@", String(describing: error))
+              }
+            }
+          }
+          '''
+
+          UI_TEST_SOURCE = r'''import XCTest
+
+          final class NativeBaselineUITests: XCTestCase {
+            override func setUpWithError() throws {
+              continueAfterFailure = false
+              XCUIDevice.shared.orientation = .portrait
+            }
+
+            func testColdLaunchActionsAndLayout() throws {
+              let app = XCUIApplication()
+              app.terminate()
+              app.launch()
+              XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
+              let counter = app.staticTexts["baseline.count"]
+              XCTAssertTrue(counter.waitForExistence(timeout: 15))
+              expect(counter, label: "Count: 0")
+              expect(app.staticTexts["baseline.submitted"], label: "Submitted: (none)")
+              XCTAssertEqual(app.textFields["baseline.input"].value as? String, "Message")
+              try capture(app, state: "initial")
+
+              app.buttons["baseline.increment"].tap()
+              expect(counter, label: "Count: 1")
+              try capture(app, state: "increment-1")
+              app.buttons["baseline.increment"].tap()
+              expect(counter, label: "Count: 2")
+              try capture(app, state: "increment-2")
+              app.buttons["baseline.reset"].tap()
+              expect(counter, label: "Count: 0")
+              try capture(app, state: "reset")
+
+              let input = app.textFields["baseline.input"]
+              input.tap()
+              input.typeText("Hello native iOS\n")
+              let keyboardGone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.keyboards.firstMatch)
+              wait(for: [keyboardGone], timeout: 10)
+              XCTAssertEqual(input.value as? String, "Hello native iOS")
+              app.buttons["baseline.submit"].tap()
+              expect(app.staticTexts["baseline.submitted"], label: "Submitted: Hello native iOS")
+              expect(counter, label: "Count: 0")
+              try capture(app, state: "submitted")
+            }
+
+            private func expect(_ element: XCUIElement, label: String) {
+              let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", label), object: element)
+              wait(for: [expectation], timeout: 10)
+              XCTAssertEqual(element.label, label)
+            }
+
+            private func capture(_ app: XCUIApplication, state: String) throws {
+              let identifiers = ["baseline.title", "baseline.count", "baseline.increment", "baseline.reset", "baseline.input", "baseline.submit", "baseline.submitted"]
+              let window = app.windows.firstMatch
+              XCTAssertTrue(window.exists)
+              XCTAssertGreaterThan(window.frame.width, 0)
+              XCTAssertGreaterThan(window.frame.height, window.frame.width)
+              func rect(_ frame: CGRect) -> [String: Double] {
+                ["x": Double(frame.minX), "y": Double(frame.minY), "width": Double(frame.width), "height": Double(frame.height)]
+              }
+              var controls: [[String: Any]] = []
+              var frames: [CGRect] = []
+              for identifier in identifiers {
+                let element = app.descendants(matching: .any).matching(identifier: identifier).firstMatch
+                XCTAssertTrue(element.exists, identifier)
+                XCTAssertTrue(element.isHittable, identifier)
+                XCTAssertTrue(element.isEnabled, identifier)
+                XCTAssertFalse(element.frame.isEmpty, identifier)
+                XCTAssertTrue(window.frame.contains(element.frame), identifier)
+                for previous in frames {
+                  XCTAssertTrue(previous.intersection(element.frame).isEmpty, identifier)
+                }
+                if element.elementType == .button || element.elementType == .textField {
+                  XCTAssertGreaterThanOrEqual(element.frame.height, 44, identifier)
+                }
+                frames.append(element.frame)
+                controls.append(["identifier": identifier, "label": element.label, "value": element.value as? String ?? "", "frame": rect(element.frame), "enabled": element.isEnabled, "hittable": element.isHittable])
+              }
+              let description = app.debugDescription
+              let model: [String: Any] = ["kind": "native-ui-observation", "schemaVersion": 1, "state": state, "windowBounds": rect(window.frame), "controls": controls, "accessibilityDebugDescription": description]
+              let data = try JSONSerialization.data(withJSONObject: model, options: [.prettyPrinted, .sortedKeys])
+              let layout = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+              layout.name = "baseline-\(state)-layout.json"
+              layout.lifetime = .keepAlways
+              add(layout)
+              let accessibility = XCTAttachment(string: description)
+              accessibility.name = "baseline-\(state)-accessibility.txt"
+              accessibility.lifetime = .keepAlways
+              add(accessibility)
+              let screenshot = XCTAttachment(screenshot: app.screenshot())
+              screenshot.name = "baseline-\(state).png"
+              screenshot.lifetime = .keepAlways
+              add(screenshot)
+            }
+          }
+          '''
+
+          root = Path(os.environ["BASELINE_ROOT"])
+          source = root / "source"
+          (root / "evidence" / "logs").mkdir(parents=True, exist_ok=True)
+          expected = os.environ.get("EXPECTED_APP_SOURCE_SHA256", "")
+          if expected and not re.fullmatch(r"[0-9a-fA-F]{64}", expected):
+            raise SystemExit("expected_app_source_sha256 must be exactly 64 hexadecimal characters")
+          app_bytes = APP_SOURCE.encode("utf-8")
+          app_hash = hashlib.sha256(app_bytes).hexdigest()
+          if expected and app_hash != expected.lower():
+            raise SystemExit("Embedded App.swift SHA-256 does not match expected_app_source_sha256")
+
+          objects = {}
+          def identifier(key):
+            return hashlib.sha256(key.encode("utf-8")).hexdigest()[:24].upper()
+          def add(key, kind, **properties):
+            objects[identifier(key)] = dict(isa=kind, **properties)
+            return identifier(key)
+          def configurations(key, extra):
+            references = []
+            for name in ("Debug", "Release"):
+              settings = dict(extra, SWIFT_OPTIMIZATION_LEVEL="-Onone" if name == "Debug" else "-O")
+              references.append(add(key + name, "XCBuildConfiguration", name=name, buildSettings=settings))
+            return add(key + "Configurations", "XCConfigurationList", buildConfigurations=references, defaultConfigurationIsVisible="0", defaultConfigurationName="Release")
+          common = dict(IPHONEOS_DEPLOYMENT_TARGET="15.0", SWIFT_VERSION="5.0", SDKROOT="iphoneos", CLANG_ENABLE_MODULES="YES", CODE_SIGNING_ALLOWED="NO", CODE_SIGNING_REQUIRED="NO", CODE_SIGN_IDENTITY="", TARGETED_DEVICE_FAMILY="1", ENABLE_USER_SCRIPT_SANDBOXING="YES")
+          project_config = configurations("Project", common)
+          app_config = configurations("App", dict(PRODUCT_NAME="$(TARGET_NAME)", PRODUCT_BUNDLE_IDENTIFIER="org.hggz.NativeUIKitBaseline", INFOPLIST_FILE="NativeBaseline/Info.plist", GENERATE_INFOPLIST_FILE="NO", SUPPORTED_PLATFORMS="iphoneos iphonesimulator", LD_RUNPATH_SEARCH_PATHS=["$(inherited)", "@executable_path/Frameworks"]))
+          test_config = configurations("Tests", dict(PRODUCT_NAME="$(TARGET_NAME)", PRODUCT_BUNDLE_IDENTIFIER="org.hggz.NativeUIKitBaselineUITests", INFOPLIST_FILE="NativeBaselineUITests/Info.plist", GENERATE_INFOPLIST_FILE="NO", SUPPORTED_PLATFORMS="iphonesimulator", TEST_TARGET_NAME="NativeBaseline", ENABLE_TESTING_SEARCH_PATHS="YES", LD_RUNPATH_SEARCH_PATHS=["$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks"]))
+          app_ref = add("AppSource", "PBXFileReference", lastKnownFileType="sourcecode.swift", path="App.swift", sourceTree="<group>")
+          test_ref = add("TestSource", "PBXFileReference", lastKnownFileType="sourcecode.swift", path="UITest.swift", sourceTree="<group>")
+          app_info = add("AppInfo", "PBXFileReference", lastKnownFileType="text.plist.xml", path="Info.plist", sourceTree="<group>")
+          test_info = add("TestInfo", "PBXFileReference", lastKnownFileType="text.plist.xml", path="Info.plist", sourceTree="<group>")
+          app_product = add("AppProduct", "PBXFileReference", explicitFileType="wrapper.application", includeInIndex="0", path="NativeBaseline.app", sourceTree="BUILT_PRODUCTS_DIR")
+          test_product = add("TestProduct", "PBXFileReference", explicitFileType="wrapper.cfbundle", includeInIndex="0", path="NativeBaselineUITests.xctest", sourceTree="BUILT_PRODUCTS_DIR")
+          app_group = add("AppGroup", "PBXGroup", path="NativeBaseline", sourceTree="<group>", children=[app_ref, app_info])
+          test_group = add("TestGroup", "PBXGroup", path="NativeBaselineUITests", sourceTree="<group>", children=[test_ref, test_info])
+          products = add("Products", "PBXGroup", name="Products", sourceTree="<group>", children=[app_product, test_product])
+          main_group = add("MainGroup", "PBXGroup", sourceTree="<group>", children=[app_group, test_group, products])
+          proxy = add("TestProxy", "PBXContainerItemProxy", containerPortal=identifier("Project"), proxyType="1", remoteGlobalIDString=identifier("AppTarget"), remoteInfo="NativeBaseline")
+          dependency = add("TestDependency", "PBXTargetDependency", target=identifier("AppTarget"), targetProxy=proxy)
+          for key, name, source_ref, product, config, product_type, dependencies in [
+            ("App", "NativeBaseline", app_ref, app_product, app_config, "com.apple.product-type.application", []),
+            ("Tests", "NativeBaselineUITests", test_ref, test_product, test_config, "com.apple.product-type.bundle.ui-testing", [dependency]),
+          ]:
+            build_file = add(key + "BuildFile", "PBXBuildFile", fileRef=source_ref)
+            phases = [add(key + "Sources", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=[build_file], runOnlyForDeploymentPostprocessing="0")]
+            for phase in ("Frameworks", "Resources"):
+              phases.append(add(key + phase, "PBX" + phase + "BuildPhase", buildActionMask="2147483647", files=[], runOnlyForDeploymentPostprocessing="0"))
+            add(key + "Target", "PBXNativeTarget", name=name, productName=name, productReference=product, productType=product_type, buildConfigurationList=config, buildPhases=phases, buildRules=[], dependencies=dependencies)
+          add("Project", "PBXProject", attributes={"LastUpgradeCheck": "1600", "TargetAttributes": {identifier("AppTarget"): {"CreatedOnToolsVersion": "16.0"}, identifier("TestsTarget"): {"CreatedOnToolsVersion": "16.0", "TestTargetID": identifier("AppTarget")}}}, buildConfigurationList=project_config, compatibilityVersion="Xcode 14.0", developmentRegion="en", knownRegions=["en", "Base"], mainGroup=main_group, productRefGroup=products, projectDirPath="", projectRoot="", targets=[identifier("AppTarget"), identifier("TestsTarget")])
+          def pbx(value, depth=0):
+            indentation = "\t" * depth
+            if isinstance(value, dict):
+              return "{\n" + "".join("\t" * (depth + 1) + key + " = " + pbx(item, depth + 1) + ";\n" for key, item in sorted(value.items())) + indentation + "}"
+            if isinstance(value, list):
+              return "(\n" + "".join("\t" * (depth + 1) + pbx(item, depth + 1) + ",\n" for item in value) + indentation + ")"
+            if isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_./]+", value):
+              return value
+            return json.dumps(value)
+          project_lines = ["// !$*UTF8*$!", "{", "\tarchiveVersion = 1;", "\tclasses = {};", "\tobjectVersion = 56;", "\tobjects = {"]
+          for kind in sorted({item["isa"] for item in objects.values()}):
+            project_lines.append("\n/* Begin " + kind + " section */")
+            for object_id, item in sorted(objects.items()):
+              if item["isa"] == kind:
+                project_lines.append("\t\t" + object_id + " = " + pbx(item, 2) + ";")
+            project_lines.append("/* End " + kind + " section */\n")
+          project_lines.extend(["\t};", "\trootObject = " + identifier("Project") + ";", "}", ""])
+          project = "\n".join(project_lines)
+
+          scheme = ET.Element("Scheme", LastUpgradeVersion="1600", version="1.7")
+          def buildable(parent, key, name, product):
+            ET.SubElement(parent, "BuildableReference", BuildableIdentifier="primary", BlueprintIdentifier=identifier(key), BuildableName=product, BlueprintName=name, ReferencedContainer="container:NativeBaseline.xcodeproj")
+          build_action = ET.SubElement(scheme, "BuildAction", parallelizeBuildables="NO", buildImplicitDependencies="YES")
+          entries = ET.SubElement(build_action, "BuildActionEntries")
+          for key, name, product, other in [("AppTarget", "NativeBaseline", "NativeBaseline.app", "YES"), ("TestsTarget", "NativeBaselineUITests", "NativeBaselineUITests.xctest", "NO")]:
+            entry = ET.SubElement(entries, "BuildActionEntry", buildForTesting="YES", buildForRunning=other, buildForProfiling=other, buildForArchiving=other, buildForAnalyzing=other)
+            buildable(entry, key, name, product)
+          test_action = ET.SubElement(scheme, "TestAction", buildConfiguration="Debug", selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB", selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB", shouldUseLaunchSchemeArgsEnv="YES")
+          testable = ET.SubElement(ET.SubElement(test_action, "Testables"), "TestableReference", skipped="NO", parallelizable="NO")
+          buildable(testable, "TestsTarget", "NativeBaselineUITests", "NativeBaselineUITests.xctest")
+          for tag, configuration in [("LaunchAction", "Debug"), ("ProfileAction", "Release")]:
+            action = ET.SubElement(scheme, tag, buildConfiguration=configuration, useCustomWorkingDirectory="NO")
+            runnable = ET.SubElement(action, "BuildableProductRunnable", runnableDebuggingMode="0")
+            buildable(runnable, "AppTarget", "NativeBaseline", "NativeBaseline.app")
+          ET.SubElement(scheme, "AnalyzeAction", buildConfiguration="Debug")
+          ET.SubElement(scheme, "ArchiveAction", buildConfiguration="Release", revealArchiveInOrganizer="NO")
+          ET.indent(scheme, space="  ")
+          info = dict(CFBundleDevelopmentRegion="$(DEVELOPMENT_LANGUAGE)", CFBundleExecutable="$(EXECUTABLE_NAME)", CFBundleIdentifier="$(PRODUCT_BUNDLE_IDENTIFIER)", CFBundleInfoDictionaryVersion="6.0", CFBundleName="$(PRODUCT_NAME)", CFBundleShortVersionString="1.0", CFBundleVersion="1")
+          app_plist = dict(info, CFBundlePackageType="APPL", CFBundleDisplayName="Native UIKit Baseline", LSRequiresIPhoneOS=True, UIDeviceFamily=[1], UILaunchScreen={}, UIUserInterfaceStyle="Light", UISupportedInterfaceOrientations=["UIInterfaceOrientationPortrait"])
+          files = {
+            "NativeBaseline/App.swift": app_bytes,
+            "NativeBaseline/Info.plist": plistlib.dumps(app_plist, sort_keys=True),
+            "NativeBaselineUITests/UITest.swift": UI_TEST_SOURCE.encode("utf-8"),
+            "NativeBaselineUITests/Info.plist": plistlib.dumps(dict(info, CFBundlePackageType="BNDL"), sort_keys=True),
+            "NativeBaseline.xcodeproj/project.pbxproj": project.encode("utf-8"),
+            "NativeBaseline.xcodeproj/xcshareddata/xcschemes/NativeBaseline.xcscheme": ET.tostring(scheme, encoding="utf-8", xml_declaration=True) + b"\n",
+          }
+          for name, data in sorted(files.items()):
+            destination = source / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(data)
+          print("Generated six embedded native project files")
+          PY
+
+      - name: Pin generated native sources before Apple builds
+        id: source-pin
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["BASELINE_ROOT"])
+          source = root / "source"
+          expected = os.environ.get("EXPECTED_APP_SOURCE_SHA256", "")
+          app_hash = hashlib.sha256((source / "NativeBaseline/App.swift").read_bytes()).hexdigest()
+          if expected and app_hash != expected.lower():
+            raise SystemExit("Generated App.swift does not match expected_app_source_sha256")
+          records = []
+          for path in sorted(source.rglob("*")):
+            if path.is_file():
+              data = path.read_bytes()
+              records.append(dict(path=path.relative_to(source).as_posix(), bytes=len(data), sha256=hashlib.sha256(data).hexdigest()))
+          if len(records) != 6:
+            raise SystemExit("Expected exactly six native project files")
+          workflow = Path(os.environ["GITHUB_WORKSPACE"]) / ".github/workflows/test-simulator-fix.yml"
+          manifest = dict(schemaVersion=1, baselineScope="primitive UIKit", originalAppQualified=False, localRenderingMatched=False, appSourcePath="NativeBaseline/App.swift", appSourceSHA256=app_hash, sourceEncoding="UTF-8", sourceLineEndings="LF", expectedAppSourceSHA256=expected.lower() or None, expectedAppSourceVerified=True if expected else None, files=records, workflowSHA256=hashlib.sha256(workflow.read_bytes()).hexdigest(), commit=os.environ["GITHUB_SHA"], ref=os.environ["GITHUB_REF"], repository=os.environ["GITHUB_REPOSITORY"])
+          (root / "source-manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          (root / "evidence" / "workflow.yml").write_bytes(workflow.read_bytes())
+          print(json.dumps(dict(generatedFiles=len(records), appSourceSHA256=app_hash, baselineScope=manifest["baselineScope"]), indent=2))
+          PY
+
+      - name: Record default Xcode and select an available iPhone runtime
+        id: environment
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import subprocess
+
+          evidence = Path(os.environ["BASELINE_ROOT"]) / "evidence"
+          def capture(name, command):
+            result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
+            (evidence / "logs" / (name + ".stdout")).write_text(result.stdout, encoding="utf-8")
+            (evidence / "logs" / (name + ".stderr")).write_text(result.stderr, encoding="utf-8")
+            result.check_returncode()
+            return result.stdout.strip()
+          runtimes = json.loads(capture("runtimes", ["xcrun", "simctl", "list", "runtimes", "--json"]))["runtimes"]
+          device_types = json.loads(capture("device-types", ["xcrun", "simctl", "list", "devicetypes", "--json"]))["devicetypes"]
+          def version(runtime):
+            parts = tuple(int(part) for part in runtime["version"].split("."))
+            return (parts + (0, 0, 0))[:3]
+          available = [runtime for runtime in runtimes if runtime.get("isAvailable") is True and runtime["identifier"].startswith("com.apple.CoreSimulator.SimRuntime.iOS-") and version(runtime) >= (15, 0, 0)]
+          available.sort(key=lambda runtime: (version(runtime)[0] == 18, version(runtime)), reverse=True)
+          selected = None
+          for runtime in available:
+            runtime_version = version(runtime)
+            encoded_version = (runtime_version[0] << 16) | (runtime_version[1] << 8) | runtime_version[2]
+            for name in ("iPhone 16", "iPhone 15"):
+              matches = [device for device in device_types if device["name"] == name and device.get("productFamily", "iPhone") == "iPhone" and ".iPhone-" in device["identifier"] and int(device.get("minRuntimeVersion", 0)) <= encoded_version <= int(device.get("maxRuntimeVersion", 0xFFFFFFFF))]
+              if matches:
+                selected = dict(runtime=runtime, deviceType=matches[0], deploymentTarget="15.0", runtimeIsDeploymentTarget=runtime_version == (15, 0, 0))
+                break
+            if selected:
+              break
+          if not selected:
+            raise SystemExit("No installed, compatible iPhone 16 or iPhone 15 iOS runtime; no runtime downloads are permitted")
+          sdks = {}
+          for sdk in ("iphoneos", "iphonesimulator"):
+            sdks[sdk] = {field: capture(sdk + "-" + field, ["xcrun", "--sdk", sdk, option]) for field, option in [("path", "--show-sdk-path"), ("version", "--show-sdk-version"), ("build", "--show-sdk-build-version")]}
+          environment = dict(xcode=capture("xcode", ["xcodebuild", "-version"]), swiftCompiler=capture("swift", ["xcrun", "swift", "--version"]), developerDirectory=capture("developer-directory", ["xcode-select", "-p"]), hostVersion=capture("host-version", ["sw_vers"]), runnerArchitecture=platform.machine(), runnerOS=os.environ.get("RUNNER_OS"), runnerImage=os.environ.get("ImageOS"), runnerImageVersion=os.environ.get("ImageVersion"), sdks=sdks, selection=selected)
+          if environment["runnerArchitecture"] not in ("arm64", "x86_64"):
+            raise SystemExit("Unsupported native runner architecture")
+          (evidence / "environment.json").write_text(json.dumps(environment, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(environment, indent=2))
+          PY
+
+      - name: Compile an unsigned archive for generic physical iOS
+        id: archive
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+          -project "$BASELINE_ROOT/source/NativeBaseline.xcodeproj" \
+          -scheme NativeBaseline -configuration Release \
+          -sdk iphoneos -destination 'generic/platform=iOS' \
+          -archivePath "$BASELINE_ROOT/evidence/NativeBaseline.xcarchive" \
+          -derivedDataPath "$BASELINE_ROOT/derived-ios" \
+          -resultBundlePath "$BASELINE_ROOT/evidence/archive.xcresult" \
+          CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
+          2>&1 | tee "$BASELINE_ROOT/evidence/logs/archive.log"
+
+      - name: Build and run XCUITest on two fresh cold iPhones
+        id: cold
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import json
+          import os
+          from pathlib import Path
+          import shutil
+          import signal
+          import subprocess
+          import sys
+          import uuid
+
+          root = Path(os.environ["BASELINE_ROOT"])
+          evidence = root / "evidence"
+          environment = json.loads((evidence / "environment.json").read_text())
+          selection = environment["selection"]
+          derived = root / "derived-simulator"
+          app = derived / "Build/Products/Debug-iphonesimulator/NativeBaseline.app"
+          bundle_id = "org.hggz.NativeUIKitBaseline"
+          owned = []
+          failure_code = 0
+          built = False
+          def stop_requested(signum, frame):
+            raise SystemExit(128 + signum)
+          signal.signal(signal.SIGINT, stop_requested)
+          signal.signal(signal.SIGTERM, stop_requested)
+          def save(path, value):
+            path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          def invoke(command, log, timeout=90, check=True):
+            print("+ " + " ".join(str(part) for part in command), flush=True)
+            with log.open("w", encoding="utf-8") as output:
+              result = subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, text=True, timeout=timeout)
+            if check and result.returncode:
+              print(log.read_text(encoding="utf-8", errors="replace")[-16000:], flush=True)
+              result.check_returncode()
+            return result
+          for index in (1, 2):
+            run = evidence / ("cold-" + str(index))
+            run.mkdir(parents=True, exist_ok=True)
+            record = dict(index=index, startedAtUTC=datetime.now(timezone.utc).isoformat(), errors=[], testExitCode=None)
+            device_id = None
+            result_bundle = run / "tests.xcresult"
+            try:
+              name = "NativeBaseline-" + os.environ["GITHUB_RUN_ID"] + "-" + os.environ["GITHUB_RUN_ATTEMPT"] + "-cold-" + str(index)
+              invoke(["xcrun", "simctl", "create", name, selection["deviceType"]["identifier"], selection["runtime"]["identifier"]], run / "create.log")
+              device_id = str(uuid.UUID((run / "create.log").read_text().strip()))
+              if device_id in owned:
+                raise RuntimeError("Simulator UUID was reused")
+              owned.append(device_id)
+              save(evidence / "owned-simulators.json", owned)
+              record.update(deviceUDID=device_id, deviceName=name, deviceTypeIdentifier=selection["deviceType"]["identifier"], runtimeIdentifier=selection["runtime"]["identifier"], createdFresh=True)
+              invoke(["xcrun", "simctl", "bootstatus", device_id, "-b"], run / "boot.log", timeout=240)
+              destination = "platform=iOS Simulator,id=" + device_id
+              common = ["xcodebuild", "-project", str(root / "source/NativeBaseline.xcodeproj"), "-scheme", "NativeBaseline", "-configuration", "Debug", "-sdk", "iphonesimulator", "-destination", destination, "-destination-timeout", "120", "-derivedDataPath", str(derived), "CODE_SIGN_IDENTITY=", "CODE_SIGNING_REQUIRED=NO", "CODE_SIGNING_ALLOWED=NO", "ARCHS=" + environment["runnerArchitecture"], "ONLY_ACTIVE_ARCH=YES"]
+              if not built:
+                invoke(common + ["build-for-testing", "-resultBundlePath", str(evidence / "simulator-build.xcresult")], evidence / "logs/simulator-build.log", timeout=600)
+                invoke(["xcrun", "lipo", "-archs", str(app / "NativeBaseline")], evidence / "logs/simulator-architecture.log")
+                if (evidence / "logs/simulator-architecture.log").read_text().strip() != environment["runnerArchitecture"]:
+                  raise RuntimeError("Simulator product does not match the native runner architecture")
+                built = True
+              invoke(["xcrun", "simctl", "install", device_id, str(app)], run / "install.log")
+              invoke(["xcrun", "simctl", "get_app_container", device_id, bundle_id, "data"], run / "container.log")
+              container = Path((run / "container.log").read_text().strip())
+              layout = container / "Documents/native-layout.json"
+              if layout.exists():
+                raise RuntimeError("Fresh install unexpectedly contains prior application state")
+              record["freshInstallHadNoLayoutState"] = True
+              result = invoke(common + ["test-without-building", "-parallel-testing-enabled", "NO", "-maximum-concurrent-test-simulator-destinations", "1", "-test-timeouts-enabled", "YES", "-default-test-execution-time-allowance", "120", "-maximum-test-execution-time-allowance", "180", "-only-testing:NativeBaselineUITests/NativeBaselineUITests/testColdLaunchActionsAndLayout", "-resultBundlePath", str(result_bundle)], run / "test.log", timeout=720, check=False)
+              record["testExitCode"] = result.returncode
+              result.check_returncode()
+              invoke(["xcrun", "simctl", "get_app_container", device_id, bundle_id, "data"], run / "container-after-test.log")
+              container = Path((run / "container-after-test.log").read_text().strip())
+              shutil.copyfile(container / "Documents/native-layout.json", run / "native-layout.json")
+            except Exception as error:
+              failure_code = failure_code or (getattr(error, "returncode", None) or 1)
+              record["errors"].append(str(error))
+            finally:
+              if result_bundle.is_dir():
+                try:
+                  invoke(["xcrun", "xcresulttool", "export", "attachments", "--help"], run / "export-help.log")
+                  help_text = (run / "export-help.log").read_text()
+                  if "--path" not in help_text or "--output-path" not in help_text:
+                    raise RuntimeError("Unsupported xcresulttool attachment export interface")
+                  invoke(["xcrun", "xcresulttool", "export", "attachments", "--path", str(result_bundle), "--output-path", str(run / "attachments")], run / "export.log", timeout=120)
+                  invoke(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(result_bundle)], run / "test-summary.json", timeout=120)
+                  record["attachmentExport"] = "exported"
+                except Exception as error:
+                  record["attachmentExport"] = "raw-xcresult-retained"
+                  record["errors"].append(str(error))
+                  failure_code = failure_code or 1
+              if device_id is not None and device_id in owned:
+                for action in ("shutdown", "delete"):
+                  try:
+                    result = invoke(["xcrun", "simctl", action, device_id], run / ("cleanup-" + action + ".log"), timeout=90, check=False)
+                    record["cleanup" + action.title() + "ExitCode"] = result.returncode
+                    if action == "delete" and result.returncode:
+                      raise RuntimeError("Failed to delete owned simulator " + device_id)
+                  except Exception as error:
+                    record["errors"].append(str(error))
+                    failure_code = failure_code or 1
+              record["finishedAtUTC"] = datetime.now(timezone.utc).isoformat()
+              save(run / "run.json", record)
+          sys.exit(failure_code if 0 <= failure_code <= 255 else 1)
+          PY
+
+      - name: Verify retained evidence and write the artifact manifest
+        id: manifest
+        if: always()
+        env:
+          GENERATE_OUTCOME: ${{ steps.generate.outcome }}
+          SOURCE_PIN_OUTCOME: ${{ steps.source-pin.outcome }}
+          ENVIRONMENT_OUTCOME: ${{ steps.environment.outcome }}
+          ARCHIVE_OUTCOME: ${{ steps.archive.outcome }}
+          COLD_OUTCOME: ${{ steps.cold.outcome }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import struct
+          import subprocess
+          import sys
+          import zlib
+
+          root = Path(os.environ["BASELINE_ROOT"])
+          evidence = root / "evidence"
+          evidence.mkdir(parents=True, exist_ok=True)
+          errors = []
+          def require(condition, message):
+            if not condition:
+              errors.append(message)
+          def load(path):
+            try:
+              return json.loads(path.read_text(encoding="utf-8"))
+            except Exception as error:
+              errors.append(str(path.relative_to(root)) + ": " + str(error))
+              return {}
+          def digest(path):
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+          for stage in ("GENERATE", "SOURCE_PIN", "ENVIRONMENT", "ARCHIVE", "COLD"):
+            require(os.environ.get(stage + "_OUTCOME") == "success", stage + " stage did not succeed")
+          source_manifest = load(root / "source-manifest.json")
+          for item in source_manifest.get("files", []):
+            path = root / "source" / item["path"]
+            require(path.is_file() and digest(path) == item["sha256"], "Source changed after manifest: " + item["path"])
+          environment = load(evidence / "environment.json")
+          identifiers = {"baseline.title", "baseline.count", "baseline.increment", "baseline.reset", "baseline.input", "baseline.submit", "baseline.submitted"}
+          expected_states = {"initial": "Count: 0", "increment-1": "Count: 1", "increment-2": "Count: 2", "reset": "Count: 0", "submitted": "Count: 0"}
+          runs = []
+          total_pngs = 0
+          def contains(outer, inner):
+            return inner["width"] > 0 and inner["height"] > 0 and inner["x"] >= outer["x"] and inner["y"] >= outer["y"] and inner["x"] + inner["width"] <= outer["x"] + outer["width"] and inner["y"] + inner["height"] <= outer["y"] + outer["height"]
+          def png_metadata(path, data):
+            if len(data) < 33 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR" or struct.unpack(">I", data[8:12])[0] != 13:
+              raise ValueError("Invalid PNG signature or IHDR: " + str(path))
+            width, height, bit_depth, color_type, compression, filtering, interlace = struct.unpack(">IIBBBBB", data[16:29])
+            if width <= 0 or height <= 0:
+              raise ValueError("Empty PNG dimensions")
+            offset, image_bytes, chunks = 8, 0, []
+            while offset + 12 <= len(data):
+              length = struct.unpack(">I", data[offset:offset + 4])[0]
+              kind = data[offset + 4:offset + 8]
+              end = offset + 8 + length
+              if end + 4 > len(data) or zlib.crc32(data[offset + 4:end]) & 0xFFFFFFFF != struct.unpack(">I", data[end:end + 4])[0]:
+                raise ValueError("PNG chunk length/CRC failure")
+              chunks.append(kind.decode("ascii"))
+              if kind == b"IDAT":
+                image_bytes += length
+              offset = end + 4
+              if kind == b"IEND":
+                break
+            if not chunks or chunks[-1] != "IEND" or image_bytes == 0 or offset != len(data):
+              raise ValueError("Incomplete PNG image data")
+            result = subprocess.run(["sips", "-g", "pixelWidth", "-g", "pixelHeight", "-g", "format", "-g", "space", "-g", "samplesPerPixel", "-g", "bitsPerSample", "-g", "hasAlpha", str(path)], capture_output=True, text=True, timeout=30, check=True)
+            if re.search(r"pixelWidth:\s*" + str(width) + r"\b", result.stdout) is None or re.search(r"pixelHeight:\s*" + str(height) + r"\b", result.stdout) is None:
+              raise ValueError("sips and PNG IHDR dimensions differ")
+            return dict(path=str(path.relative_to(evidence)), bytes=len(data), sha256=hashlib.sha256(data).hexdigest(), width=width, height=height, bitDepth=bit_depth, colorType=color_type, compression=compression, filtering=filtering, interlace=interlace, chunks=chunks, sips=result.stdout, pixelContentCompared=False)
+          for index in (1, 2):
+            run = evidence / ("cold-" + str(index))
+            record = load(run / "run.json")
+            summary = load(run / "test-summary.json")
+            native = load(run / "native-layout.json")
+            require(record.get("createdFresh") is True and record.get("freshInstallHadNoLayoutState") is True, "Cold run " + str(index) + " is not proven fresh")
+            require(record.get("testExitCode") == 0 and not record.get("errors"), "Cold run " + str(index) + " failed")
+            require(summary.get("totalTestCount") == 1 and summary.get("passedTests") == 1 and summary.get("failedTests") == 0 and summary.get("skippedTests") == 0, "Cold run " + str(index) + " did not execute exactly one passing UI test")
+            require(record.get("cleanupDeleteExitCode") == 0, "Owned simulator deletion was not successful")
+            require(native.get("count") == 0 and native.get("submittedLabel") == "Submitted: Hello native iOS" and native.get("interfaceStyle") == "light", "Final native app state differs")
+            require(native.get("scale", 0) > 0 and native.get("safeAreaInsets", {}).get("top", 0) > 0 and bool(native.get("operatingSystemVersion")), "Native screen/OS/safe-area metadata is incomplete")
+            require({control["identifier"] for control in native.get("controls", [])} == identifiers, "Native control inventory differs")
+            for control in native.get("controls", []):
+              require(contains(native["safeAreaBounds"], control["frame"]) and control["enabled"] and not control["hidden"] and control["alpha"] > 0, "Native control is outside safe area or unavailable: " + control["identifier"])
+            observations, pngs = {}, []
+            for path in sorted((run / "attachments").rglob("*")):
+              if not path.is_file():
+                continue
+              data = path.read_bytes()
+              try:
+                if data.startswith(b"\x89PNG\r\n\x1a\n"):
+                  pngs.append(png_metadata(path, data))
+                elif data.lstrip().startswith(b"{"):
+                  value = json.loads(data)
+                  if value.get("kind") == "native-ui-observation":
+                    require(value["state"] not in observations, "Duplicate native state observation")
+                    observations[value["state"]] = value
+              except Exception as error:
+                errors.append(str(path.relative_to(evidence)) + ": " + str(error))
+            require(set(observations) == set(expected_states), "Cold run " + str(index) + " is missing state observations")
+            for state, observation in observations.items():
+              controls = {control["identifier"]: control for control in observation["controls"]}
+              require(set(controls) == identifiers, "Accessibility control inventory differs: " + state)
+              require(controls.get("baseline.count", {}).get("label") == expected_states.get(state), "Count differs: " + state)
+              require(controls.get("baseline.submitted", {}).get("label") == ("Submitted: Hello native iOS" if state == "submitted" else "Submitted: (none)"), "Submitted state differs: " + state)
+              require(all(identifier in observation.get("accessibilityDebugDescription", "") for identifier in identifiers), "Accessibility debug description is incomplete: " + state)
+              for control in controls.values():
+                require(control["enabled"] and control["hittable"] and contains(observation["windowBounds"], control["frame"]), "UI test control is occluded or out of bounds: " + state)
+            require(len(pngs) >= len(expected_states), "Cold run " + str(index) + " has fewer than five verified PNG screenshots")
+            total_pngs += len(pngs)
+            if run.is_dir():
+              (run / "png-metadata.json").write_text(json.dumps(pngs, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            runs.append(dict(record=record, testSummary=summary, nativeLayout=native, states=sorted(observations), verifiedPNGCount=len(pngs)))
+          device_ids = [run["record"].get("deviceUDID") for run in runs]
+          require(None not in device_ids and len(set(device_ids)) == 2, "Two distinct owned simulator UUIDs are required")
+          inventory = [dict(path=str(path.relative_to(evidence)), bytes=path.stat().st_size, sha256=digest(path)) for path in sorted(evidence.rglob("*")) if path.is_file() and path.name != "artifact-manifest.json"]
+          manifest = dict(schemaVersion=1, baselineScope="primitive UIKit", originalAppQualified=False, localRenderingMatched=False, pixelContentCompared=False, appSourceSHA256=source_manifest.get("appSourceSHA256"), sourceManifestSHA256=digest(root / "source-manifest.json") if (root / "source-manifest.json").is_file() else None, workflowSHA256=source_manifest.get("workflowSHA256"), commit=os.environ["GITHUB_SHA"], ref=os.environ["GITHUB_REF"], runID=os.environ["GITHUB_RUN_ID"], runAttempt=os.environ["GITHUB_RUN_ATTEMPT"], environment=environment, unsignedPhysicalArchiveCompiled=os.environ.get("ARCHIVE_OUTCOME") == "success", coldRuns=runs, verifiedPNGCount=total_pngs, validation=dict(status="failed" if errors else "passed", errors=errors), evidenceFiles=inventory)
+          (evidence / "artifact-manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          print(json.dumps(dict(status=manifest["validation"]["status"], verifiedPNGCount=total_pngs, errors=errors), indent=2))
+          sys.exit(1 if errors else 0)
+          PY
+
+      - name: Retain exact embedded native sources
+        id: upload-source
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-ios-baseline-source-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.BASELINE_ROOT }}/source/NativeBaseline/App.swift
+            ${{ env.BASELINE_ROOT }}/source/NativeBaseline/Info.plist
+            ${{ env.BASELINE_ROOT }}/source/NativeBaselineUITests/UITest.swift
+            ${{ env.BASELINE_ROOT }}/source/NativeBaselineUITests/Info.plist
+            ${{ env.BASELINE_ROOT }}/source/NativeBaseline.xcodeproj/project.pbxproj
+            ${{ env.BASELINE_ROOT }}/source/NativeBaseline.xcodeproj/xcshareddata/xcschemes/NativeBaseline.xcscheme
+            ${{ env.BASELINE_ROOT }}/source-manifest.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Retain logs, raw xcresults, PNGs and native metadata
+        id: upload-evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-ios-baseline-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.BASELINE_ROOT }}/evidence
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 6
+
+      - name: Summarize the native baseline and link artifacts
+        if: always()
+        env:
+          SOURCE_ARTIFACT_URL: ${{ steps.upload-source.outputs.artifact-url }}
+          EVIDENCE_ARTIFACT_URL: ${{ steps.upload-evidence.outputs.artifact-url }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["BASELINE_ROOT"]) / "evidence/artifact-manifest.json"
+          manifest = json.loads(path.read_text()) if path.is_file() else {}
+          selection = manifest.get("environment", {}).get("selection", {})
+          lines = ["## Primitive UIKit Native Baseline", "", "Not the original ADCIOSVisualizer. No browser rendering or rendering-parity claim.", "", "- baselineScope: primitive UIKit", "- originalAppQualified: false", "- localRenderingMatched: false", "- Evidence gate: " + manifest.get("validation", {}).get("status", "not produced"), "- App.swift SHA-256: `" + str(manifest.get("appSourceSHA256", "unavailable")) + "`", "- Deployment target: iOS 15.0 (not a claim of an iOS 15 simulator)", "- Actual runtime: " + selection.get("runtime", {}).get("identifier", "unavailable"), "- Runtime build: " + selection.get("runtime", {}).get("buildversion", "unavailable"), "- iPhone model: " + selection.get("deviceType", {}).get("name", "unavailable"), "- Verified PNG files: " + str(manifest.get("verifiedPNGCount", 0)), ""]
+          for label, variable in [("Exact native sources", "SOURCE_ARTIFACT_URL"), ("Native evidence, PNGs, logs and xcresults", "EVIDENCE_ARTIFACT_URL")]:
+            url = os.environ.get(variable, "")
+            lines.append("[" + label + "](" + url + ")" if url else label + ": upload unavailable")
+          lines.extend(["", "Further comparison requires the exact source hash and recorded native environment. PNGs are retained unchanged; no masks or tolerance-based parity decision is made.", ""])
+          with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as summary:
+            summary.write("\n".join(lines))
+          PY
