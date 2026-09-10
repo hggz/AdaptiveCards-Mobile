@@ -332,7 +332,7 @@ jobs:
               accessibility.name = "baseline-\(state)-accessibility.txt"
               accessibility.lifetime = .keepAlways
               add(accessibility)
-              let screenshot = XCTAttachment(screenshot: app.screenshot())
+              let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
               screenshot.name = "baseline-\(state).png"
               screenshot.lifetime = .keepAlways
               add(screenshot)
@@ -757,6 +757,8 @@ jobs:
               for control in controls.values():
                 require(control["enabled"] and control["hittable"] and contains(observation["windowBounds"], control["frame"]), "UI test control is occluded or out of bounds: " + state)
             require(len(pngs) >= len(expected_states), "Cold run " + str(index) + " has fewer than five verified PNG screenshots")
+            for image in pngs:
+              require(image["width"] == native.get("nativeScreenBounds", {}).get("width") and image["height"] == native.get("nativeScreenBounds", {}).get("height"), "Screenshot is not the complete native screen")
             total_pngs += len(pngs)
             if run.is_dir():
               (run / "png-metadata.json").write_text(json.dumps(pngs, indent=2, sort_keys=True) + "\n", encoding="utf-8")
