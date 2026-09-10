@@ -557,6 +557,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          from contextlib import closing
           from datetime import datetime, timezone
           import hashlib
           import json
@@ -666,7 +667,7 @@ jobs:
             captures, capture_ids = [], set()
             descriptor = os.open(capture_root, os.O_RDONLY)
             try:
-              with select.kqueue() as events, log.open("w", encoding="utf-8") as output:
+              with closing(select.kqueue()) as events, log.open("w", encoding="utf-8") as output:
                 events.control([select.kevent(descriptor, filter=select.KQ_FILTER_VNODE,
                   flags=select.KQ_EV_ADD | select.KQ_EV_CLEAR, fflags=select.KQ_NOTE_WRITE | select.KQ_NOTE_RENAME)], 0, 0)
                 process = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT, text=True, start_new_session=True)
